@@ -16,6 +16,11 @@ from sklearn.preprocessing import (
     scale,
     normalize
 )
+#coding:utf-8
+
+
+from matplotlib import rcParams
+rcParams['font.family'] = 'WenQuanYi Micro Hei'
 
 
 
@@ -79,8 +84,10 @@ def matplot_list(list_data,
     
 def main():
 
+
     x =[0,  0,  0, 5.5,   9, 10, 20,24.5,  36, 45.5, 60,  80,  100]
     y =[0, 18, 30,  40,  55, 60, 70,  80,  86, 89.5, 91.5, 92, 100]
+    
 
 
     x_2 =[0, 0, 0, 3.13,6.25,9.38,18.75,31.25, 40.63, 62.5, 78.13, 81.25, 84.38, 100]
@@ -91,8 +98,8 @@ def main():
 
     #plt.scatter(x, y, s=20, c='red')
     plt.plot(x,y, 'o-',label="HMM",linewidth=1,color='red',markersize=6)
-    #plt.plot(x_2,y_2, 'o-',label="sHDP-HMM",linewidth=1,color='green',markersize=6)
-    #plt.plot(x_3,y_3, 'o-',label="sHDP-VAR-HMM",linewidth=1,markersize=6)
+    plt.plot(x_2,y_2, 'o-',label="sHDP-HMM",linewidth=1,color='green',markersize=6)
+    plt.plot(x_3,y_3, 'o-',label="sHDP-VAR-HMM",linewidth=1,markersize=6)
     
 
 
@@ -100,7 +107,7 @@ def main():
     #plt.plot(x,y, 'o', mfc ="red",makersize = '3.0')
     x1 = [0,100]
     y1 = [0,100]
-    plt.xlabel("False Positive Rate(%)")
+    plt.xlabel(u"假正类率")
 
     plt.xlim([0,100])
     plt.ylim([0,100])
