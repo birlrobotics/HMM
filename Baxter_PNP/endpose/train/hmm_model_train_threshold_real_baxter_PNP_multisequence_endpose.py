@@ -25,8 +25,7 @@ def matplot_list(list_data,
                  label_string,
                  save_path,
                  save=False,
-                 linewidth='3.0'):
-    # if you want to save, title is necessary as a save name.
+                 linewidth=3.0):
     
     global n_state
     global covariance_type_string
@@ -50,13 +49,9 @@ def matplot_list(list_data,
 
     plt.title(title)
 
-    #plt.annotate('State=4 Sub_State='+str(n_state)+' GaussianHMM_cov='+covariance_type_string,
-    #         xy=(0, 0), xycoords='data',
-    #         xytext=(+10, +30), textcoords='offset points', fontsize=16,
-   #          arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
 
     if save:
-        plt.savefig(save_path+'/'+title+".eps", format="eps")
+        plt.savefig(os.path.join(save_path, title+".eps"), format="eps")
 
 
 
@@ -100,7 +95,7 @@ def load_data(path, preprocessing_scaling=False, preprocessing_normalize=False, 
        u'.wrench_stamped.wrench.torque.x', u'.wrench_stamped.wrench.torque.y',
        u'.wrench_stamped.wrench.torque.z', u'.tag']
     """
-    df = pd.read_csv(path+"/tag_multimodal.csv",sep=',')
+    df = pd.read_csv(path,sep=',')
 
     df = df[[u'.endpoint_state.pose.position.x',
              u'.endpoint_state.pose.position.y',
@@ -223,13 +218,13 @@ def main():
     norm_style = 'l2'
 
 
-    success_path = "/home/ben/ML_data/REAL_BAXTER_PICK_N_PLACE_6_1/success"
+    base_path = '/home/sklaw/Desktop/experiment/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170704_with_broken_wrench'
 
-    model_save_path = "/home/ben/ML_data/REAL_BAXTER_PICK_N_PLACE_6_1/model/endpoint_pose"
+    success_path = base_path+"/success"
 
-    figure_save_path = "/home/ben/ML_data/REAL_BAXTER_PICK_N_PLACE_6_1/figure/endpoint_pose"
+    model_save_path = base_path+"/model"+"/endpoint_pose"
 
-    success_train_num = 10
+    figure_save_path = base_path+"/figure"+"/endpoint_pose"
 
     threshold_constant = 10
 
@@ -248,31 +243,36 @@ def main():
     path_index_name = []
 
 
-    for i in range(success_train_num):
-        if i+1 <= 9:
-            post_str = '0'+str(i+1)
-        else:
-            post_str = str(i+1)
-            
-        path_index_name.append(post_str)
+    success_train_num = 0
         
     Success_Data = []
     Success_Index = []
     Success_Label_String = []
 
     
-    ##########-----loading the Sucess trails data-----------############################
-    ## Success_Data[trails][subtask][time_index,feature]
-    ## Success_Index[trails][subtask]
-    ## Success_Label_String[trails]
-    for i in range(success_train_num):
-        data_tempt, index_tempt = load_data(path=success_path+"/"+path_index_name[i],
+    files = os.listdir(success_path)
+    for f in files:
+        path = os.path.join(success_path, f)
+        if not os.path.isdir(path):
+            continue
+        if f.startswith("bad"):
+            continue
+
+        if os.path.isfile(os.path.join(path, f+'-tag_multimodal.csv')):
+            csv_file_path = os.path.join(path, f+'-tag_multimodal.csv')
+        elif os.path.isfile(os.path.join(path, 'tag_multimodal.csv')):
+            csv_file_path = os.path.join(path, 'tag_multimodal.csv')
+        else:
+            raise Exception("folder %s doesn't have csv file."%(path,))
+
+        success_train_num += 1
+        data_tempt, index_tempt = load_data(path=csv_file_path,
                                             preprocessing_scaling=preprocessing_scaling,
                                             preprocessing_normalize=preprocessing_normalize,
                                             norm=norm_style)
         Success_Data.append(data_tempt)
         Success_Index.append(index_tempt)
-        Success_Label_String.append("Success "+ path_index_name[i])
+        Success_Label_String.append("Success "+ path )
 
 
 

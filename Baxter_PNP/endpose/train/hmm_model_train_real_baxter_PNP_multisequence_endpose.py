@@ -83,7 +83,7 @@ def scaling(X):
     
 
 
-def load_data(path, preprocessing_scaling=False, norm='l2'):
+def load_data(path, preprocessing_normalize, preprocessing_scaling=False, norm='l2'):
     df = pd.read_csv(path, sep=',')
 
     df = df[[u'.endpoint_state.pose.position.x',
