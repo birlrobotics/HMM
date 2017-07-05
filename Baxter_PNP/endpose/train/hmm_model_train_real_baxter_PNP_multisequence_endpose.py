@@ -83,35 +83,8 @@ def scaling(X):
     
 
 
-def load_data(path, preprocessing_scaling=False, preprocessing_normalize=False, norm='l2'):
-    """
-       df.columns = u'time', u'.endpoint_state.header.seq',
-       u'.endpoint_state.header.stamp.secs',
-       u'.endpoint_state.header.stamp.nsecs',
-       u'.endpoint_state.header.frame_id', u'.endpoint_state.pose.position.x',
-       u'.endpoint_state.pose.position.y', u'.endpoint_state.pose.position.z',
-       u'.endpoint_state.pose.orientation.x',
-       u'.endpoint_state.pose.orientation.y',
-       u'.endpoint_state.pose.orientation.z',
-       u'.endpoint_state.pose.orientation.w',
-       u'.endpoint_state.twist.linear.x', u'.endpoint_state.twist.linear.y',
-       u'.endpoint_state.twist.linear.z', u'.endpoint_state.twist.angular.x',
-       u'.endpoint_state.twist.angular.y', u'.endpoint_state.twist.angular.z',
-       u'.endpoint_state.wrench.force.x', u'.endpoint_state.wrench.force.y',
-       u'.endpoint_state.wrench.force.z', u'.endpoint_state.wrench.torque.x',
-       u'.endpoint_state.wrench.torque.y', u'.endpoint_state.wrench.torque.z',
-       u'.joint_state.header.seq', u'.joint_state.header.stamp.secs',
-       u'.joint_state.header.stamp.nsecs', u'.joint_state.header.frame_id',
-       u'.joint_state.name', u'.joint_state.position',
-       u'.joint_state.velocity', u'.joint_state.effort',
-       u'.wrench_stamped.header.seq', u'.wrench_stamped.header.stamp.secs',
-       u'.wrench_stamped.header.stamp.nsecs',
-       u'.wrench_stamped.header.frame_id', u'.wrench_stamped.wrench.force.x',
-       u'.wrench_stamped.wrench.force.y', u'.wrench_stamped.wrench.force.z',
-       u'.wrench_stamped.wrench.torque.x', u'.wrench_stamped.wrench.torque.y',
-       u'.wrench_stamped.wrench.torque.z', u'.tag']
-    """
-    df = pd.read_csv(path+"/tag_multimodal.csv",sep=',')
+def load_data(path, preprocessing_scaling=False, norm='l2'):
+    df = pd.read_csv(path, sep=',')
 
     df = df[[u'.endpoint_state.pose.position.x',
              u'.endpoint_state.pose.position.y',
@@ -234,13 +207,13 @@ def main():
 
     norm_style = 'l2'
 
-    success_path = "/home/ben/ML_data/REAL_BAXTER_PICK_N_PLACE_6_1/success"
+    base_path = '/home/sklaw/Desktop/experiment/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170704_with_broken_wrench'
 
-    model_save_path = "/home/ben/ML_data/REAL_BAXTER_PICK_N_PLACE_6_1/model/endpoint_pose"
+    success_path = os.path.join(base_path, "success")
 
-    figure_save_path = "/home/ben/ML_data/REAL_BAXTER_PICK_N_PLACE_6_1/figure/endpoint_pose"
+    model_save_path = os.path.join(base_path, "model", "endpoint_pose")
 
-    success_train_num = 10
+    figure_save_path = os.path.join(base_path, "figure", "endpoint_pose")
 
     data_feature_name = ['position_x',
                          'position_y',
@@ -257,34 +230,32 @@ def main():
     if not os.path.isdir(figure_save_path):
         os.makedirs(figure_save_path)
 
-
-    #failure_test_path = "/home/ben/ML_data/SIM_HIRO_ONE_SA_ERROR_CHARAC_Prob/XX+r0.1968"
-
-    
-    # load the success Data Index And Label String
-    path_index_name = []
-
-
-    for i in range(success_train_num):
-        if i+1 <= 9:
-            post_str = '0'+str(i+1)
-        else:
-            post_str = str(i+1)
-            
-        path_index_name.append(post_str)
-        
+    success_train_num = 0
     Success_Data = []
     Success_Index = []
-    Success_Label_String = []
-    for i in range(success_train_num):
-        data_tempt, index_tempt = load_data(path=success_path+"/"+path_index_name[i],
+
+    files = os.listdir(success_path)
+    for f in files:
+        path = os.path.join(success_path, f)
+        if not os.path.isdir(path):
+            continue
+        if f.startswith("bad"):
+            continue
+
+        if os.path.isfile(os.path.join(path, f+'-tag_multimodal.csv')):
+            csv_file_path = os.path.join(path, f+'-tag_multimodal.csv')
+        elif os.path.isfile(os.path.join(path, 'tag_multimodal.csv')):
+            csv_file_path = os.path.join(path, 'tag_multimodal.csv')
+        else:
+            raise Exception("folder %s doesn't have csv file."%(path,))
+
+        success_train_num += 1
+        data_tempt, index_tempt = load_data(path=csv_file_path,
                                             preprocessing_scaling=preprocessing_scaling,
                                             preprocessing_normalize=preprocessing_normalize,
                                             norm=norm_style)
         Success_Data.append(data_tempt)
         Success_Index.append(index_tempt)
-        Success_Label_String.append("Success Trail 0"+ str(i+1))
-
 
 
         
