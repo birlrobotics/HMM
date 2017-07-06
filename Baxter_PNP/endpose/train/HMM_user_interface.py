@@ -61,8 +61,8 @@ if __name__ == "__main__":
         print "gonna train threshold."
         trials_group_by_folder_name = get_trials_group_by_folder_name()
 
-        import log_likekihood_training
-        log_likekihood_training.run(
+        import log_likelihood_training
+        log_likelihood_training.run(
             model_save_path = training_config.model_save_path,
             figure_save_path = training_config.figure_save_path,
             trials_group_by_folder_name = trials_group_by_folder_name)
