@@ -119,15 +119,20 @@ class HMMThread(threading.Thread):
 
             try:    
 
+                expected_log = self.expected_log_group_by_state[hmm_state][data_index-1]
                 threshold = self.threshold_group_by_state[hmm_state][data_index-1]
                 current_log = self.model_group_by_state[hmm_state].score(data_arr)
 
                 now_diff = current_log-threshold
         
                 if prev_diff is not None:
-                    hmm_log.expected_log.data = now_diff
-                    hmm_log.threshold.data = now_diff-prev_diff
+
                     hmm_log.current_log.data = current_log 
+                    hmm_log.expected_log.data = expected_log
+                    hmm_log.threshold.data = threshold
+
+                    hmm_log.diff_btw_curlog_n_thresh.data = now_diff
+                    hmm_log.deri_of_diff_btw_curlog_n_thresh.data = now_diff-prev_diff
 
                     if abs(now_diff-prev_diff) < 250:
                         hmm_log.event_flag = 1
