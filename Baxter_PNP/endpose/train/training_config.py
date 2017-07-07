@@ -30,7 +30,7 @@ data_fields_store = {
 # config provided by the user
 config_by_user = {
     'data_type_chosen': data_type_options[2],
-    'base_path': '/home/sklaw/Desktop/experiment/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170705_wrench_come_back',
+    'base_path': '/home/sklaw/Desktop/experiment/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170707',
     'preprocessing_scaling': False,
     'preprocessing_normalize': False,
     'norm_style': 'l2',
@@ -49,6 +49,9 @@ interested_data_fields = []
 for data_type in data_type_split:
     interested_data_fields += data_fields_store[data_type]
 interested_data_fields.append('.tag')
+print "interested_data_fields:", interested_data_fields
+print "press any key to continue."
+raw_input()
 
 success_path = os.path.join(config_by_user['base_path'], "success")
 model_save_path = os.path.join(config_by_user['base_path'], "model", config_by_user['data_type_chosen'])

@@ -134,7 +134,7 @@ class HMMThread(threading.Thread):
                     hmm_log.diff_btw_curlog_n_thresh.data = now_diff
                     hmm_log.deri_of_diff_btw_curlog_n_thresh.data = now_diff-prev_diff
 
-                    if abs(now_diff-prev_diff) < 250:
+                    if abs(now_diff-prev_diff) < 400:
                         hmm_log.event_flag = 1
                     else:
                         hmm_log.event_flag = 0
