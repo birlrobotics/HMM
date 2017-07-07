@@ -21,7 +21,7 @@ from birl_sim_examples.msg import (
 data_arr = []
 hmm_previous_state =0
 hmm_state = 0
-block_detection = False
+prev_diff = None
 header = Header()
 
 class ROSThread(threading.Thread):
@@ -40,14 +40,14 @@ class ROSThread(threading.Thread):
         global data_arr
         global header
         global hmm_previous_state
-        global block_detection
+        global prev_diff 
 
+        header = data.endpoint_state.header
         hmm_state = data.tag
         if not hmm_state==hmm_previous_state:
-            block_detection = True
+            prev_diff = None
             data_arr = []
             rospy.loginfo("state %s->%s"%(hmm_previous_state,hmm_state))
-            rospy.loginfo("block until var reaches the boundary")
 
         one_frame_data = []
         for field in self.interested_data_fields:
@@ -65,10 +65,9 @@ class ROSThread(threading.Thread):
             rospy.spin()
 
 class HMMThread(threading.Thread):
-    def __init__(self, model_save_path, state_amount, var_boundary):
+    def __init__(self, model_save_path, state_amount):
         threading.Thread.__init__(self) 
 
-        self.var_boundary = var_boundary
 
         list_of_expected_log = joblib.load(model_save_path+'/multisequence_model/expected_log.pkl')
         list_of_threshold = joblib.load(model_save_path+'/multisequence_model/threshold.pkl')
@@ -99,14 +98,14 @@ class HMMThread(threading.Thread):
         global data_arr
         global hmm_state
         global header
-        global block_detection
+        global prev_diff 
 
         hmm_log = Hmm_Log()
-        publishing_rate = 50
+        publishing_rate = 10 
         r = rospy.Rate(publishing_rate)
         pub = rospy.Publisher("/hmm_online_result", Hmm_Log, queue_size=10)
         rospy.loginfo('/hmm_online_result published')
-    
+
         while not rospy.is_shutdown():
             if hmm_state == 0:
                 r.sleep()
@@ -118,25 +117,28 @@ class HMMThread(threading.Thread):
                 r.sleep()
                 continue
 
-            if block_detection:
-                if self.var_log_group_by_state[hmm_state][data_index] > self.var_boundary:
-                    rospy.loginfo('var boundary reached, unblock')
-                    block_detection = False
-                else:
-                    r.sleep()
-                    continue
-
             try:    
-                hmm_log.expected_log.data = self.expected_log_group_by_state[hmm_state][data_index-1]
-                hmm_log.threshold.data = self.threshold_group_by_state[hmm_state][data_index-1]
-                hmm_log.current_log.data = self.model_group_by_state[hmm_state].score(data_arr)
-                if hmm_log.current_log.data > hmm_log.threshold.data:
-                    hmm_log.event_flag = 1
-                else:
-                    hmm_log.event_flag = 0
 
-                hmm_log.header = header
-                pub.publish(hmm_log)
+                threshold = self.threshold_group_by_state[hmm_state][data_index-1]
+                current_log = self.model_group_by_state[hmm_state].score(data_arr)
+
+                now_diff = current_log-threshold
+        
+                if prev_diff is not None:
+                    hmm_log.expected_log.data = now_diff
+                    hmm_log.threshold.data = now_diff-prev_diff
+                    hmm_log.current_log.data = current_log 
+
+                    if abs(now_diff-prev_diff) < 250:
+                        hmm_log.event_flag = 1
+                    else:
+                        hmm_log.event_flag = 0
+                        
+
+                    hmm_log.header = header
+                    pub.publish(hmm_log)
+
+                prev_diff = now_diff
             except IndexError:
                 rospy.loginfo('received data is longer than the threshold. DTW needed.')
 
@@ -145,10 +147,10 @@ class HMMThread(threading.Thread):
         return 0
 
     
-def run(interested_data_fields, model_save_path, state_amount, var_boundary):
+def run(interested_data_fields, model_save_path, state_amount):
     rospy.init_node("hmm_online_parser", anonymous=True)
     thread1 = ROSThread(interested_data_fields)  
-    thread2 = HMMThread(model_save_path, state_amount, var_boundary)
+    thread2 = HMMThread(model_save_path, state_amount)
     thread1.setDaemon(True)
     thread2.setDaemon(True)
     thread1.start()  

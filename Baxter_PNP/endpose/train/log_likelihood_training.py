@@ -39,12 +39,12 @@ def assess_threshold_and_decide(mean_of_log_curve, var_of_log_curve, np_matrix_t
     ax = fig.add_subplot(111)
     
     # plot var value boundaries
-    interested_boundary = [1, 10, 100, 1000]
+    interested_boundary = [0.1, 0.2, 0.3, 0.4, 0.5]
     idx = 0
     for col_no in range(var_of_log_curve.shape[1]):
-        if var_of_log_curve[0, col_no] > interested_boundary[idx]:
+        if var_of_log_curve[0, col_no]/mean_of_log_curve[0, col_no] > interested_boundary[idx]:
             ax.axvline(x = col_no) 
-            ax.text(col_no, 0, 'var>%s'%(interested_boundary[idx],), rotation=90)
+            ax.text(col_no, 0, 'var>%s*mean'%(interested_boundary[idx],), rotation=90)
             idx += 1
             if idx == len(interested_boundary):
                 break;

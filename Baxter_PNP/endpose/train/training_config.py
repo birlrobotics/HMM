@@ -23,6 +23,3 @@ norm_style = 'l2'
 hmm_max_train_iteration = 100
 hmm_hidden_state_amount = 4
 gaussianhmm_covariance_type_string = 'diag'
-
-# block anomaly detection until var of log curve reach this boundary
-var_boundary = 100
