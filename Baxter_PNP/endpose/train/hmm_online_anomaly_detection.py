@@ -71,12 +71,12 @@ class HMMThread(threading.Thread):
 
         list_of_expected_log = joblib.load(model_save_path+'/multisequence_model/expected_log.pkl')
         list_of_threshold = joblib.load(model_save_path+'/multisequence_model/threshold.pkl')
-        list_of_var_of_log = joblib.load(model_save_path+"/multisequence_model/var_of_log.pkl")
+        list_of_std_of_log = joblib.load(model_save_path+"/multisequence_model/std_of_log.pkl")
 
         model_group_by_state = {}
         expected_log_group_by_state = {}
         threshold_group_by_state = {} 
-        var_log_group_by_state = {}
+        std_log_group_by_state = {}
 
         for state_no in range(1, state_amount+1):
             model_group_by_state[state_no] = joblib.load(model_save_path+"/multisequence_model/model_s%s.pkl"%(state_no,))
@@ -85,13 +85,13 @@ class HMMThread(threading.Thread):
             # the counterpart simply pushes these data into a list, so for state 1, its data is located in 0.
             expected_log_group_by_state[state_no] = list_of_expected_log[state_no-1]
             threshold_group_by_state[state_no] = list_of_threshold[state_no-1]
-            var_log_group_by_state[state_no] = list_of_var_of_log[state_no-1]
+            std_log_group_by_state[state_no] = list_of_std_of_log[state_no-1]
 
 
         self.model_group_by_state = model_group_by_state
 
         self.expected_log_group_by_state = expected_log_group_by_state
-        self.var_log_group_by_state = var_log_group_by_state 
+        self.std_log_group_by_state = std_log_group_by_state 
         self.threshold_group_by_state = threshold_group_by_state 
 
     def run(self):
