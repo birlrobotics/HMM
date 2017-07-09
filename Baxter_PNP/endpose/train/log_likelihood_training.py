@@ -35,7 +35,7 @@ def make_trials_of_each_state_the_same_length(trials_group_by_folder_name):
     return trials_group_by_folder_name
 
 def assess_threshold_and_decide(mean_of_log_curve, std_of_log_curve, np_matrix_traj_by_time, curve_owner, state_no, figure_save_path):
-    fig = plt.figure()
+    fig = plt.figure(1)
     ax = fig.add_subplot(111)
     
     # plot std value boundaries
@@ -80,6 +80,8 @@ def assess_threshold_and_decide(mean_of_log_curve, std_of_log_curve, np_matrix_t
             if not os.path.isdir(figure_save_path+'/threshold_assessment'):
                 os.makedirs(figure_save_path+'/threshold_assessment')
             fig.savefig(os.path.join(figure_save_path, 'threshold_assessment', title+".eps"), format="eps")
+
+            plt.close(1)
             return mean_of_log_curve-c*std_of_log_curve
         try:
             c = float(i_str)
