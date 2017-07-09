@@ -1,6 +1,15 @@
 from optparse import OptionParser
 import training_config
 
+def warn(*args, **kwargs):
+    if 'category' in kwargs and kwargs['category'] == DeprecationWarning:
+        pass
+    else:
+        for arg in args:
+            print arg
+import warnings
+warnings.warn = warn
+
 def get_trials_group_by_folder_name():
     import copy
     if (get_trials_group_by_folder_name.done):
