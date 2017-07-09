@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-def warn(*args, **kwargs):
-    pass
-import warnings
-warnings.warn = warn
-
 import os
 import threading
 from sklearn.externals import joblib
