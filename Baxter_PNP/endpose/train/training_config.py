@@ -26,17 +26,18 @@ data_fields_store = {
     ] 
 }
 
-
 # config provided by the user
 config_by_user = {
-    'data_type_chosen': data_type_options[2],
-    'base_path': '/home/sklaw/Desktop/experiment/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170707',
+    'data_type_chosen': data_type_options[0],
+    'base_path': '/home/sklaw/Desktop/experiment/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_OPEN_DRAWER_20170712',
     'preprocessing_scaling': False,
     'preprocessing_normalize': False,
     'norm_style': 'l2',
     'hmm_max_train_iteration': 100,
     'hmm_hidden_state_amount': 4,
     'gaussianhmm_covariance_type_string': 'diag',
+    # threshold of derivative used in hmm online anomaly detection
+    'deri_threshold': 300 
 }
 
 for config_key in config_by_user:
@@ -50,6 +51,8 @@ for data_type in data_type_split:
     interested_data_fields += data_fields_store[data_type]
 interested_data_fields.append('.tag')
 print "interested_data_fields:", interested_data_fields
+
+print '\n############'
 print "press any key to continue."
 raw_input()
 

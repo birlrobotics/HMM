@@ -93,5 +93,6 @@ if __name__ == "__main__":
         hmm_online_anomaly_detection.run(
             interested_data_fields = training_config.interested_data_fields,
             model_save_path = training_config.model_save_path,
-            state_amount = state_amount)
+            state_amount = state_amount,
+            deri_threshold = training_config.deri_threshold)
             

@@ -60,8 +60,10 @@ class ROSThread(threading.Thread):
             rospy.spin()
 
 class HMMThread(threading.Thread):
-    def __init__(self, model_save_path, state_amount):
+    def __init__(self, model_save_path, state_amount, deri_threshold):
         threading.Thread.__init__(self) 
+
+        self.deri_threshold = deri_threshold
 
 
         list_of_expected_log = joblib.load(model_save_path+'/multisequence_model/expected_log.pkl')
@@ -129,7 +131,7 @@ class HMMThread(threading.Thread):
                     hmm_log.diff_btw_curlog_n_thresh.data = now_diff
                     hmm_log.deri_of_diff_btw_curlog_n_thresh.data = now_diff-prev_diff
 
-                    if abs(now_diff-prev_diff) < 400:
+                    if abs(now_diff-prev_diff) < self.deri_threshold:
                         hmm_log.event_flag = 1
                     else:
                         hmm_log.event_flag = 0
@@ -147,10 +149,10 @@ class HMMThread(threading.Thread):
         return 0
 
     
-def run(interested_data_fields, model_save_path, state_amount):
+def run(interested_data_fields, model_save_path, state_amount, deri_threshold):
     rospy.init_node("hmm_online_parser", anonymous=True)
     thread1 = ROSThread(interested_data_fields)  
-    thread2 = HMMThread(model_save_path, state_amount)
+    thread2 = HMMThread(model_save_path, state_amount, deri_threshold)
     thread1.setDaemon(True)
     thread2.setDaemon(True)
     thread1.start()  
