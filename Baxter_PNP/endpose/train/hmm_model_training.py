@@ -22,7 +22,7 @@ def run(model_save_path,
     one_trial_data_group_by_state = list_of_trials[0]
     state_amount = len(one_trial_data_group_by_state)
 
-    start_prob = np.zeros(state_amount)
+    start_prob = np.zeros(n_state)
     start_prob[0] = 1
 
     training_data_group_by_state = {}
