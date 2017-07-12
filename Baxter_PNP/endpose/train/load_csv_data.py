@@ -5,7 +5,7 @@ def _load_data(path, interested_data_fields, preprocessing_normalize, preprocess
     df = pd.read_csv(path, sep=',')
 
     df = df[interested_data_fields].loc[df['.tag'] != 0]
-    state_amount = df.tail(1)['.tag']
+    state_amount = len(df['.tag'].unique())
     one_trial_data_group_by_state = {}
 
     # state no counts from 1
