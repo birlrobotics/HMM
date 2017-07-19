@@ -67,9 +67,8 @@ if __name__ == "__main__":
         import hmm_model_training
         hmm_model_training.run(
             model_save_path = training_config.model_save_path,
-            n_state = training_config.hmm_hidden_state_amount,
-            covariance_type_string = training_config.gaussianhmm_covariance_type_string,
-            n_iteration = training_config.hmm_max_train_iteration,
+            model_type = training_config.model_type_chosen,
+            model_config = training_config.model_config,
             trials_group_by_folder_name = trials_group_by_folder_name)
 
     if options.train_threshold is True:

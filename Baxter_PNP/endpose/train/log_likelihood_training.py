@@ -2,7 +2,6 @@
 import os
 import pandas as pd
 import numpy as np
-import hmmlearn.hmm
 from sklearn.externals import joblib
 from math import (
     log,
