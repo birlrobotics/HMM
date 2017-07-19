@@ -29,7 +29,7 @@ data_fields_store = {
 # config provided by the user
 config_by_user = {
     'data_type_chosen': data_type_options[0],
-    'base_path': '/home/sklaw/Desktop/experiment/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_OPEN_DRAWER_20170712',
+    'base_path': '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170714',
     'preprocessing_scaling': False,
     'preprocessing_normalize': False,
     'norm_style': 'l2',

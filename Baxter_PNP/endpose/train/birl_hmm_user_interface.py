@@ -29,7 +29,7 @@ def get_trials_group_by_folder_name():
     return copy.deepcopy(get_trials_group_by_folder_name.trials_group_by_folder_name)
         
 def build_parser():
-    usage = "usage: %prog --train-model --train-threshold --run-online-detection"
+    usage = "usage: %prog --train-model --train-threshold --online-service"
     parser = OptionParser(usage=usage)
     parser.add_option(
         "--train-model",
@@ -46,11 +46,11 @@ def build_parser():
         help="True if you want to train log likelihook curve threshold.")
 
     parser.add_option(
-        "--online-anomaly-detection",
+        "--online-service",
         action="store_true", 
-        dest="online_anomaly_detection",
+        dest="online_service",
         default = False,
-        help="True if you want to run online anomaly detection.")
+        help="True if you want to run online anomaly detection and online state classification.")
 
     return parser
 
@@ -82,15 +82,15 @@ if __name__ == "__main__":
             figure_save_path = training_config.figure_save_path,
             trials_group_by_folder_name = trials_group_by_folder_name)
 
-    if options.online_anomaly_detection is True:
-        print "gonna run online anomaly detection."
-        import hmm_online_anomaly_detection
+    if options.online_service is True:
+        print "gonna run online service."
+        import hmm_online_service
 
         trials_group_by_folder_name = get_trials_group_by_folder_name()
         one_trial_data_group_by_state = trials_group_by_folder_name.itervalues().next()
         state_amount = len(one_trial_data_group_by_state)
 
-        hmm_online_anomaly_detection.run(
+        hmm_online_service.run(
             interested_data_fields = training_config.interested_data_fields,
             model_save_path = training_config.model_save_path,
             state_amount = state_amount,

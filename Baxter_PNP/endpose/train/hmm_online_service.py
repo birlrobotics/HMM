@@ -6,12 +6,15 @@ from sklearn.externals import joblib
 import rospy
 import copy
 from std_msgs.msg import (
-    Header
+    Header,
+    Float32
 )
 from birl_sim_examples.msg import (
     Tag_MultiModal,
     Hmm_Log
 )
+
+import copy
 
 data_arr = []
 hmm_previous_state =0
@@ -91,58 +94,102 @@ class HMMThread(threading.Thread):
         self.std_log_group_by_state = std_log_group_by_state 
         self.threshold_group_by_state = threshold_group_by_state 
 
-    def run(self):
+    def get_anomaly_detection_msg(self):
         global data_arr
         global hmm_state
         global header
         global prev_diff 
 
-        hmm_log = Hmm_Log()
+
+        if hmm_state == 0:
+            return None
+
+        data_arr_copy = copy.deepcopy(data_arr)
+
+        data_index = len(data_arr_copy)
+        if data_index == 0:
+            return None
+
+        hmm_log = None
+
+        try:    
+            expected_log = self.expected_log_group_by_state[hmm_state][data_index-1]
+            threshold = self.threshold_group_by_state[hmm_state][data_index-1]
+            current_log = self.model_group_by_state[hmm_state].score(data_arr_copy)
+
+            now_diff = current_log-threshold
+    
+            if prev_diff is not None:
+                hmm_log = Hmm_Log()
+
+                hmm_log.current_log.data = current_log 
+                hmm_log.expected_log.data = expected_log
+                hmm_log.threshold.data = threshold
+                hmm_log.diff_btw_curlog_n_thresh.data = now_diff
+                hmm_log.deri_of_diff_btw_curlog_n_thresh.data = now_diff-prev_diff
+
+                if abs(now_diff-prev_diff) < self.deri_threshold:
+                    hmm_log.event_flag = 1
+                else:
+                    hmm_log.event_flag = 0
+                hmm_log.header = header
+
+            else:
+                pass
+            prev_diff = now_diff
+
+        except IndexError:
+            rospy.loginfo('received data is longer than the threshold. DTW needed.')
+            hmm_log = None
+            
+        return hmm_log
+
+
+    def get_state_classification_msgs_group_by_state(self):
+        global data_arr
+        global hmm_state
+
+        if hmm_state == 0:
+            return None
+
+        data_arr_copy = copy.deepcopy(data_arr)
+
+        data_index = len(data_arr_copy)
+        if data_index == 0:
+            return None
+
+        msgs_group_by_state = {}
+        for state_no in self.model_group_by_state:
+            msgs_group_by_state[state_no] = self.model_group_by_state[state_no].score(data_arr_copy)
+        return msgs_group_by_state
+
+    def run(self):
+
+
         publishing_rate = 10 
         r = rospy.Rate(publishing_rate)
-        pub = rospy.Publisher("/hmm_online_result", Hmm_Log, queue_size=10)
+
+        anomaly_topic_pub = rospy.Publisher("/hmm_online_result", Hmm_Log, queue_size=10)
         rospy.loginfo('/hmm_online_result published')
 
-        while not rospy.is_shutdown():
-            if hmm_state == 0:
-                r.sleep()
-                continue
-
-            # no data arrived yet
-            data_index = len(data_arr)
-            if data_index == 0:
-                r.sleep()
-                continue
-
-            try:    
-
-                expected_log = self.expected_log_group_by_state[hmm_state][data_index-1]
-                threshold = self.threshold_group_by_state[hmm_state][data_index-1]
-                current_log = self.model_group_by_state[hmm_state].score(data_arr)
-
-                now_diff = current_log-threshold
+        state_log_curve_pub = {}
+        for state_no in self.model_group_by_state:
+            topic_name = "/hmm_log_curve_of_state_%s"%(state_no,)
+            state_log_curve_pub[state_no] = rospy.Publisher(topic_name, Float32, queue_size=10)
+            rospy.loginfo('%s published'%(topic_name,))
         
-                if prev_diff is not None:
 
-                    hmm_log.current_log.data = current_log 
-                    hmm_log.expected_log.data = expected_log
-                    hmm_log.threshold.data = threshold
+        while not rospy.is_shutdown():
 
-                    hmm_log.diff_btw_curlog_n_thresh.data = now_diff
-                    hmm_log.deri_of_diff_btw_curlog_n_thresh.data = now_diff-prev_diff
 
-                    if abs(now_diff-prev_diff) < self.deri_threshold:
-                        hmm_log.event_flag = 1
-                    else:
-                        hmm_log.event_flag = 0
-                        
+            hmm_log = self.get_anomaly_detection_msg()
+            if hmm_log is not None:
+                anomaly_topic_pub.publish(hmm_log)
 
-                    hmm_log.header = header
-                    pub.publish(hmm_log)
-
-                prev_diff = now_diff
-            except IndexError:
-                rospy.loginfo('received data is longer than the threshold. DTW needed.')
+            msgs_group_by_state = self.get_state_classification_msgs_group_by_state()
+            if msgs_group_by_state is not None:
+                for state_no in msgs_group_by_state:
+                    state_log_curve_pub[state_no].publish(msgs_group_by_state[state_no]) 
 
             r.sleep()
 
@@ -150,7 +197,7 @@ class HMMThread(threading.Thread):
 
     
 def run(interested_data_fields, model_save_path, state_amount, deri_threshold):
-    rospy.init_node("hmm_online_parser", anonymous=True)
+    rospy.init_node("hmm_online_service", anonymous=True)
     thread1 = ROSThread(interested_data_fields)  
     thread2 = HMMThread(model_save_path, state_amount, deri_threshold)
     thread1.setDaemon(True)
