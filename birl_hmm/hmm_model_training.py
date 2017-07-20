@@ -22,7 +22,16 @@ def get_model_generator(model_type, model_config):
             model.startprob_ = start_prob
             return model
     elif model_type == 'BNPY\'s HMM':
-        pass
+        def model_generator():
+            import hongminhmmpkg.hmm
+            model = hongminhmmpkg.hmm.HongminHMM(
+                alloModel=model_config['alloModel'],
+                obsModel=model_config['obsModel'],
+                varMethod=model_config['varMethod'],
+                n_iteration=model_config['hmm_max_train_iteration'],
+                K=model_config['hmm_hidden_state_amount']
+            )
+            return model
 
     return model_generator 
 
@@ -69,11 +78,15 @@ def run(model_save_path,
 
 
     # save the models
-    if not os.path.isdir(model_save_path+"/multisequence_model"):
-        os.makedirs(model_save_path+"/multisequence_model")
+    if not os.path.isdir(model_save_path):
+        os.makedirs(model_save_path)
     for state_no in range(1, state_amount+1):
         joblib.dump(
             model_group_by_state[state_no], 
-            model_save_path+"/multisequence_model/model_s%s.pkl"%(state_no,))
+            os.path.join(model_save_path, "model_s%s.pkl"%(state_no,))
+        )
     
-    joblib.dump(model_config, model_save_path+"/multisequence_model/model_config.pkl")
+    joblib.dump(
+        model_config, 
+        os.path.join(model_save_path, "model_config.pkl")
+    )
