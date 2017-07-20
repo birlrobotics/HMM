@@ -34,7 +34,16 @@ def make_trials_of_each_state_the_same_length(trials_group_by_folder_name):
 
     return trials_group_by_folder_name
 
-def assess_threshold_and_decide(mean_of_log_curve, std_of_log_curve, np_matrix_traj_by_time, curve_owner, state_no, figure_save_path, score_time_cost_per_point):
+def assess_threshold_and_decide(
+    threshold_c_value,
+    mean_of_log_curve, 
+    std_of_log_curve, 
+    np_matrix_traj_by_time, 
+    curve_owner, 
+    state_no, 
+    figure_save_path, 
+    score_time_cost_per_point):
+
     fig = plt.figure(1)
     ax = fig.add_subplot(111)
 
@@ -54,30 +63,39 @@ def assess_threshold_and_decide(mean_of_log_curve, std_of_log_curve, np_matrix_t
 
     fig.show()
 
-    # decide c in an interactive way
-    print 
-    print 
-    print 
-    print "enter c (default 0.1) to visualize mean-c*std or enter ok to use this c as final threshold:"
-    c = 0.1 # this is default
-    while True:
-        i_str = raw_input()
-        if i_str == 'ok':
-            title = 'state %s use threshold with c=%s (on average use %ss to compute each log likelihood point)'%(state_no, c, score_time_cost_per_point)
-            ax.set_title(title)
-            if not os.path.isdir(figure_save_path+'/threshold_assessment'):
-                os.makedirs(figure_save_path+'/threshold_assessment')
-            fig.savefig(os.path.join(figure_save_path, 'threshold_assessment', title+".eps"), format="eps")
+    if threshold_c_value is None:
+        # decide c in an interactive way
+        print "\n\nenter c (default 0.1) to visualize mean-c*std or enter ok to use this c as final threshold:"
+        c = 0.1 # this is default
+        while True:
+            i_str = raw_input()
+            if i_str == 'ok':
+                title = 'state %s use threshold with c=%s (on average use %ss to compute each log likelihood point)'%(state_no, c, score_time_cost_per_point)
+                ax.set_title(title)
+                if not os.path.isdir(figure_save_path+'/threshold_assessment'):
+                    os.makedirs(figure_save_path+'/threshold_assessment')
+                fig.savefig(os.path.join(figure_save_path, 'threshold_assessment', title+".eps"), format="eps")
 
-            plt.close(1)
-            return mean_of_log_curve-c*std_of_log_curve
-        try:
-            c = float(i_str)
-            ax.plot((mean_of_log_curve-c*std_of_log_curve).tolist()[0], label="mean-%s*std"%(c,), linestyle='dotted')
-            ax.legend()
-            fig.show()
-        except ValueError:
-            print 'bad input'
+                plt.close(1)
+                return mean_of_log_curve-c*std_of_log_curve
+            try:
+                c = float(i_str)
+                ax.plot((mean_of_log_curve-c*std_of_log_curve).tolist()[0], label="mean-%s*std"%(c,), linestyle='dotted')
+                ax.legend()
+                fig.show()
+            except ValueError:
+                print 'bad input'
+    else:
+        c = threshold_c_value
+        title = 'state %s use threshold with c=%s (on average use %ss to compute each log likelihood point)'%(state_no, c, score_time_cost_per_point)
+        ax.set_title(title)
+        if not os.path.isdir(figure_save_path+'/threshold_assessment'):
+            os.makedirs(figure_save_path+'/threshold_assessment')
+        fig.savefig(os.path.join(figure_save_path, 'threshold_assessment', title+".eps"), format="eps")
+
+        plt.close(1)
+        return mean_of_log_curve-c*std_of_log_curve
+        
 
             
         
@@ -85,6 +103,7 @@ def assess_threshold_and_decide(mean_of_log_curve, std_of_log_curve, np_matrix_t
     
 def run(model_save_path, 
     figure_save_path,
+    threshold_c_value,
     trials_group_by_folder_name):
 
 
@@ -99,7 +118,7 @@ def run(model_save_path,
 
     model_group_by_state = {}
     for state_no in range(1, state_amount+1):
-        model_group_by_state[state_no] = joblib.load(model_save_path+"/multisequence_model/model_s%s.pkl"%(state_no,))
+        model_group_by_state[state_no] = joblib.load(model_save_path+"/model_s%s.pkl"%(state_no,))
 
     expected_log = []
     std_of_log = []
@@ -137,14 +156,22 @@ def run(model_save_path,
 
         score_time_cost_per_point = float(compute_score_time_cost)/total_step_times
 
-        decided_threshold_log_curve = assess_threshold_and_decide(mean_of_log_curve, std_of_log_curve, np_matrix_traj_by_time, curve_owner, state_no, figure_save_path, score_time_cost_per_point)
+        decided_threshold_log_curve = assess_threshold_and_decide(
+            threshold_c_value,
+            mean_of_log_curve, 
+            std_of_log_curve, 
+            np_matrix_traj_by_time, 
+            curve_owner, 
+            state_no, 
+            figure_save_path, 
+            score_time_cost_per_point)
         expected_log.append(mean_of_log_curve.tolist()[0])
         threshold.append(decided_threshold_log_curve.tolist()[0])
         std_of_log.append(std_of_log_curve.tolist()[0])
 
-    if not os.path.isdir(model_save_path+"/multisequence_model"):
-        os.makedirs(model_save_path+"/multisequence_model")
+    if not os.path.isdir(model_save_path):
+        os.makedirs(model_save_path)
         
-    joblib.dump(expected_log, model_save_path+"/multisequence_model/expected_log.pkl")
-    joblib.dump(threshold, model_save_path+"/multisequence_model/threshold.pkl")
-    joblib.dump(std_of_log, model_save_path+"/multisequence_model/std_of_log.pkl")
+    joblib.dump(expected_log, model_save_path+"/expected_log.pkl")
+    joblib.dump(threshold, model_save_path+"/threshold.pkl")
+    joblib.dump(std_of_log, model_save_path+"/std_of_log.pkl")

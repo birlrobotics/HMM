@@ -69,9 +69,9 @@ class HMMThread(threading.Thread):
         self.deri_threshold = deri_threshold
 
 
-        list_of_expected_log = joblib.load(model_save_path+'/multisequence_model/expected_log.pkl')
-        list_of_threshold = joblib.load(model_save_path+'/multisequence_model/threshold.pkl')
-        list_of_std_of_log = joblib.load(model_save_path+"/multisequence_model/std_of_log.pkl")
+        list_of_expected_log = joblib.load(model_save_path+'/expected_log.pkl')
+        list_of_threshold = joblib.load(model_save_path+'/threshold.pkl')
+        list_of_std_of_log = joblib.load(model_save_path+"/std_of_log.pkl")
 
         model_group_by_state = {}
         expected_log_group_by_state = {}
@@ -79,7 +79,7 @@ class HMMThread(threading.Thread):
         std_log_group_by_state = {}
 
         for state_no in range(1, state_amount+1):
-            model_group_by_state[state_no] = joblib.load(model_save_path+"/multisequence_model/model_s%s.pkl"%(state_no,))
+            model_group_by_state[state_no] = joblib.load(model_save_path+"/model_s%s.pkl"%(state_no,))
 
 
             # the counterpart simply pushes these data into a list, so for state 1, its data is located in 0.

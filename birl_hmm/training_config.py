@@ -5,75 +5,36 @@ data_type_options = [
     'wrench',
     'endpoint_pose_and_wrench'        
 ]
+from data_fields_config_store import data_fields_store
 
-data_fields_store = {
-    "endpoint_pose": [
-        '.endpoint_state.pose.position.x',
-        '.endpoint_state.pose.position.y',
-        '.endpoint_state.pose.position.z',
-        '.endpoint_state.pose.orientation.x',
-        '.endpoint_state.pose.orientation.y',
-        '.endpoint_state.pose.orientation.z',
-        '.endpoint_state.pose.orientation.w'
-    ],
-    'wrench': [
-         '.wrench_stamped.wrench.force.x',
-         '.wrench_stamped.wrench.force.y',
-         '.wrench_stamped.wrench.force.z',
-         '.wrench_stamped.wrench.torque.x',
-         '.wrench_stamped.wrench.torque.y',
-         '.wrench_stamped.wrench.torque.z',
-    ] 
-}
+model_type_options = [
+    'hmmlearn\'s HMM', 
+    'BNPY\'s HMM'
+]
+from model_config_store import model_store
 
-model_type_options = ['hmmlearn\'s HMM', 'BNPY\'s HMM']
-model_config_store = {
-    'hmmlearn\'s HMM': {
-        'use': 'default',
-        'config_set': {
-            'default': {
-                'hmm_max_train_iteration': 100,
-                'hmm_hidden_state_amount': 4,
-                'gaussianhmm_covariance_type_string': 'diag',
-            },
-        }
-    },
-    'BNPY\'s HMM': {
-        'use': 'default',
-        'config_set': {
-            'default': {
-                'hmm_max_train_iteration': 100,
-                'hmm_hidden_state_amount': 4,
-                'alloModel' : 'HDPHMM',     # FiniteMixtureModel 
-                                            # DPMixtureModel
-                                            # FiniteHMM
-                                            # HDPHMM
-
-                'obsModel'  : 'Gauss',      # DiagGauss     : Diagonal-covariance Gaussian
-                                            # Gauss         : Full-covariance Gaussian
-                                            # ZeroMeanGauss : Zero-mean, full-covariance
-                                            # AutoRegGauss  : First-order auto-regressive Gaussian
-
-                'varMethod' : 'moVB'      # FullDataAlgSet = set(['EM', 'VB', 'GS', 'pVB'])
-                                            # OnliDataAlgSet = set(['soVB', 'moVB', 'memoVB', 'pmoVB'])
-            },
-        }
-    }
-}
 
 # config provided by the user
 config_by_user = {
+    # config for types
     'data_type_chosen': data_type_options[0],
-    'model_type_chosen': model_type_options[1],
+    'model_type_chosen': model_type_options[0],
+
+    # config for dataset folder
     'base_path': '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170714',
+
+    # config for preprocessing
     'preprocessing_scaling': False,
     'preprocessing_normalize': False,
     'norm_style': 'l2',
+
     # threshold of derivative used in hmm online anomaly detection
-    'deri_threshold': 300 
+    'deri_threshold': 300,
+
+    # threshold training c value in threshold=mean-c*std
+    'threshold_c_value': 4
 }
-
-
+print 'config_by_user:', config_by_user
 
 
 # auto config generation
@@ -84,8 +45,8 @@ for data_type in data_type_split:
 interested_data_fields.append('.tag')
 print "interested_data_fields:", interested_data_fields
 
-model_config_set_name = model_config_store[config_by_user['model_type_chosen']]['use']
-model_config = model_config_store[config_by_user['model_type_chosen']]['config_set'][model_config_set_name]
+model_config_set_name = model_store[config_by_user['model_type_chosen']]['use']
+model_config = model_store[config_by_user['model_type_chosen']]['config_set'][model_config_set_name]
 print "model_config:", model_config 
 
 def convert_camel_to_underscore(name):
