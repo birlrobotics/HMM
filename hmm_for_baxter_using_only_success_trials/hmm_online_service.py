@@ -62,7 +62,7 @@ class ROSThread(threading.Thread):
         while not rospy.is_shutdown():
             rospy.spin()
 
-class HMMThread(threading.Thread):
+class HMMThreadForAnomalyDetection(threading.Thread):
     def __init__(self, model_save_path, state_amount, deri_threshold):
         threading.Thread.__init__(self) 
 
@@ -100,22 +100,23 @@ class HMMThread(threading.Thread):
         global header
         global prev_diff 
 
-
-        if hmm_state == 0:
-            return None
-
         data_arr_copy = copy.deepcopy(data_arr)
 
         data_index = len(data_arr_copy)
         if data_index == 0:
             return None
 
+        hmm_state_copy = hmm_state
+
+        if hmm_state_copy == 0:
+            return None
+
         hmm_log = None
 
         try:    
-            expected_log = self.expected_log_group_by_state[hmm_state][data_index-1]
-            threshold = self.threshold_group_by_state[hmm_state][data_index-1]
-            current_log = self.model_group_by_state[hmm_state].score(data_arr_copy)
+            expected_log = self.expected_log_group_by_state[hmm_state_copy][data_index-1]
+            threshold = self.threshold_group_by_state[hmm_state_copy][data_index-1]
+            current_log = self.model_group_by_state[hmm_state_copy].score(data_arr_copy)
 
             now_diff = current_log-threshold
     
@@ -141,21 +142,52 @@ class HMMThread(threading.Thread):
         except IndexError:
             rospy.loginfo('received data is longer than the threshold. DTW needed.')
             hmm_log = None
+            prev_diff = None
             
         return hmm_log
+
+    def run(self):
+        publishing_rate = 10 
+        r = rospy.Rate(publishing_rate)
+
+        anomaly_topic_pub = rospy.Publisher("/hmm_online_result", Hmm_Log, queue_size=10)
+        rospy.loginfo('/hmm_online_result published')
+
+        while not rospy.is_shutdown():
+
+
+            hmm_log = self.get_anomaly_detection_msg()
+            if hmm_log is not None:
+                anomaly_topic_pub.publish(hmm_log)
+
+            r.sleep()
+
+        return 0
+
+
+class HMMThreadForStateClassification(threading.Thread):
+    def __init__(self, model_save_path, state_amount):
+        threading.Thread.__init__(self) 
+
+        model_group_by_state = {}
+        for state_no in range(1, state_amount+1):
+            model_group_by_state[state_no] = joblib.load(model_save_path+"/model_s%s.pkl"%(state_no,))
+        self.model_group_by_state = model_group_by_state
 
 
     def get_state_classification_msgs_group_by_state(self):
         global data_arr
         global hmm_state
 
-        if hmm_state == 0:
-            return None
-
         data_arr_copy = copy.deepcopy(data_arr)
 
         data_index = len(data_arr_copy)
         if data_index == 0:
+            return None
+
+        hmm_state_copy = hmm_state
+
+        if hmm_state_copy == 0:
             return None
 
         msgs_group_by_state = {}
@@ -164,13 +196,8 @@ class HMMThread(threading.Thread):
         return msgs_group_by_state
 
     def run(self):
-
-
         publishing_rate = 10 
         r = rospy.Rate(publishing_rate)
-
-        anomaly_topic_pub = rospy.Publisher("/hmm_online_result", Hmm_Log, queue_size=10)
-        rospy.loginfo('/hmm_online_result published')
 
         state_log_curve_pub = {}
         for state_no in self.model_group_by_state:
@@ -181,11 +208,6 @@ class HMMThread(threading.Thread):
 
         while not rospy.is_shutdown():
 
-
-            hmm_log = self.get_anomaly_detection_msg()
-            if hmm_log is not None:
-                anomaly_topic_pub.publish(hmm_log)
-
             msgs_group_by_state = self.get_state_classification_msgs_group_by_state()
             if msgs_group_by_state is not None:
                 for state_no in msgs_group_by_state:
@@ -194,16 +216,18 @@ class HMMThread(threading.Thread):
             r.sleep()
 
         return 0
-
     
 def run(interested_data_fields, model_save_path, state_amount, deri_threshold):
     rospy.init_node("hmm_online_service", anonymous=True)
     thread1 = ROSThread(interested_data_fields)  
-    thread2 = HMMThread(model_save_path, state_amount, deri_threshold)
+    thread2 = HMMThreadForAnomalyDetection(model_save_path, state_amount, deri_threshold)
+    thread3 = HMMThreadForStateClassification(model_save_path, state_amount)
     thread1.setDaemon(True)
     thread2.setDaemon(True)
+    thread3.setDaemon(True)
     thread1.start()  
     thread2.start()
+    thread3.start()
     rospy.spin()
     return 0
     
