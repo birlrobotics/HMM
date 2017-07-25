@@ -1,4 +1,6 @@
 import os 
+import util
+
 # hardcoded constants.
 data_type_options = [
     'endpoint_pose',
@@ -21,7 +23,7 @@ config_by_user = {
     'model_type_chosen': model_type_options[0],
 
     # config for dataset folder
-    'base_path': '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170714',
+    'base_path': '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170724_6states_vision',
 
     # config for preprocessing
     'preprocessing_scaling': False,
@@ -49,16 +51,7 @@ model_config_set_name = model_store[config_by_user['model_type_chosen']]['use']
 model_config = model_store[config_by_user['model_type_chosen']]['config_set'][model_config_set_name]
 print "model_config:", model_config 
 
-def convert_camel_to_underscore(name):
-    import re
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
-model_id = ''
-for config_key in model_config:
-    uncamel_key = convert_camel_to_underscore(config_key)
-    for word in uncamel_key.split('_'): 
-        model_id += word[0]
-    model_id += '_(%s)_'%(model_config[config_key],)
+model_id = util.get_model_config_id(model_config)
 print 'model_id', model_id
 
 

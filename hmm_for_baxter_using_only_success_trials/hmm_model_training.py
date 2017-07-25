@@ -6,34 +6,51 @@ from sklearn.preprocessing import (
     scale,
     normalize
 )
+import util
     
 def get_model_generator(model_type, model_config):
     if model_type == 'hmmlearn\'s HMM':
-        def model_generator():
-            import hmmlearn.hmm 
-            model = hmmlearn.hmm.GaussianHMM(
-                n_components=model_config['hmm_hidden_state_amount'], 
-                covariance_type=model_config['gaussianhmm_covariance_type_string'],
-                params="mct", 
-                init_params="cmt", 
-                n_iter=model_config['hmm_max_train_iteration'])
-            start_prob = np.zeros(model_config['hmm_hidden_state_amount'])
-            start_prob[0] = 1
-            model.startprob_ = start_prob
-            return model
-    elif model_type == 'BNPY\'s HMM':
-        def model_generator():
-            import hongminhmmpkg.hmm
-            model = hongminhmmpkg.hmm.HongminHMM(
-                alloModel=model_config['alloModel'],
-                obsModel=model_config['obsModel'],
-                varMethod=model_config['varMethod'],
-                n_iteration=model_config['hmm_max_train_iteration'],
-                K=model_config['hmm_hidden_state_amount']
-            )
-            return model
+        import hmmlearn.hmm 
+        if type(model_config['hmm_max_train_iteration']) is not list:
+            model_config['hmm_max_train_iteration'] = [model_config['hmm_max_train_iteration']]
 
-    return model_generator 
+        if type(model_config['gaussianhmm_covariance_type_string']) is not list:
+            model_config['gaussianhmm_covariance_type_string'] = [model_config['gaussianhmm_covariance_type_string']]
+
+        if type(model_config['hmm_hidden_state_amount']) is not list:
+            model_config['hmm_hidden_state_amount'] = [model_config['hmm_hidden_state_amount']]
+
+        for n_components in model_config['hmm_hidden_state_amount']:
+            for covariance_type in model_config['gaussianhmm_covariance_type_string']:
+                for n_iter in model_config['hmm_max_train_iteration']:
+                    model = hmmlearn.hmm.GaussianHMM(
+                        n_components=n_components, 
+                        covariance_type=covariance_type,
+                        params="mct", 
+                        init_params="cmt", 
+                        n_iter=n_iter)
+                    start_prob = np.zeros(n_components)
+                    start_prob[0] = 1
+                    model.startprob_ = start_prob
+
+                    now_model_config = {
+                        "hmm_hidden_state_amount": n_components,
+                        "gaussianhmm_covariance_type_string": covariance_type,
+                        "hmm_max_train_iteration": n_iter,
+                    }
+                    yield model, now_model_config 
+
+    elif model_type == 'BNPY\'s HMM':
+        import hongminhmmpkg.hmm
+        model = hongminhmmpkg.hmm.HongminHMM(
+            alloModel=model_config['alloModel'],
+            obsModel=model_config['obsModel'],
+            varMethod=model_config['varMethod'],
+            n_iteration=model_config['hmm_max_train_iteration'],
+            K=model_config['hmm_hidden_state_amount']
+        )
+
+        yield model, model_config 
 
 def run(model_save_path, 
     model_type,
@@ -65,28 +82,75 @@ def run(model_save_path,
         training_data_group_by_state[state_no] = data_tempt
         training_length_array_group_by_state[state_no] = length_array
 
-
-    model_generator = get_model_generator(model_type, model_config)
     model_group_by_state = {}
     for state_no in range(1, state_amount+1):
-        model = model_generator()
-        model = model.fit(
-            training_data_group_by_state[state_no],
-            lengths=training_length_array_group_by_state[state_no])
-    
-        model_group_by_state[state_no] = model
+        model_group_by_state[state_no] = []
+        model_generator = get_model_generator(model_type, model_config)
+        for model, now_model_config in model_generator:
+            print 'in state', state_no, ' working on config:', now_model_config
 
 
-    # save the models
+            X = training_data_group_by_state[state_no]
+            lengths = training_length_array_group_by_state[state_no]
+
+            model = model.fit(X, lengths=lengths)
+
+            final_time_step_log_lik = [
+                model.score(X[i:j]) for i, j in util.iter_from_X_lengths(X, lengths)
+            ]
+            matrix = np.matrix(final_time_step_log_lik)
+            mean = matrix.mean(1)[0, 0]
+            std = matrix.std(1)[0, 0]
+            std_mean_ratio = std/mean
+        
+            model_group_by_state[state_no].append({
+                "model": model,
+                "now_model_config": now_model_config,
+                "std_mean_ratio": std_mean_ratio
+            })
+
     if not os.path.isdir(model_save_path):
         os.makedirs(model_save_path)
+
     for state_no in range(1, state_amount+1):
+        model_list = model_group_by_state[state_no]
+        sorted_model_list = sorted(model_list, key=lambda x:x['std_mean_ratio'])
+
+        best = sorted_model_list[0]
+        model_id = util.get_model_config_id(best['now_model_config'])
+
         joblib.dump(
-            model_group_by_state[state_no], 
+            best['model'],
             os.path.join(model_save_path, "model_s%s.pkl"%(state_no,))
         )
     
-    joblib.dump(
-        model_config, 
-        os.path.join(model_save_path, "model_config.pkl")
-    )
+        joblib.dump(
+            best['now_model_config'], 
+            os.path.join(
+                model_save_path, 
+                "model_s%s_config_%s.pkl"%(state_no, model_id)
+            )
+        )
+
+        joblib.dump(
+            None,
+            os.path.join(
+                model_save_path, 
+                "model_s%s_std_mean_ratio_%s.pkl"%(state_no, best['std_mean_ratio'])
+            )
+        )
+
+        train_report = [{util.get_model_config_id(i['now_model_config']): i['std_mean_ratio']} for i in sorted_model_list]
+        import json
+        json.dump(
+            train_report, 
+            open(
+                os.path.join(
+                    model_save_path, 
+                    "model_s%s_training_report.json"%(state_no)
+                ), 'w'
+            ),
+            separators = (',\n', ': ')
+        )
+
+
