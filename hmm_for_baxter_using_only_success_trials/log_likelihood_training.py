@@ -59,7 +59,6 @@ def assess_threshold_and_decide(
     for c in np.arange(0, 20, 2):
         ax.plot((mean_of_log_curve-c*std_of_log_curve).tolist()[0], label="mean-%s*std"%(c,), linestyle='solid')
 
-    ax.legend()
 
     fig.show()
 
@@ -81,7 +80,6 @@ def assess_threshold_and_decide(
             try:
                 c = float(i_str)
                 ax.plot((mean_of_log_curve-c*std_of_log_curve).tolist()[0], label="mean-%s*std"%(c,), linestyle='dotted')
-                ax.legend()
                 fig.show()
             except ValueError:
                 print 'bad input'
@@ -118,7 +116,11 @@ def run(model_save_path,
 
     model_group_by_state = {}
     for state_no in range(1, state_amount+1):
-        model_group_by_state[state_no] = joblib.load(model_save_path+"/model_s%s.pkl"%(state_no,))
+        try:
+            model_group_by_state[state_no] = joblib.load(model_save_path+"/model_s%s.pkl"%(state_no,))
+        except IOError:
+            print 'model of state %s not found'%(state_no,)
+            continue
 
     expected_log = []
     std_of_log = []
@@ -127,7 +129,7 @@ def run(model_save_path,
 
 
 
-    for state_no in range(1, state_amount+1):
+    for state_no in model_group_by_state:
         compute_score_time_cost = 0
         total_step_times = 0
 

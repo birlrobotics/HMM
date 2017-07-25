@@ -8,8 +8,8 @@ model_store = {
                 'gaussianhmm_covariance_type_string': 'diag',
             },
             'crazy': {
-                'hmm_max_train_iteration': [10, 100, 1000],
-                'hmm_hidden_state_amount': [4, 8, 16, 32],
+                'hmm_max_train_iteration': 100000,
+                'hmm_max_hidden_state_amount': 100,
                 'gaussianhmm_covariance_type_string': ['diag', 'spherical', 'full', 'tied'],
             },
         }
