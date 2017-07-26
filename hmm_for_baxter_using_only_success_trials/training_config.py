@@ -19,8 +19,8 @@ from model_config_store import model_store
 # config provided by the user
 config_by_user = {
     # config for types
-    'data_type_chosen': data_type_options[0],
-    'model_type_chosen': model_type_options[0],
+    'data_type_chosen': data_type_options[2],
+    'model_type_chosen': model_type_options[1],
 
     # config for dataset folder
     'base_path': '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170724_6states_vision',
@@ -31,7 +31,7 @@ config_by_user = {
     'norm_style': 'l2',
 
     # threshold of derivative used in hmm online anomaly detection
-    'deri_threshold': 200,
+    'deri_threshold': 300,
 
     # threshold training c value in threshold=mean-c*std
     'threshold_c_value': 4

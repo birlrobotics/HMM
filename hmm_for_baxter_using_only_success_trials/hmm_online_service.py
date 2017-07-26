@@ -118,7 +118,7 @@ class HMMThreadForAnomalyDetection(threading.Thread):
             threshold = self.threshold_group_by_state[hmm_state_copy][data_index-1]
             current_log = self.model_group_by_state[hmm_state_copy].score(data_arr_copy)
 
-            now_diff = current_log-threshold
+            now_diff = current_log-expected_log
     
             if prev_diff is not None:
                 hmm_log = Hmm_Log()
@@ -135,8 +135,6 @@ class HMMThreadForAnomalyDetection(threading.Thread):
                     hmm_log.event_flag = 0
                 hmm_log.header = header
 
-            else:
-                pass
             prev_diff = now_diff
 
         except IndexError:

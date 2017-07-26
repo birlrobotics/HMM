@@ -57,23 +57,75 @@ def get_model_generator(model_type, model_config):
                         # we are making good progress, don't stop
                         pass
                     else:
-                        # seems best of the hidden state amount is hit, we stop
-                        break
+                        # seems best of the hidden state amount is hit, we'll stop if we've tried 1 to 5
+                        if n_components > 5:
+                            break
                         
                     last_score = now_score
                     yield model, now_model_config 
 
     elif model_type == 'BNPY\'s HMM':
         import hongminhmmpkg.hmm
-        model = hongminhmmpkg.hmm.HongminHMM(
-            alloModel=model_config['alloModel'],
-            obsModel=model_config['obsModel'],
-            varMethod=model_config['varMethod'],
-            n_iteration=model_config['hmm_max_train_iteration'],
-            K=model_config['hmm_hidden_state_amount']
-        )
 
-        yield model, model_config 
+
+        if type(model_config['hmm_max_train_iteration']) is not list:
+            model_config['hmm_max_train_iteration'] = [model_config['hmm_max_train_iteration']]
+
+
+        if type(model_config['alloModel']) is not list:
+            model_config['alloModel'] = [model_config['alloModel']]
+
+        if type(model_config['obsModel']) is not list:
+            model_config['obsModel'] = [model_config['obsModel']]
+
+        if type(model_config['varMethod']) is not list:
+            model_config['varMethod'] = [model_config['varMethod']]
+
+        if 'hmm_max_hidden_state_amount' in model_config:
+            model_config['hmm_hidden_state_amount'] = range(1, model_config['hmm_max_hidden_state_amount']+1)
+        else:
+            if type(model_config['hmm_hidden_state_amount']) is not list:
+                model_config['hmm_hidden_state_amount'] = [model_config['hmm_hidden_state_amount']]
+
+
+        for alloModel in model_config['alloModel']:
+            for obsModel in model_config['obsModel']:
+                for varMethod in model_config['varMethod']:
+                    for n_iter in model_config['hmm_max_train_iteration']:
+                        now_score = None
+                        last_score = None
+                    
+                        for n_components in model_config['hmm_hidden_state_amount']:
+
+                            model = hongminhmmpkg.hmm.HongminHMM(
+                                alloModel=alloModel,
+                                obsModel=obsModel,
+                                varMethod=varMethod,
+                                n_iteration=n_iter,
+                                K=n_components
+                            )
+
+                            now_model_config = {
+                                'alloModel': alloModel,
+                                'obsModel': obsModel,
+                                'varMethod': varMethod,
+                                'hmm_hidden_state_amount': n_components,
+                                'hmm_max_train_iteration': n_iter,
+                            }
+
+                            # we want a minimal score
+                            if now_score is None or last_score is None:
+                                pass
+                            elif now_score < last_score:
+                                # we are making good progress, don't stop
+                                pass
+                            else:
+                                # seems best of the hidden state amount is hit, we'll stop if we've tried 1 to 5
+                                if n_components > 5:
+                                    break
+                                
+                            last_score = now_score
+                            yield model, now_model_config 
 
 def run(model_save_path, 
     model_type,
@@ -110,9 +162,8 @@ def run(model_save_path,
     if not os.path.isdir(model_save_path):
         os.makedirs(model_save_path)
 
-    model_group_by_state = {}
     for state_no in range(1, state_amount+1):
-        model_group_by_state[state_no] = []
+        model_list = []
         model_generator = get_model_generator(model_type, model_config)
         for model, now_model_config in model_generator:
             print 'in state', state_no, ' working on config:', now_model_config,
@@ -127,20 +178,19 @@ def run(model_save_path,
                 model.score(X[i:j]) for i, j in util.iter_from_X_lengths(X, lengths)
             ]
             matrix = np.matrix(final_time_step_log_lik)
-            mean = matrix.mean(1)[0, 0]
+            mean = abs(matrix.mean(1)[0, 0])
             std = matrix.std(1)[0, 0]
             std_mean_ratio = std/mean
 
             now_score = std_mean_ratio
         
-            model_group_by_state[state_no].append({
+            model_list.append({
                 "model": model,
                 "now_model_config": now_model_config,
                 "std_mean_ratio": std_mean_ratio
             })
             print ' std_mean_ratio:', std_mean_ratio 
 
-        model_list = model_group_by_state[state_no]
         sorted_model_list = sorted(model_list, key=lambda x:x['std_mean_ratio'])
 
         best = sorted_model_list[0]
