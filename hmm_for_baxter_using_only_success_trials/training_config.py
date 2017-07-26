@@ -31,7 +31,7 @@ config_by_user = {
     'norm_style': 'l2',
 
     # threshold of derivative used in hmm online anomaly detection
-    'deri_threshold': 300,
+    'deri_threshold': 400,
 
     # threshold training c value in threshold=mean-c*std
     'threshold_c_value': 4
