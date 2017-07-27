@@ -92,7 +92,11 @@ def assess_threshold_and_decide(
         fig.savefig(os.path.join(figure_save_path, 'threshold_assessment', title+".eps"), format="eps")
 
         plt.close(1)
-        return mean_of_log_curve-c*std_of_log_curve
+
+        if threshold_c_value == 0:
+            return mean_of_log_curve
+        else:
+            return mean_of_log_curve-c*std_of_log_curve
         
 
             

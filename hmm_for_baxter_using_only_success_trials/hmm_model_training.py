@@ -174,13 +174,14 @@ def run(model_save_path,
 
             model = model.fit(X, lengths=lengths)
 
-            final_time_step_log_lik = [
-                model.score(X[i:j]) for i, j in util.iter_from_X_lengths(X, lengths)
-            ]
-            matrix = np.matrix(final_time_step_log_lik)
-            mean = abs(matrix.mean(1)[0, 0])
-            std = matrix.std(1)[0, 0]
-            std_mean_ratio = std/mean
+            
+
+            slice_10_time_step_log_lik = [[model.score(X[i:i+k*(j-i)/10]) for k in range(1, 11, 1)] for i, j in util.iter_from_X_lengths(X, lengths)]
+            matrix = np.matrix(slice_10_time_step_log_lik)
+            slice_10_means = abs(matrix.mean(0))
+            slice_10_std = matrix.std(0)
+            slice_10_stme_ratio = slice_10_std/slice_10_means
+            std_mean_ratio = slice_10_stme_ratio.max()
 
             now_score = std_mean_ratio
         
