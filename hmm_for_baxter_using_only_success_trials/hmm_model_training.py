@@ -130,6 +130,7 @@ def get_model_generator(model_type, model_config):
 def run(model_save_path, 
     model_type,
     model_config,
+    score_metric,
     trials_group_by_folder_name):
 
     global now_score
@@ -175,13 +176,23 @@ def run(model_save_path,
             model = model.fit(X, lengths=lengths)
 
             
-
-            slice_10_time_step_log_lik = [[model.score(X[i:i+k*(j-i)/10]) for k in range(1, 11, 1)] for i, j in util.iter_from_X_lengths(X, lengths)]
-            matrix = np.matrix(slice_10_time_step_log_lik)
-            slice_10_means = abs(matrix.mean(0))
-            slice_10_std = matrix.std(0)
-            slice_10_stme_ratio = slice_10_std/slice_10_means
-            std_mean_ratio = slice_10_stme_ratio.max()
+            if score_metric == '_scoremetric_worst_stdmeanratio_in_10_slice_':
+                slice_10_time_step_log_lik = [[model.score(X[i:i+k*(j-i)/10]) for k in range(1, 11, 1)] for i, j in util.iter_from_X_lengths(X, lengths)]
+                matrix = np.matrix(slice_10_time_step_log_lik)
+                slice_10_means = abs(matrix.mean(0))
+                slice_10_std = matrix.std(0)
+                slice_10_stme_ratio = slice_10_std/slice_10_means
+                std_mean_ratio = slice_10_stme_ratio.max()
+            elif score_metric == '_scoremetrix_last_time_stdmeanratio_':
+                final_time_step_log_lik = [
+                    model.score(X[i:j]) for i, j in util.iter_from_X_lengths(X, lengths)
+                ]
+                matrix = np.matrix(final_time_step_log_lik)
+                mean = abs(matrix.mean())
+                std = matrix.std()
+                std_mean_ratio = std/mean
+            else:
+                raise Exception('unknown score metric \'%s\''%(score_metric,))
 
             now_score = std_mean_ratio
         

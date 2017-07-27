@@ -69,6 +69,7 @@ if __name__ == "__main__":
             model_save_path = training_config.model_save_path,
             model_type = training_config.model_type_chosen,
             model_config = training_config.model_config,
+            score_metric = training_config.scoremetric,
             trials_group_by_folder_name = trials_group_by_folder_name)
 
     if options.train_threshold is True:

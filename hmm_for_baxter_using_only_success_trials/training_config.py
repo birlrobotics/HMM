@@ -15,6 +15,11 @@ model_type_options = [
 ]
 from model_config_store import model_store
 
+scoremetric_options = [
+    '_scoremetrix_last_time_stdmeanratio_',
+    '_scoremetric_worst_stdmeanratio_in_10_slice_'
+]
+
 
 # config provided by the user
 config_by_user = {
@@ -22,7 +27,7 @@ config_by_user = {
     'data_type_chosen': data_type_options[2],
     'model_type_chosen': model_type_options[0],
 
-    'custom_model_prefix': '_scoremetric_worst_stdmeanratio_in_10_slice_',
+    'scoremetric': scoremetric_options[0],
 
     # config for dataset folder
     'base_path': '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170724_6states_vision',
@@ -54,7 +59,7 @@ model_config = model_store[config_by_user['model_type_chosen']]['config_set'][mo
 print "model_config:", model_config 
 
 model_id = util.get_model_config_id(model_config)
-model_id = config_by_user['custom_model_prefix']+model_id 
+model_id = config_by_user['scoremetric']+model_id 
 print 'model_id', model_id
 
 
