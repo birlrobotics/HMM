@@ -11,10 +11,10 @@ from data_fields_config_store import data_fields_store
 
 model_type_options = [
     'hmmlearn\'s HMM', 
-    'BNPY\'s HMM'
+    'BNPY\'s HMM',
+    'hmmlearn\'s GMMHMM',
 ]
 from model_config_store import model_store
-
 scoremetric_options = [
     '_scoremetrix_last_time_stdmeanratio_',
     '_scoremetric_worst_stdmeanratio_in_10_slice_'
@@ -38,7 +38,7 @@ config_by_user = {
     'norm_style': 'l2',
 
     # threshold of derivative used in hmm online anomaly detection
-    'deri_threshold': 400,
+    'deri_threshold': 200,
 
     # threshold training c value in threshold=mean-c*std
     'threshold_c_value': 0

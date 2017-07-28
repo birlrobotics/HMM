@@ -63,7 +63,62 @@ def get_model_generator(model_type, model_config):
                         
                     last_score = now_score
                     yield model, now_model_config 
+    elif model_type == 'hmmlearn\'s GMMHMM':
+        import hmmlearn.hmm 
+        if type(model_config['hmm_max_train_iteration']) is not list:
+            model_config['hmm_max_train_iteration'] = [model_config['hmm_max_train_iteration']]
 
+        if type(model_config['gaussianhmm_covariance_type_string']) is not list:
+            model_config['gaussianhmm_covariance_type_string'] = [model_config['gaussianhmm_covariance_type_string']]
+
+        if type(model_config['GMM_state_amount']) is not list:
+            model_config['GMM_state_amount'] = [model_config['GMM_state_amount']]
+
+        if 'hmm_max_hidden_state_amount' in model_config:
+            model_config['hmm_hidden_state_amount'] = range(1, model_config['hmm_max_hidden_state_amount']+1)
+        else:
+            if type(model_config['hmm_hidden_state_amount']) is not list:
+                model_config['hmm_hidden_state_amount'] = [model_config['hmm_hidden_state_amount']]
+
+
+        for covariance_type in model_config['gaussianhmm_covariance_type_string']:
+            for n_iter in model_config['hmm_max_train_iteration']:
+                for n_mix in model_config['GMM_state_amount']:
+                    now_score = None
+                    last_score = None
+            
+                    for n_components in model_config['hmm_hidden_state_amount']:
+                        model = hmmlearn.hmm.GMMHMM(
+                            n_components=n_components, 
+                            n_mix=n_mix, 
+                            covariance_type=covariance_type,
+                            params="mct", 
+                            init_params="cmt", 
+                            n_iter=n_iter)
+                        start_prob = np.zeros(n_components)
+                        start_prob[0] = 1
+                        model.startprob_ = start_prob
+
+                        now_model_config = {
+                            "hmm_hidden_state_amount": n_components,
+                            "gaussianhmm_covariance_type_string": covariance_type,
+                            "hmm_max_train_iteration": n_iter,
+                            "GMM_state_amount": n_mix,
+                        }
+
+                        # we want a minimal score
+                        if now_score is None or last_score is None:
+                            pass
+                        elif now_score < last_score:
+                            # we are making good progress, don't stop
+                            pass
+                        else:
+                            # seems best of the hidden state amount is hit, we'll stop if we've tried 1 to 5
+                            if n_components > 5:
+                                break
+                            
+                        last_score = now_score
+                        yield model, now_model_config 
     elif model_type == 'BNPY\'s HMM':
         import hongminhmmpkg.hmm
 
