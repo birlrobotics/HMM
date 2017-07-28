@@ -7,6 +7,8 @@ from sklearn.preprocessing import (
     normalize
 )
 import util
+import ipdb
+import copy
     
 now_score = None
 
@@ -190,7 +192,9 @@ def run(model_save_path,
 
     global now_score
 
+    trials_group_by_folder_name = util.make_trials_of_each_state_the_same_length(trials_group_by_folder_name)
     list_of_trials = trials_group_by_folder_name.values() 
+
 
     if not os.path.isdir(model_save_path):
         os.makedirs(model_save_path)
@@ -227,7 +231,6 @@ def run(model_save_path,
 
             X = training_data_group_by_state[state_no]
             lengths = training_length_array_group_by_state[state_no]
-
             model = model.fit(X, lengths=lengths)
 
             
@@ -246,6 +249,16 @@ def run(model_save_path,
                 mean = abs(matrix.mean())
                 std = matrix.std()
                 std_mean_ratio = std/mean
+            elif score_metric == '_scoremetric_sum_stdmeanratio_using_fast_log_cal_':
+                final_time_step_log_lik = [
+                    util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
+                ]
+                
+                curve_mat = np.matrix(final_time_step_log_lik) 
+                mean_of_log_curve = curve_mat.mean(0)
+                std_of_log_curve = curve_mat.std(0)
+                std_mean_ratio = abs(std_of_log_curve/mean_of_log_curve).mean()
+
             else:
                 raise Exception('unknown score metric \'%s\''%(score_metric,))
 

@@ -8,31 +8,10 @@ from math import (
     exp
 )
 from matplotlib import pyplot as plt
-import ipdb
 import time
+import util
 
-def make_trials_of_each_state_the_same_length(trials_group_by_folder_name):
-    # may implement DTW in the future...
-    # for now we just align trials with the shortest trial of each state
 
-    one_trial_data_group_by_state = trials_group_by_folder_name.itervalues().next()
-    state_amount = len(one_trial_data_group_by_state)
-
-    for state_no in range(1, state_amount+1):
-
-        min_length = None
-        for trial_name in trials_group_by_folder_name:
-            # remember that the actual data is a numpy matrix
-            # so we use *.shape[0] to get the length
-            now_length = trials_group_by_folder_name[trial_name][state_no].shape[0]
-            if min_length is None or now_length < min_length:
-                min_length = now_length
-
-        # align all trials in this state to min_length
-        for trial_name in trials_group_by_folder_name:
-            trials_group_by_folder_name[trial_name][state_no] = trials_group_by_folder_name[trial_name][state_no][:min_length, :]
-
-    return trials_group_by_folder_name
 
 def assess_threshold_and_decide(
     threshold_c_value,
@@ -110,7 +89,7 @@ def run(model_save_path,
 
 
         
-    trials_group_by_folder_name = make_trials_of_each_state_the_same_length(trials_group_by_folder_name)
+    trials_group_by_folder_name = util.make_trials_of_each_state_the_same_length(trials_group_by_folder_name)
 
     one_trial_data_group_by_state = trials_group_by_folder_name.itervalues().next()
     state_amount = len(one_trial_data_group_by_state)
@@ -145,10 +124,11 @@ def run(model_save_path,
             one_log_curve_of_this_state = [] 
 
             start_time = time.time()
-
-            for time_step in range(len(trials_group_by_folder_name[trial_name][state_no])):
-                log_probability = model_group_by_state[state_no].score(trials_group_by_folder_name[trial_name][state_no][:time_step+1])
-                one_log_curve_of_this_state.append(log_probability)
+            
+            one_log_curve_of_this_state = util.fast_log_curve_calculation(
+                trials_group_by_folder_name[trial_name][state_no],
+                model_group_by_state[state_no]
+            )
 
             compute_score_time_cost += time.time()-start_time
             total_step_times += len(trials_group_by_folder_name[trial_name][state_no])
