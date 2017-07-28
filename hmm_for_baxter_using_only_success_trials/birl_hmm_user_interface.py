@@ -46,6 +46,13 @@ def build_parser():
         help="True if you want to train log likelihook curve threshold.")
 
     parser.add_option(
+        "--train-derivative-threshold",
+        action="store_true", 
+        dest="train_derivative_threshold",
+        default = False,
+        help="True if you want to train derivative threshold.")
+
+    parser.add_option(
         "--online-service",
         action="store_true", 
         dest="online_service",
@@ -78,6 +85,17 @@ if __name__ == "__main__":
 
         import log_likelihood_training
         log_likelihood_training.run(
+            model_save_path = training_config.model_save_path,
+            figure_save_path = training_config.figure_save_path,
+            threshold_c_value = training_config.threshold_c_value,
+            trials_group_by_folder_name = trials_group_by_folder_name)
+
+    if options.train_derivative_threshold is True:
+        print "gonna train derivative threshold."
+        trials_group_by_folder_name = get_trials_group_by_folder_name()
+
+        import derivative_threshold_training 
+        derivative_threshold_training.run(
             model_save_path = training_config.model_save_path,
             figure_save_path = training_config.figure_save_path,
             threshold_c_value = training_config.threshold_c_value,
