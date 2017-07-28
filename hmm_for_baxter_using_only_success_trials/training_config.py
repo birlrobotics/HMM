@@ -27,9 +27,9 @@ scoremetric_options = [
 config_by_user = {
     # config for types
     'data_type_chosen': data_type_options[2],
-    'model_type_chosen': model_type_options[0],
+    'model_type_chosen': model_type_options[1],
 
-    'scoremetric': scoremetric_options[1],
+    'scoremetric': scoremetric_options[0],
 
     # config for dataset folder
     'base_path': '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170724_6states_vision',

@@ -30,8 +30,9 @@ def iter_from_X_lengths(X, lengths):
             yield start[i], end[i]
 
 def fast_log_curve_calculation(X, model):
-    import hmmlearn
-
+    import hmmlearn.hmm
+    import hongminhmmpkg.hmm
+    import bnpy
 
     if issubclass(type(model), hmmlearn.hmm._BaseHMM):
         from sklearn.utils import check_array, check_random_state
@@ -45,6 +46,8 @@ def fast_log_curve_calculation(X, model):
         log_curve = [logsumexp(_fwdlattice[i]) for i in range(len(_fwdlattice))]
 
         return log_curve 
+    elif issubclass(type(model.model), bnpy.HModel):
+        return model.calc_log(X)
     else:
         raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))
 

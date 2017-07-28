@@ -20,7 +20,7 @@ model_store = {
         }
     },
     'BNPY\'s HMM': {
-        'use': 'default',
+        'use': 'b1',
         'config_set': {
             'default': {
                 'hmm_max_train_iteration': 100,
