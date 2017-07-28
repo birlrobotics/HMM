@@ -19,6 +19,7 @@ scoremetric_options = [
     '_scoremetrix_last_time_stdmeanratio_',
     '_scoremetric_worst_stdmeanratio_in_10_slice_',
     '_scoremetric_sum_stdmeanratio_using_fast_log_cal_',
+    '_scoremetric_mean_of_std_using_fast_log_cal_',
 ]
 
 
@@ -28,7 +29,7 @@ config_by_user = {
     'data_type_chosen': data_type_options[2],
     'model_type_chosen': model_type_options[0],
 
-    'scoremetric': scoremetric_options[2],
+    'scoremetric': scoremetric_options[3],
 
     # config for dataset folder
     'base_path': '/home/sklaw/Desktop/experiment/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170711',

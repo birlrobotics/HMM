@@ -258,6 +258,14 @@ def run(model_save_path,
                 mean_of_log_curve = curve_mat.mean(0)
                 std_of_log_curve = curve_mat.std(0)
                 std_mean_ratio = abs(std_of_log_curve/mean_of_log_curve).mean()
+            elif score_metric == '_scoremetric_mean_of_std_using_fast_log_cal_':
+                final_time_step_log_lik = [
+                    util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
+                ]
+                
+                curve_mat = np.matrix(final_time_step_log_lik) 
+                std_of_log_curve = curve_mat.std(0)
+                std_mean_ratio = std_of_log_curve.mean()
 
             else:
                 raise Exception('unknown score metric \'%s\''%(score_metric,))
