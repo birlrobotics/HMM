@@ -20,7 +20,8 @@ score_metric_options = [
     '_score_metric_worst_stdmeanratio_in_10_slice_',
     '_score_metric_sum_stdmeanratio_using_fast_log_cal_',
     '_score_metric_mean_of_std_using_fast_log_cal_',
-    '_score_metric_hamming_distance_using_fast_log_cal_'
+    '_score_metric_hamming_distance_using_fast_log_cal_',
+    '_score_metric_std_of_std_using_fast_log_cal_',
 ]
 
 

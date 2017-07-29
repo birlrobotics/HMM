@@ -240,7 +240,7 @@ def run(model_save_path,
                 slice_10_means = abs(matrix.mean(0))
                 slice_10_std = matrix.std(0)
                 slice_10_stme_ratio = slice_10_std/slice_10_means
-                std_mean_ratio = slice_10_stme_ratio.max()
+                score = slice_10_stme_ratio.max()
             elif score_metric == '_score_metric_last_time_stdmeanratio_':
                 final_time_step_log_lik = [
                     model.score(X[i:j]) for i, j in util.iter_from_X_lengths(X, lengths)
@@ -248,7 +248,7 @@ def run(model_save_path,
                 matrix = np.matrix(final_time_step_log_lik)
                 mean = abs(matrix.mean())
                 std = matrix.std()
-                std_mean_ratio = std/mean
+                score = std/mean
             elif score_metric == '_score_metric_sum_stdmeanratio_using_fast_log_cal_':
                 final_time_step_log_lik = [
                     util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
@@ -257,15 +257,15 @@ def run(model_save_path,
                 curve_mat = np.matrix(final_time_step_log_lik) 
                 mean_of_log_curve = curve_mat.mean(0)
                 std_of_log_curve = curve_mat.std(0)
-                std_mean_ratio = abs(std_of_log_curve/mean_of_log_curve).mean()
+                score = abs(std_of_log_curve/mean_of_log_curve).mean()
             elif score_metric == '_score_metric_mean_of_std_using_fast_log_cal_':
-                final_time_step_log_lik = [
+                log_curves_of_all_trials = [
                     util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
                 ]
                 
-                curve_mat = np.matrix(final_time_step_log_lik) 
+                curve_mat = np.matrix(log_curves_of_all_trials) 
                 std_of_log_curve = curve_mat.std(0)
-                std_mean_ratio = std_of_log_curve.mean()
+                score = std_of_log_curve.mean()
             elif score_metric == '_score_metric_hamming_distance_using_fast_log_cal_':
                 import scipy.spatial.distance as sp_dist
                 log_lik = [util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
@@ -274,22 +274,30 @@ def run(model_save_path,
                 std_of_log_mat  = log_mat.std(0)
                 mean_of_log_mat = log_mat.mean(0)
                 lower_bound     = mean_of_log_mat - 20 * std_of_log_mat
-                # ipdb.set_trace()
+                ipdb.set_trace()
                 hamming_score   = sp_dist.hamming(mean_of_log_mat, lower_bound)
-                std_mean_ratio  = hamming_score
+                score  = hamming_score
+            elif score_metric == '_score_metric_std_of_std_using_fast_log_cal_':
+                log_curves_of_all_trials = [
+                    util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
+                ]
+                
+                curve_mat = np.matrix(log_curves_of_all_trials) 
+                std_of_log_curve = curve_mat.std(0)
+                score = std_of_log_curve.std()
             else:
                 raise Exception('unknown score metric \'%s\''%(score_metric,))
 
-            now_score = std_mean_ratio
+            now_score = score
         
             model_list.append({
                 "model": model,
                 "now_model_config": now_model_config,
-                "std_mean_ratio": std_mean_ratio
+                "score": score
             })
-            print ' std_mean_ratio:', std_mean_ratio 
+            print ' score:', score 
 
-        sorted_model_list = sorted(model_list, key=lambda x:x['std_mean_ratio'])
+        sorted_model_list = sorted(model_list, key=lambda x:x['score'])
 
         best = sorted_model_list[0]
         model_id = util.get_model_config_id(best['now_model_config'])
@@ -311,11 +319,11 @@ def run(model_save_path,
             None,
             os.path.join(
                 model_save_path, 
-                "model_s%s_std_mean_ratio_%s.pkl"%(state_no, best['std_mean_ratio'])
+                "model_s%s_score_%s.pkl"%(state_no, best['score'])
             )
         )
 
-        train_report = [{util.get_model_config_id(i['now_model_config']): i['std_mean_ratio']} for i in sorted_model_list]
+        train_report = [{util.get_model_config_id(i['now_model_config']): i['score']} for i in sorted_model_list]
         import json
         json.dump(
             train_report, 
