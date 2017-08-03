@@ -52,6 +52,28 @@ def fast_log_curve_calculation(X, model):
         raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))
 
 
+def get_hidden_state_logpmf_matrix(X, model):
+    import hmmlearn.hmm
+    import hongminhmmpkg.hmm
+    import bnpy
+
+    if issubclass(type(model), hmmlearn.hmm._BaseHMM):
+        from sklearn.utils import check_array, check_random_state
+        from scipy.misc import logsumexp
+
+        X = check_array(X)
+
+        framelogprob = model._compute_log_likelihood(X[:])
+        logprobij, _fwdlattice = model._do_forward_pass(framelogprob)
+
+        return _fwdlattice 
+    elif issubclass(type(model.model), bnpy.HModel):
+        raise Exception('hongmin BNPY not supported for now.')
+    else:
+        raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))
+
+
+
 def make_trials_of_each_state_the_same_length(_trials_group_by_folder_name):
     import copy
 
