@@ -29,8 +29,7 @@ def get_trials_group_by_folder_name():
     return copy.deepcopy(get_trials_group_by_folder_name.trials_group_by_folder_name)
         
 def build_parser():
-    usage = "usage: %prog --train-model --train-threshold --online-service"
-    parser = OptionParser(usage=usage)
+    parser = OptionParser()
     parser.add_option(
         "--train-model",
         action="store_true", 
@@ -68,11 +67,33 @@ def build_parser():
 
     return parser
 
+def inform_config():
+    import json
+    config_to_print = [
+        'training_config.config_by_user',
+        'training_config.interested_data_fields',
+        'training_config.model_config',
+        'training_config.model_id',
+    ]
+    
+    for s in config_to_print:
+        print '-'*20
+        print s, ':'
+        print json.dumps(
+            eval(s),
+            indent=4,
+        )
+    print '#'*20
+    print "press any key to continue."
+    raw_input()
+
 if __name__ == "__main__":
     get_trials_group_by_folder_name.done = False
 
     parser = build_parser()
     (options, args) = parser.parse_args()
+
+    inform_config()
 
     if options.train_model is True:
         print "gonna train HMM model."
