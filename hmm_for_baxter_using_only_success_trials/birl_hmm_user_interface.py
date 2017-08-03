@@ -72,6 +72,13 @@ def build_parser():
         default = False,
         help="True if you want to plot trials' log likelihood.")
 
+    parser.add_option(
+        "--emission-log-prob-plot",
+        action="store_true", 
+        dest="emission_log_prob_plot",
+        default = False,
+        help="True if you want to plot emission log prob.")
+
     return parser
 
 def inform_config():
@@ -167,6 +174,17 @@ if __name__ == "__main__":
 
         import trial_log_likelihood_plot
         trial_log_likelihood_plot.run(
+            model_save_path = training_config.model_save_path,
+            figure_save_path = training_config.figure_save_path,
+            threshold_c_value = training_config.threshold_c_value,
+            trials_group_by_folder_name = trials_group_by_folder_name)
+
+    if options.emission_log_prob_plot is True:
+        print "gonna plot emission log prob."
+        trials_group_by_folder_name = get_trials_group_by_folder_name()
+
+        import emission_log_prob_plot 
+        emission_log_prob_plot.run(
             model_save_path = training_config.model_save_path,
             figure_save_path = training_config.figure_save_path,
             threshold_c_value = training_config.threshold_c_value,
