@@ -22,14 +22,17 @@ def plot_logpmf_of_all_trials(
     figure_save_path):
 
 
-    fig = plt.figure(1)
-    ax = fig.add_subplot(111)
+    trial_amount = len(list_of_logpmf_mat)
+    hidden_state_amount = list_of_logpmf_mat[0].shape[1]
+    fig, ax_list = plt.subplots(nrows=hidden_state_amount)
 
     from matplotlib.pyplot import cm 
     import numpy as np
 
-    for i in range(len(list_of_logpmf_mat)):
-        logpmf_mat = list_of_logpmf_mat[i].transpose()
+    color=iter(cm.rainbow(np.linspace(0, 1, trial_amount)))
+    for i in range(trial_amount):
+        c=next(color)
+        logpmf_mat = list_of_logpmf_mat[i][:, :].transpose()
         for col_no in range(logpmf_mat.shape[1]):
             max_exponent = max(logpmf_mat[:, col_no])
             logpmf_mat[:, col_no] -= max_exponent
@@ -39,23 +42,22 @@ def plot_logpmf_of_all_trials(
             logpmf_mat[:, col_no] = normalized_pmf
 
         hidden_state_amount = logpmf_mat.shape[0]
-        color=iter(cm.rainbow(np.linspace(0, 1, hidden_state_amount)))
+
         for row_no in range(hidden_state_amount):
-            c=next(color)
-
             if i == 0:
-                ax.plot(logpmf_mat[row_no].tolist(), linestyle="solid", color=c, label='hidden state %s'%(row_no,))
+                ax_list[row_no].plot(logpmf_mat[row_no].tolist(), linestyle="solid", color=c)
+                title = 'state %s trial hidden state %s logpmf plot'%(state_no, row_no)
+                ax_list[row_no].set_title(title)
             else:
-                ax.plot(logpmf_mat[row_no].tolist(), linestyle="solid", color=c)
+                ax_list[row_no].plot(logpmf_mat[row_no].tolist(), linestyle="solid", color=c)
 
-    title = 'state %s trial hidden state logpmf plot'%(state_no,)
-    ax.set_title(title)
-    ax.legend()
+
 
     plt.show()
 
     if not os.path.isdir(figure_save_path+'/hidden_state_logpmf_plot'):
         os.makedirs(figure_save_path+'/hidden_state_logpmf_plot')
+    title = 'state %s trial hidden state logpmf plot'%(state_no,)
     fig.savefig(os.path.join(figure_save_path, 'hidden_state_logpmf_plot', title+".eps"), format="eps")
     plt.close(1)
     
