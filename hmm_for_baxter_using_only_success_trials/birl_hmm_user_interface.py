@@ -59,11 +59,18 @@ def build_parser():
         help="True if you want to run online anomaly detection and online state classification.")
 
     parser.add_option(
-        "--hidden-state-pmf-plot",
+        "--hidden-state-log-prob-plot",
         action="store_true", 
-        dest="hidden_state_pmf_plot",
+        dest="hidden_state_log_prob_plot",
         default = False,
-        help="True if you want to plot hidden state pmf.")
+        help="True if you want to plot hidden state log prob.")
+
+    parser.add_option(
+        "--trial-log-likelihood-plot",
+        action="store_true", 
+        dest="trial_log_likelihood_plot",
+        default = False,
+        help="True if you want to plot trials' log likelihood.")
 
     return parser
 
@@ -143,12 +150,23 @@ if __name__ == "__main__":
             state_amount = state_amount,
             deri_threshold = training_config.deri_threshold)
             
-    if options.hidden_state_pmf_plot is True:
-        print "gonna plot hidden state pmf."
+    if options.hidden_state_log_prob_plot is True:
+        print "gonna plot hidden state log prob."
         trials_group_by_folder_name = get_trials_group_by_folder_name()
 
-        import hidden_state_pmf_plot 
-        hidden_state_pmf_plot.run(
+        import hidden_state_log_prob_plot 
+        hidden_state_log_prob_plot.run(
+            model_save_path = training_config.model_save_path,
+            figure_save_path = training_config.figure_save_path,
+            threshold_c_value = training_config.threshold_c_value,
+            trials_group_by_folder_name = trials_group_by_folder_name)
+
+    if options.trial_log_likelihood_plot is True:
+        print "gonna plot trials' log likelihood."
+        trials_group_by_folder_name = get_trials_group_by_folder_name()
+
+        import trial_log_likelihood_plot
+        trial_log_likelihood_plot.run(
             model_save_path = training_config.model_save_path,
             figure_save_path = training_config.figure_save_path,
             threshold_c_value = training_config.threshold_c_value,

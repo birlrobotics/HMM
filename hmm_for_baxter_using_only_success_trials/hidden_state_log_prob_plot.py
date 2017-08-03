@@ -15,15 +15,15 @@ import ipdb
 
 
 
-def plot_logpmf_of_all_trials(
-    list_of_logpmf_mat,
-    logpmf_owner, 
+def plot_log_prob_of_all_trials(
+    list_of_log_prob_mat,
+    log_prob_owner, 
     state_no, 
     figure_save_path):
 
 
-    trial_amount = len(list_of_logpmf_mat)
-    hidden_state_amount = list_of_logpmf_mat[0].shape[1]
+    trial_amount = len(list_of_log_prob_mat)
+    hidden_state_amount = list_of_log_prob_mat[0].shape[1]
     fig, ax_list = plt.subplots(nrows=hidden_state_amount)
 
     from matplotlib.pyplot import cm 
@@ -32,33 +32,26 @@ def plot_logpmf_of_all_trials(
     color=iter(cm.rainbow(np.linspace(0, 1, trial_amount)))
     for i in range(trial_amount):
         c=next(color)
-        logpmf_mat = list_of_logpmf_mat[i][:, :].transpose()
-        for col_no in range(logpmf_mat.shape[1]):
-            max_exponent = max(logpmf_mat[:, col_no])
-            logpmf_mat[:, col_no] -= max_exponent
-            unnormalized_pmf = np.exp(logpmf_mat[:, col_no])
-            psum = sum(unnormalized_pmf)
-            normalized_pmf = unnormalized_pmf/psum
-            logpmf_mat[:, col_no] = normalized_pmf
+        log_prob_mat = list_of_log_prob_mat[i][:, :].transpose()
 
-        hidden_state_amount = logpmf_mat.shape[0]
+        hidden_state_amount = log_prob_mat.shape[0]
 
         for row_no in range(hidden_state_amount):
             if i == 0:
-                ax_list[row_no].plot(logpmf_mat[row_no].tolist(), linestyle="solid", color=c)
-                title = 'state %s trial hidden state %s logpmf plot'%(state_no, row_no)
+                ax_list[row_no].plot(log_prob_mat[row_no].tolist(), linestyle="solid", color=c)
+                title = 'state %s trial hidden state %s log_prob plot'%(state_no, row_no)
                 ax_list[row_no].set_title(title)
             else:
-                ax_list[row_no].plot(logpmf_mat[row_no].tolist(), linestyle="solid", color=c)
+                ax_list[row_no].plot(log_prob_mat[row_no].tolist(), linestyle="solid", color=c)
 
 
 
     plt.show()
 
-    if not os.path.isdir(figure_save_path+'/hidden_state_logpmf_plot'):
-        os.makedirs(figure_save_path+'/hidden_state_logpmf_plot')
-    title = 'state %s trial hidden state logpmf plot'%(state_no,)
-    fig.savefig(os.path.join(figure_save_path, 'hidden_state_logpmf_plot', title+".eps"), format="eps")
+    if not os.path.isdir(figure_save_path+'/hidden_state_log_prob_plot'):
+        os.makedirs(figure_save_path+'/hidden_state_log_prob_plot')
+    title = 'state %s trial hidden state log_prob plot'%(state_no,)
+    fig.savefig(os.path.join(figure_save_path, 'hidden_state_log_prob_plot', title+".eps"), format="eps")
     plt.close(1)
     
 def run(model_save_path, 
@@ -93,22 +86,22 @@ def run(model_save_path,
 
     for state_no in model_group_by_state:
 
-        list_of_logpmf_mat = []
-        logpmf_owner = []
+        list_of_log_prob_mat = []
+        log_prob_owner = []
         for trial_name in trials_group_by_folder_name:
-            logpmf_owner.append(trial_name)
+            log_prob_owner.append(trial_name)
 
             
-            hidden_state_logpmf = util.get_hidden_state_logpmf_matrix(
+            hidden_state_log_prob = util.get_hidden_state_log_prob_matrix(
                 trials_group_by_folder_name[trial_name][state_no],
                 model_group_by_state[state_no]
             )
 
-            list_of_logpmf_mat.append(hidden_state_logpmf)
+            list_of_log_prob_mat.append(hidden_state_log_prob)
 
         # use np matrix to facilitate the computation of mean curve and std 
-        plot_logpmf_of_all_trials(
-            list_of_logpmf_mat, 
-            logpmf_owner, 
+        plot_log_prob_of_all_trials(
+            list_of_log_prob_mat, 
+            log_prob_owner, 
             state_no, 
             figure_save_path)
