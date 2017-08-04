@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 import os
-import pandas as pd
 import numpy as np
 from sklearn.externals import joblib
-from math import (
-    log,
-    exp
-)
 from matplotlib import pyplot as plt
 import time
 import util
@@ -93,9 +88,6 @@ def run(model_save_path,
 
     one_trial_data_group_by_state = trials_group_by_folder_name.itervalues().next()
     state_amount = len(one_trial_data_group_by_state)
-
-    threshold_constant = 10
-    threshold_offset = 10
 
     model_group_by_state = {}
     for state_no in range(1, state_amount+1):

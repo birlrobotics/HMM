@@ -29,7 +29,7 @@ score_metric_options = [
 config_by_user = {
     # config for types
     'data_type_chosen': data_type_options[2],
-    'model_type_chosen': model_type_options[2],
+    'model_type_chosen': model_type_options[0],
     'score_metric': score_metric_options[3],
 
     # config for dataset folder
