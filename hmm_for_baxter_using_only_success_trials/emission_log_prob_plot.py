@@ -25,6 +25,8 @@ def plot_log_prob_of_all_trials(
     trial_amount = len(list_of_log_prob_mat)
     hidden_state_amount = list_of_log_prob_mat[0].shape[1]
     fig, ax_list = plt.subplots(nrows=hidden_state_amount)
+    if hidden_state_amount == 1:
+        ax_list = [ax_list]
 
     from matplotlib.pyplot import cm 
     import numpy as np
@@ -46,7 +48,6 @@ def plot_log_prob_of_all_trials(
 
 
 
-    plt.show()
 
     if not os.path.isdir(figure_save_path+'/emission_log_prob_plot'):
         os.makedirs(figure_save_path+'/emission_log_prob_plot')
