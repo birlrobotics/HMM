@@ -9,188 +9,15 @@ from sklearn.preprocessing import (
 import util
 import ipdb
 import copy
+import model_generation
+import model_score
     
-now_score = None
-
-def get_model_generator(model_type, model_config):
-    global now_score
-
-    if model_type == 'hmmlearn\'s HMM':
-        import hmmlearn.hmm 
-        if type(model_config['hmm_max_train_iteration']) is not list:
-            model_config['hmm_max_train_iteration'] = [model_config['hmm_max_train_iteration']]
-
-        if type(model_config['gaussianhmm_covariance_type_string']) is not list:
-            model_config['gaussianhmm_covariance_type_string'] = [model_config['gaussianhmm_covariance_type_string']]
-
-        if 'hmm_max_hidden_state_amount' in model_config:
-            model_config['hmm_hidden_state_amount'] = range(1, model_config['hmm_max_hidden_state_amount']+1)
-        else:
-            if type(model_config['hmm_hidden_state_amount']) is not list:
-                model_config['hmm_hidden_state_amount'] = [model_config['hmm_hidden_state_amount']]
-
-
-        for covariance_type in model_config['gaussianhmm_covariance_type_string']:
-            for n_iter in model_config['hmm_max_train_iteration']:
-                now_score = None
-                last_score = None
-            
-                for n_components in model_config['hmm_hidden_state_amount']:
-                    model = hmmlearn.hmm.GaussianHMM(
-                        n_components=n_components, 
-                        covariance_type=covariance_type,
-                        params="mct", 
-                        init_params="cmt", 
-                        n_iter=n_iter)
-                    start_prob = np.zeros(n_components)
-                    start_prob[0] = 1
-                    model.startprob_ = start_prob
-
-                    now_model_config = {
-                        "hmm_hidden_state_amount": n_components,
-                        "gaussianhmm_covariance_type_string": covariance_type,
-                        "hmm_max_train_iteration": n_iter,
-                    }
-
-                    # we want a minimal score
-                    if now_score is None or last_score is None:
-                        pass
-                    elif now_score < last_score:
-                        # we are making good progress, don't stop
-                        pass
-                    else:
-                        # seems best of the hidden state amount is hit, we'll stop if we've tried 1 to 5
-                        if n_components > 5:
-                            break
-                        
-                    last_score = now_score
-                    yield model, now_model_config 
-    elif model_type == 'hmmlearn\'s GMMHMM':
-        import hmmlearn.hmm 
-        if type(model_config['hmm_max_train_iteration']) is not list:
-            model_config['hmm_max_train_iteration'] = [model_config['hmm_max_train_iteration']]
-
-        if type(model_config['gaussianhmm_covariance_type_string']) is not list:
-            model_config['gaussianhmm_covariance_type_string'] = [model_config['gaussianhmm_covariance_type_string']]
-
-        if type(model_config['GMM_state_amount']) is not list:
-            model_config['GMM_state_amount'] = [model_config['GMM_state_amount']]
-
-        if 'hmm_max_hidden_state_amount' in model_config:
-            model_config['hmm_hidden_state_amount'] = range(1, model_config['hmm_max_hidden_state_amount']+1)
-        else:
-            if type(model_config['hmm_hidden_state_amount']) is not list:
-                model_config['hmm_hidden_state_amount'] = [model_config['hmm_hidden_state_amount']]
-
-
-        for covariance_type in model_config['gaussianhmm_covariance_type_string']:
-            for n_iter in model_config['hmm_max_train_iteration']:
-                for n_mix in model_config['GMM_state_amount']:
-                    now_score = None
-                    last_score = None
-            
-                    for n_components in model_config['hmm_hidden_state_amount']:
-                        model = hmmlearn.hmm.GMMHMM(
-                            n_components=n_components, 
-                            n_mix=n_mix, 
-                            covariance_type=covariance_type,
-                            params="mct", 
-                            init_params="cmt", 
-                            n_iter=n_iter)
-                        start_prob = np.zeros(n_components)
-                        start_prob[0] = 1
-                        model.startprob_ = start_prob
-
-                        now_model_config = {
-                            "hmm_hidden_state_amount": n_components,
-                            "gaussianhmm_covariance_type_string": covariance_type,
-                            "hmm_max_train_iteration": n_iter,
-                            "GMM_state_amount": n_mix,
-                        }
-
-                        # we want a minimal score
-                        if now_score is None or last_score is None:
-                            pass
-                        elif now_score < last_score:
-                            # we are making good progress, don't stop
-                            pass
-                        else:
-                            # seems best of the hidden state amount is hit, we'll stop if we've tried 1 to 5
-                            if n_components > 5:
-                                break
-                            
-                        last_score = now_score
-                        yield model, now_model_config 
-    elif model_type == 'BNPY\'s HMM':
-        import hongminhmmpkg.hmm
-
-
-        if type(model_config['hmm_max_train_iteration']) is not list:
-            model_config['hmm_max_train_iteration'] = [model_config['hmm_max_train_iteration']]
-
-
-        if type(model_config['alloModel']) is not list:
-            model_config['alloModel'] = [model_config['alloModel']]
-
-        if type(model_config['obsModel']) is not list:
-            model_config['obsModel'] = [model_config['obsModel']]
-
-        if type(model_config['varMethod']) is not list:
-            model_config['varMethod'] = [model_config['varMethod']]
-
-        if 'hmm_max_hidden_state_amount' in model_config:
-            model_config['hmm_hidden_state_amount'] = range(1, model_config['hmm_max_hidden_state_amount']+1)
-        else:
-            if type(model_config['hmm_hidden_state_amount']) is not list:
-                model_config['hmm_hidden_state_amount'] = [model_config['hmm_hidden_state_amount']]
-
-
-        for alloModel in model_config['alloModel']:
-            for obsModel in model_config['obsModel']:
-                for varMethod in model_config['varMethod']:
-                    for n_iter in model_config['hmm_max_train_iteration']:
-                        now_score = None
-                        last_score = None
-                    
-                        for n_components in model_config['hmm_hidden_state_amount']:
-
-                            model = hongminhmmpkg.hmm.HongminHMM(
-                                alloModel=alloModel,
-                                obsModel=obsModel,
-                                varMethod=varMethod,
-                                n_iteration=n_iter,
-                                K=n_components
-                            )
-
-                            now_model_config = {
-                                'alloModel': alloModel,
-                                'obsModel': obsModel,
-                                'varMethod': varMethod,
-                                'hmm_hidden_state_amount': n_components,
-                                'hmm_max_train_iteration': n_iter,
-                            }
-
-                            # we want a minimal score
-                            if now_score is None or last_score is None:
-                                pass
-                            elif now_score < last_score:
-                                # we are making good progress, don't stop
-                                pass
-                            else:
-                                # seems best of the hidden state amount is hit, we'll stop if we've tried 1 to 5
-                                if n_components > 5:
-                                    break
-                                
-                            last_score = now_score
-                            yield model, now_model_config 
-
 def run(model_save_path, 
     model_type,
     model_config,
     score_metric,
     trials_group_by_folder_name):
 
-    global now_score
 
     trials_group_by_folder_name = util.make_trials_of_each_state_the_same_length(trials_group_by_folder_name)
     list_of_trials = trials_group_by_folder_name.values() 
@@ -224,78 +51,28 @@ def run(model_save_path,
 
     for state_no in range(1, state_amount+1):
         model_list = []
-        model_generator = get_model_generator(model_type, model_config)
+        model_generator = model_generation.get_model_generator(model_type, model_config)
         for model, now_model_config in model_generator:
-            print 'in state', state_no, ' working on config:', now_model_config,
+            print
+            print '-'*20
+            print 'in state', state_no, ' working on config:', now_model_config
 
 
             X = training_data_group_by_state[state_no]
             lengths = training_length_array_group_by_state[state_no]
             model = model.fit(X, lengths=lengths)
 
-            
-            if score_metric == '_score_metric_worst_stdmeanratio_in_10_slice_':
-                slice_10_time_step_log_lik = [[model.score(X[i:i+k*(j-i)/10]) for k in range(1, 11, 1)] for i, j in util.iter_from_X_lengths(X, lengths)]
-                matrix = np.matrix(slice_10_time_step_log_lik)
-                slice_10_means = abs(matrix.mean(0))
-                slice_10_std = matrix.std(0)
-                slice_10_stme_ratio = slice_10_std/slice_10_means
-                score = slice_10_stme_ratio.max()
-            elif score_metric == '_score_metric_last_time_stdmeanratio_':
-                final_time_step_log_lik = [
-                    model.score(X[i:j]) for i, j in util.iter_from_X_lengths(X, lengths)
-                ]
-                matrix = np.matrix(final_time_step_log_lik)
-                mean = abs(matrix.mean())
-                std = matrix.std()
-                score = std/mean
-            elif score_metric == '_score_metric_sum_stdmeanratio_using_fast_log_cal_':
-                final_time_step_log_lik = [
-                    util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
-                ]
-                
-                curve_mat = np.matrix(final_time_step_log_lik) 
-                mean_of_log_curve = curve_mat.mean(0)
-                std_of_log_curve = curve_mat.std(0)
-                score = abs(std_of_log_curve/mean_of_log_curve).mean()
-            elif score_metric == '_score_metric_mean_of_std_using_fast_log_cal_':
-                log_curves_of_all_trials = [
-                    util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
-                ]
-                
-                curve_mat = np.matrix(log_curves_of_all_trials) 
-                std_of_log_curve = curve_mat.std(0)
-                score = std_of_log_curve.mean()
-            elif score_metric == '_score_metric_hamming_distance_using_fast_log_cal_':
-                import scipy.spatial.distance as sp_dist
-                log_lik = [util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
-                ]
-                log_mat         = np.matrix(log_lik)
-                std_of_log_mat  = log_mat.std(0)
-                mean_of_log_mat = log_mat.mean(0)
-                lower_bound     = mean_of_log_mat - 20 * std_of_log_mat
-                ipdb.set_trace()
-                hamming_score   = sp_dist.hamming(mean_of_log_mat, lower_bound)
-                score  = hamming_score
-            elif score_metric == '_score_metric_std_of_std_using_fast_log_cal_':
-                log_curves_of_all_trials = [
-                    util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
-                ]
-                
-                curve_mat = np.matrix(log_curves_of_all_trials) 
-                std_of_log_curve = curve_mat.std(0)
-                score = std_of_log_curve.std()
-            else:
-                raise Exception('unknown score metric \'%s\''%(score_metric,))
-
-            now_score = score
-        
+            score = model_score.score(score_metric, model, X, lengths)
             model_list.append({
                 "model": model,
                 "now_model_config": now_model_config,
                 "score": score
             })
-            print ' score:', score 
+            print 'score:', score 
+            print '='*20
+            print 
+
+            model_generation.update_now_score(score)
 
         sorted_model_list = sorted(model_list, key=lambda x:x['score'])
 
