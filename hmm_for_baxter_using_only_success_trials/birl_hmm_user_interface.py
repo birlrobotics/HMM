@@ -1,5 +1,6 @@
 from optparse import OptionParser
 import training_config
+import util
 
 def warn(*args, **kwargs):
     if 'category' in kwargs and kwargs['category'] == DeprecationWarning:
@@ -9,24 +10,6 @@ def warn(*args, **kwargs):
             print arg
 import warnings
 warnings.warn = warn
-
-def get_trials_group_by_folder_name():
-    import copy
-    if (get_trials_group_by_folder_name.done):
-        return copy.deepcopy(get_trials_group_by_folder_name.trials_group_by_folder_name)
-
-
-    import load_csv_data
-    trials_group_by_folder_name = load_csv_data.run(
-        success_path = training_config.success_path,
-        interested_data_fields = training_config.interested_data_fields,
-        preprocessing_normalize = training_config.preprocessing_normalize,
-        preprocessing_scaling = training_config.preprocessing_scaling
-    )
-
-    get_trials_group_by_folder_name.done = True
-    get_trials_group_by_folder_name.trials_group_by_folder_name = trials_group_by_folder_name
-    return copy.deepcopy(get_trials_group_by_folder_name.trials_group_by_folder_name)
         
 def build_parser():
     parser = OptionParser()
@@ -81,37 +64,15 @@ def build_parser():
 
     return parser
 
-def inform_config():
-    import json
-    config_to_print = [
-        'training_config.config_by_user',
-        'training_config.interested_data_fields',
-        'training_config.model_config',
-        'training_config.model_id',
-    ]
-    
-    for s in config_to_print:
-        print '-'*20
-        print s, ':'
-        print json.dumps(
-            eval(s),
-            indent=4,
-        )
-    print '#'*20
-    print "press any key to continue."
-    raw_input()
-
 if __name__ == "__main__":
-    get_trials_group_by_folder_name.done = False
-
     parser = build_parser()
     (options, args) = parser.parse_args()
 
-    inform_config()
+    util.inform_config(training_config)
 
     if options.train_model is True:
         print "gonna train HMM model."
-        trials_group_by_folder_name = get_trials_group_by_folder_name()
+        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import hmm_model_training
         hmm_model_training.run(
@@ -123,7 +84,7 @@ if __name__ == "__main__":
 
     if options.train_threshold is True:
         print "gonna train threshold."
-        trials_group_by_folder_name = get_trials_group_by_folder_name()
+        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import log_likelihood_training
         log_likelihood_training.run(
@@ -134,7 +95,7 @@ if __name__ == "__main__":
 
     if options.train_derivative_threshold is True:
         print "gonna train derivative threshold."
-        trials_group_by_folder_name = get_trials_group_by_folder_name()
+        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import derivative_threshold_training 
         derivative_threshold_training.run(
@@ -147,7 +108,7 @@ if __name__ == "__main__":
         print "gonna run online service."
         import hmm_online_service
 
-        trials_group_by_folder_name = get_trials_group_by_folder_name()
+        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
         one_trial_data_group_by_state = trials_group_by_folder_name.itervalues().next()
         state_amount = len(one_trial_data_group_by_state)
 
@@ -159,7 +120,7 @@ if __name__ == "__main__":
             
     if options.hidden_state_log_prob_plot is True:
         print "gonna plot hidden state log prob."
-        trials_group_by_folder_name = get_trials_group_by_folder_name()
+        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import hidden_state_log_prob_plot 
         hidden_state_log_prob_plot.run(
@@ -170,7 +131,7 @@ if __name__ == "__main__":
 
     if options.trial_log_likelihood_plot is True:
         print "gonna plot trials' log likelihood."
-        trials_group_by_folder_name = get_trials_group_by_folder_name()
+        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import trial_log_likelihood_plot
         trial_log_likelihood_plot.run(
@@ -181,7 +142,7 @@ if __name__ == "__main__":
 
     if options.emission_log_prob_plot is True:
         print "gonna plot emission log prob."
-        trials_group_by_folder_name = get_trials_group_by_folder_name()
+        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import emission_log_prob_plot 
         emission_log_prob_plot.run(

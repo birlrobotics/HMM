@@ -33,7 +33,7 @@ config_by_user = {
     'score_metric': score_metric_options[3],
 
     # config for dataset folder
-    'base_path': '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170724_6states_vision (delete a bad training data)', 
+    'base_path': '/home/sklaw/Desktop/ex/birl/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170724_6states_vision (delete a bad training data)', 
 
     # config for preprocessing
     'preprocessing_scaling': False,
