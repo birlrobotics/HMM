@@ -7,6 +7,7 @@ import os
 
 # don't wanna see scientific notation
 np.set_printoptions(suppress=True)
+np.set_printoptions(precision=4)
 
 def tamper_input_mat(X, all_Xs):
     list_of_tampered_range = []
@@ -52,6 +53,31 @@ def color_txt_lines(txt_file_path, list_of_color_range):
 
     os.rename(tmp_file_path, txt_file_path)
     
+def log_mask_zero(a):
+    """Computes the log of input probabilities masking divide by zero in log.
+    Notes
+    -----
+    During the M-step of EM-algorithm, very small intermediate start
+    or transition probabilities could be normalized to zero, causing a
+    *RuntimeWarning: divide by zero encountered in log*.
+    This function masks this unharmful warning.
+    """
+    a = np.asarray(a)
+    with np.errstate(divide="ignore"):
+        a_log = np.log(a)
+        a_log[a <= 0] = 0.0
+        return a_log
+
+def tab_sep_floats(list_to_print, acc_list=None):
+    s = ''
+    for idx in range(len(list_to_print)):
+        i = list_to_print[idx]
+        if acc_list is not None:
+            j = acc_list[idx]
+            s += '%-16s' % ('%.2f(%.2f)'%(i, j))
+        else:
+            s += '%-16s' % ('%.2f'%i)
+    return s
 
 def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_range=[]):
     import hmmlearn.hmm
@@ -59,11 +85,16 @@ def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_ran
     import bnpy
     output_prefix = 'log_curve_cal_profile_'+output_prefix
     if issubclass(type(model), hmmlearn.hmm._BaseHMM):
+        from scipy.misc import logsumexp
         from sklearn.utils import check_array, check_random_state
+
+
+
 
         X = check_array(X)
 
         framelogprob = model._compute_log_likelihood(X[:])
+
         np.savetxt(
             os.path.join(output_dir, output_prefix+'_framelogprob.txt'), 
             framelogprob, 
@@ -80,6 +111,53 @@ def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_ran
         color_txt_lines(
             os.path.join(output_dir, output_prefix+'_fwdlattice.txt'), 
             list_of_color_range)
+
+        n_samples, n_components = framelogprob.shape
+        log_startprob = log_mask_zero(model.startprob_)
+        log_transmat = log_mask_zero(model.transmat_)
+        work_buffer = [None]*n_components
+        work_buffer_sum = [None]*n_components
+
+        color_t = set()
+        for r in list_of_color_range:
+            for t in range(r[0], r[1]+1):
+                color_t.add(t)
+        
+        import sys
+
+        orig_stdout = sys.stdout
+        f = open(os.path.join(output_dir, output_prefix+'_graph_cal_check.txt'), 'w')
+        sys.stdout = f
+
+        print 0, '\t', 'lpi\t', tab_sep_floats(log_startprob)
+        print 0, '\t', '\t', '+\t\t'*n_components
+        print 0, '\t', 'lem\t', tab_sep_floats(framelogprob[0])
+        print 0, '\t', '\t', '|\t\t'*n_components
+        print 0, '\t', 'lf\t', tab_sep_floats(_fwdlattice[0]), '->', round(logsumexp(_fwdlattice[0]), 2)
+
+
+        color_list = range(31,37)
+        from itertools import cycle
+        colors = cycle(color_list)
+
+
+        for t in range(1, n_samples):
+            if t in color_t:
+                fmt = "\033[1;"+str(next(colors))+"m%s\033[0m"
+            else:
+                fmt = "\033[0;39m%s\033[0m"
+            print fmt%(t,), '\t', '\t', 'A*\t\t'*n_components
+            lAf = _fwdlattice[t]-framelogprob[t]
+            print fmt%(t,), '\t', 'lAf\t', tab_sep_floats(lAf, lAf-_fwdlattice[t-1])
+            print fmt%(t,), '\t', '\t', '+\t\t'*n_components
+            print fmt%(t,), '\t', 'lem\t', tab_sep_floats(framelogprob[t])
+            print fmt%(t,), '\t', '\t', '|\t\t'*n_components
+            print fmt%(t,), '\t', 'lf\t', tab_sep_floats(_fwdlattice[t]), '->', round(logsumexp(_fwdlattice[t]),2)
+
+
+        sys.stdout = orig_stdout
+        f.close()
+
 
     elif issubclass(type(model.model), bnpy.HModel):
         raise Exception('hongmin BNPY not supported for now.')
