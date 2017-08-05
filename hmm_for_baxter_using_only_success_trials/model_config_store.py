@@ -60,7 +60,7 @@ model_store = {
                 'GMM_state_amount': [1,2,3,4,5,6,7,8,9,10],
             },
             'd1': {
-                'hmm_max_train_iteration': 100000,
+                'hmm_max_train_iteration': 100,
                 'hmm_max_hidden_state_amount': 100,
                 'gaussianhmm_covariance_type_string': ['diag', 'spherical', 'full', 'tied'],
                 'GMM_max_state_amount': 100,

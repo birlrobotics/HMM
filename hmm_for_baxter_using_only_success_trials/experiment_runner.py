@@ -4,10 +4,18 @@ import util
 
 def build_parser():
     parser = OptionParser()
+
     parser.add_option(
         "--test-if-parallelity-can-be-restored",
         action="store_true", 
         dest="test_if_parallelity_can_be_restored",
+        default = False,
+        help="read the option name please.")
+
+    parser.add_option(
+        "--tamper-transmat",
+        action="store_true", 
+        dest="tamper_transmat",
         default = False,
         help="read the option name please.")
 
@@ -24,4 +32,5 @@ if __name__ == "__main__":
         import experiment_scripts.test_if_parallelity_can_be_restored
         experiment_scripts.test_if_parallelity_can_be_restored.run(
             model_save_path = training_config.model_save_path,
-            trials_group_by_folder_name = trials_group_by_folder_name)
+            trials_group_by_folder_name = trials_group_by_folder_name,
+            parsed_options=options)
