@@ -19,6 +19,13 @@ def build_parser():
         default = False,
         help="read the option name please.")
 
+    parser.add_option(
+        "--tamper-startprob",
+        action="store_true", 
+        dest="tamper_startprob",
+        default = False,
+        help="read the option name please.")
+
     return parser
 
 if __name__ == "__main__":

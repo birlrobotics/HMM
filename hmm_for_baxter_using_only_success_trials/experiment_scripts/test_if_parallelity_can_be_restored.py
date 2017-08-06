@@ -32,6 +32,10 @@ def profile_model(model, output_dir, output_prefix):
             os.path.join(output_dir, output_prefix+'_transmat.txt'), 
             model.transmat_,
             fmt='%.6f')
+        np.savetxt(
+            os.path.join(output_dir, output_prefix+'_startprob.txt'), 
+            model.startprob_,
+            fmt='%.6f')
     elif issubclass(type(model.model), bnpy.HModel):
         raise Exception('hongmin BNPY not supported for now.')
     else:
@@ -88,9 +92,6 @@ def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_ran
         from scipy.misc import logsumexp
         from sklearn.utils import check_array, check_random_state
 
-
-
-
         X = check_array(X)
 
         framelogprob = model._compute_log_likelihood(X[:])
@@ -115,6 +116,7 @@ def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_ran
         n_samples, n_components = framelogprob.shape
         log_startprob = log_mask_zero(model.startprob_)
         log_transmat = log_mask_zero(model.transmat_)
+
         work_buffer = [None]*n_components
         work_buffer_sum = [None]*n_components
 
@@ -178,6 +180,18 @@ def tamper_transmat(model):
     else:
         raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))
         
+def tamper_startprob(model):
+    import hmmlearn.hmm
+    import hongminhmmpkg.hmm
+    import bnpy
+    if issubclass(type(model), hmmlearn.hmm._BaseHMM):
+        hidden_state_amount = len(model.transmat_)
+        model.startprob_[:] = 1.0/hidden_state_amount
+        pass
+    elif issubclass(type(model.model), bnpy.HModel):
+        raise Exception('hongmin BNPY not supported for now.')
+    else:
+        raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))
 
 def run(model_save_path, 
     trials_group_by_folder_name,
@@ -201,8 +215,13 @@ def run(model_save_path,
     output_id = '(tamper_input)'
 
 
+    tampered = False
     if parsed_options.tamper_transmat:
         output_id += '_(tamper_transmat)'
+        tampered = True
+    if parsed_options.tamper_startprob:
+        output_id += '_(tamper_startprob)'
+        tampered = True
     output_dir = os.path.join(exp_dir, output_id)
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
@@ -218,6 +237,9 @@ def run(model_save_path,
         profile_model(model, output_dir, 'state %s raw'%(state_no,))
         if parsed_options.tamper_transmat:
             tamper_transmat(model)
+        if parsed_options.tamper_startprob:
+            tamper_startprob(model)
+        if tampered:
             profile_model(model, output_dir, 'state %s tampered'%(state_no,))
         
         log_lik_of_X = np.array(util.fast_log_curve_calculation(X, model))
