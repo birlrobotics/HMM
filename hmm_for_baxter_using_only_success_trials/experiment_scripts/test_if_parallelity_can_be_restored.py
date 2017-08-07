@@ -72,7 +72,7 @@ def log_mask_zero(a):
         a_log[a <= 0] = 0.0
         return a_log
 
-def tab_sep_floats(list_to_print, acc_list=None, highlight_maximum=False, highlight_attr='1;39'):
+def tab_sep_floats(list_to_print, annotation_list=None, highlight_maximum=False, highlight_attr='1;39', idx_to_hl=set()):
     s = ''
     max_idx = None
     if highlight_maximum:
@@ -80,17 +80,17 @@ def tab_sep_floats(list_to_print, acc_list=None, highlight_maximum=False, highli
         max_idx, max_val = max(enumerate(list_to_print), key=operator.itemgetter(1))
     
     for idx in range(len(list_to_print)):
-        if idx == max_idx:
+        if idx == max_idx or idx in idx_to_hl:
             s += '\033['+highlight_attr+'m'
 
         i = list_to_print[idx]
-        if acc_list is not None:
-            j = acc_list[idx]
-            s += '%-16s' % ('%.2f(%.2f)'%(i, j))
+        if annotation_list is not None:
+            j = annotation_list[idx]
+            s += '%-24s' % ('%.2f(%s)'%(i, j))
         else:
-            s += '%-16s' % ('%.2f'%i)
+            s += '%-24s' % ('%.2f'%i)
 
-        if idx == max_idx:
+        if idx == max_idx or idx in idx_to_hl:
             s += '\033[0m'
     return s
 
@@ -143,9 +143,9 @@ def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_ran
         sys.stdout = f
 
         print 0, '\t', 'lpi\t', tab_sep_floats(log_startprob)
-        print 0, '\t', '\t', '+\t\t'*n_components
+        print 0, '\t', '\t', '+\t\t\t'*n_components
         print 0, '\t', 'lem\t', tab_sep_floats(framelogprob[0], highlight_maximum=True)
-        print 0, '\t', '\t', '|\t\t'*n_components
+        print 0, '\t', '\t', '|\t\t\t'*n_components
         print 0, '\t', 'lf\t', tab_sep_floats(_fwdlattice[0], highlight_maximum=True, highlight_attr='1;39;4'), '->lse', round(logsumexp(_fwdlattice[0]), 2)
 
 
@@ -159,22 +159,30 @@ def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_ran
                 fmt = "\033[1;"+str(next(colors))+"m%s\033[0m"
             else:
                 fmt = "\033[0;39m%s\033[0m"
-            print fmt%(t,), '\t', '\t', 'A*\t\t'*n_components
+            print fmt%(t,), '\t', '\t', 'A*\t\t\t'*n_components
 
 
             intermediate_mat = log_transmat.copy()
             intermediate_mat += _fwdlattice[t-1].reshape(-1, 1)
+
+            max_row_no = intermediate_mat.argmax(0)
             for i in range(n_components):
-                print fmt%(t,), '\t', 'inmat\t', tab_sep_floats(intermediate_mat[i], log_transmat[i])
-            print fmt%(t,), '\t', '\t', '|lse\t\t'*n_components
-            print fmt%(t,), '\t', '\t', 'v\t\t'*n_components
+                idx_to_hl = set()
+                for col_no in np.where(max_row_no == i)[0]:
+                    idx_to_hl.add(col_no)
+                annotation_list = []
+                for j in range(n_components):
+                    annotation_list.append('%.2f%+.2f'%(_fwdlattice[t-1][i], log_transmat[i][j]))
+                print fmt%(t,), '\t', 'inmat\t', tab_sep_floats(intermediate_mat[i], annotation_list=annotation_list, idx_to_hl=idx_to_hl)
+            print fmt%(t,), '\t', '\t', '|lse\t\t\t'*n_components
+            print fmt%(t,), '\t', '\t', 'v\t\t\t'*n_components
 
             lAf = _fwdlattice[t]-framelogprob[t]
-            print fmt%(t,), '\t', 'lAf\t', tab_sep_floats(lAf, acc_list=lAf-_fwdlattice[t-1], highlight_maximum=True)
-            print fmt%(t,), '\t', '\t', '+\t\t'*n_components
+            print fmt%(t,), '\t', 'lAf\t', tab_sep_floats(lAf, annotation_list=lAf-_fwdlattice[t-1], highlight_maximum=True)
+            print fmt%(t,), '\t', '\t', '+\t\t\t'*n_components
             print fmt%(t,), '\t', 'lem\t', tab_sep_floats(framelogprob[t], highlight_maximum=True)
-            print fmt%(t,), '\t', '\t', '|\t\t'*n_components
-            print fmt%(t,), '\t', '\t', 'v\t\t'*n_components
+            print fmt%(t,), '\t', '\t', '|\t\t\t'*n_components
+            print fmt%(t,), '\t', '\t', 'v\t\t\t'*n_components
             print fmt%(t,), '\t', 'lf\t', tab_sep_floats(_fwdlattice[t], highlight_maximum=True, highlight_attr='1;39;4'), '->lse', round(logsumexp(_fwdlattice[t]),2)
 
 
