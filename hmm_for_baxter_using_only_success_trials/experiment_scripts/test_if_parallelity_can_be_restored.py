@@ -72,15 +72,27 @@ def log_mask_zero(a):
         a_log[a <= 0] = 0.0
         return a_log
 
-def tab_sep_floats(list_to_print, acc_list=None):
+def tab_sep_floats(list_to_print, acc_list=None, highlight_maximum=False):
     s = ''
+    max_idx = None
+    if highlight_maximum:
+        import operator
+        max_idx, max_val = max(enumerate(list_to_print), key=operator.itemgetter(1))
+    
     for idx in range(len(list_to_print)):
+        fmt = ''
+        if max_idx and idx == max_idx:
+            s += '\033[1;39m'
+
         i = list_to_print[idx]
         if acc_list is not None:
             j = acc_list[idx]
             s += '%-16s' % ('%.2f(%.2f)'%(i, j))
         else:
             s += '%-16s' % ('%.2f'%i)
+
+        if max_idx and idx == max_idx:
+            s += '\033[0m'
     return s
 
 def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_range=[]):
@@ -133,9 +145,9 @@ def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_ran
 
         print 0, '\t', 'lpi\t', tab_sep_floats(log_startprob)
         print 0, '\t', '\t', '+\t\t'*n_components
-        print 0, '\t', 'lem\t', tab_sep_floats(framelogprob[0])
+        print 0, '\t', 'lem\t', tab_sep_floats(framelogprob[0], highlight_maximum=True)
         print 0, '\t', '\t', '|\t\t'*n_components
-        print 0, '\t', 'lf\t', tab_sep_floats(_fwdlattice[0]), '->', round(logsumexp(_fwdlattice[0]), 2)
+        print 0, '\t', 'lf\t', tab_sep_floats(_fwdlattice[0], highlight_maximum=True), '->lse', round(logsumexp(_fwdlattice[0]), 2)
 
 
         color_list = range(31,37)
@@ -149,12 +161,22 @@ def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_ran
             else:
                 fmt = "\033[0;39m%s\033[0m"
             print fmt%(t,), '\t', '\t', 'A*\t\t'*n_components
+
+
+            intermediate_mat = log_transmat.copy()
+            intermediate_mat += _fwdlattice[t-1].reshape(-1, 1)
+            for i in range(n_components):
+                print fmt%(t,), '\t', 'inmat\t', tab_sep_floats(intermediate_mat[i], log_transmat[i])
+            print fmt%(t,), '\t', '\t', '|lse\t\t'*n_components
+            print fmt%(t,), '\t', '\t', 'v\t\t'*n_components
+
             lAf = _fwdlattice[t]-framelogprob[t]
             print fmt%(t,), '\t', 'lAf\t', tab_sep_floats(lAf, lAf-_fwdlattice[t-1])
             print fmt%(t,), '\t', '\t', '+\t\t'*n_components
-            print fmt%(t,), '\t', 'lem\t', tab_sep_floats(framelogprob[t])
+            print fmt%(t,), '\t', 'lem\t', tab_sep_floats(framelogprob[t], highlight_maximum=True)
             print fmt%(t,), '\t', '\t', '|\t\t'*n_components
-            print fmt%(t,), '\t', 'lf\t', tab_sep_floats(_fwdlattice[t]), '->', round(logsumexp(_fwdlattice[t]),2)
+            print fmt%(t,), '\t', '\t', 'v\t\t'*n_components
+            print fmt%(t,), '\t', 'lf\t', tab_sep_floats(_fwdlattice[t], highlight_maximum=True), '->lse', round(logsumexp(_fwdlattice[t]),2)
 
 
         sys.stdout = orig_stdout
@@ -173,7 +195,12 @@ def tamper_transmat(model):
     import bnpy
     if issubclass(type(model), hmmlearn.hmm._BaseHMM):
         hidden_state_amount = len(model.transmat_)
-        model.transmat_[:] = 1.0/hidden_state_amount
+        if hidden_state_amount == 1:
+            pass
+        else:
+            model.transmat_[:] = 0.9999999999/(hidden_state_amount-1)
+            for i in range(hidden_state_amount):
+                model.transmat_[i, i] = 0.0000000001
         pass
     elif issubclass(type(model.model), bnpy.HModel):
         raise Exception('hongmin BNPY not supported for now.')
@@ -262,50 +289,28 @@ def run(model_save_path,
 
         diff = log_lik_of_X-log_lik_of_tampered_X
 
-        deri_of_diff = diff.copy()
-        deri_of_diff[:-1] = diff[1:]-diff[:-1]
-        deri_of_diff[-1] = 0
 
 
         fig = plt.figure()
-        ax = fig.add_subplot(411)
+        ax = fig.add_subplot(211)
         title = "log lik of the two"
         ax.set_title(title)
-        ax.plot(log_lik_of_X, color='black', marker='.', linestyle='None')
-        ax.plot(log_lik_of_tampered_X, color='blue', marker='.', linestyle='None')
+        ax.plot(log_lik_of_X, color='black', marker='None', linestyle='solid')
+        ax.plot(log_lik_of_tampered_X, color='blue', marker='None', linestyle='solid')
         for r in list_of_tampered_range:
             ax.axvspan(r[0], r[1], facecolor='red', alpha=0.5)
 
 
-        ax = fig.add_subplot(412)
+        ax = fig.add_subplot(212)
         title = "deri of the two"
         ax.set_title(title)
-        ax.plot(deri_of_X, color='black', marker='.', linestyle='None')
-        ax.plot(deri_of_tampered_X, color='blue', marker='.', linestyle='None')
+        ax.plot(deri_of_X, color='black', marker='None', linestyle='solid')
+        ax.plot(deri_of_tampered_X, color='blue', marker='None', linestyle='solid')
         for r in list_of_tampered_range:
             ax.axvspan(r[0], r[1], facecolor='red', alpha=0.5)
-
-
-        ax = fig.add_subplot(413)
-        title = "diff of the two"
-        ax.set_title(title)
-        ax.plot(diff.tolist(), color='black', marker='.', linestyle='None')
-        for r in list_of_tampered_range:
-            ax.axvspan(r[0], r[1], facecolor='red', alpha=0.5)
-
-
-        ax = fig.add_subplot(414)
-        title = "deri of diff"
-        ax.set_title(title)
-        ax.plot(deri_of_diff.tolist(), color='black', marker='.', linestyle='None')
-        for r in list_of_tampered_range:
-            ax.axvspan(r[0], r[1], facecolor='red', alpha=0.5)
-
 
         title = "output_id %s state %s"%(output_id, state_no)
         fig.suptitle(title)
-
-
 
         fig.savefig(os.path.join(output_dir, title+".eps"), format="eps")
         fig.savefig(os.path.join(output_dir, title+".png"), format="png")
