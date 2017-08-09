@@ -128,8 +128,9 @@ def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_ran
         log_startprob = log_mask_zero(model.startprob_)
         log_transmat = log_mask_zero(model.transmat_)
 
-        work_buffer = [None]*n_components
-        work_buffer_sum = [None]*n_components
+        log_lik = [None]*n_samples
+        log_lik[0] = logsumexp(_fwdlattice[0])
+
 
         color_t = set()
         for r in list_of_color_range:
@@ -146,7 +147,7 @@ def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_ran
         print 0, '\t', '\t', '+\t\t\t'*n_components
         print 0, '\t', 'lem\t', tab_sep_floats(framelogprob[0], highlight_maximum=True)
         print 0, '\t', '\t', '|\t\t\t'*n_components
-        print 0, '\t', 'lf\t', tab_sep_floats(_fwdlattice[0], highlight_maximum=True, highlight_attr='1;39;4'), '->lse', round(logsumexp(_fwdlattice[0]), 2)
+        print 0, '\t', 'lf\t', tab_sep_floats(_fwdlattice[0], highlight_maximum=True, highlight_attr='1;39;4'), '->lse deri', 0
 
 
         color_list = range(31,37)
@@ -178,12 +179,19 @@ def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_ran
             print fmt%(t,), '\t', '\t', 'v\t\t\t'*n_components
 
             lAf = _fwdlattice[t]-framelogprob[t]
-            print fmt%(t,), '\t', 'lAf\t', tab_sep_floats(lAf, annotation_list=lAf-_fwdlattice[t-1], highlight_maximum=True)
+            log_lik[t] = logsumexp(_fwdlattice[t])
+
+            annotation_list = []
+            print fmt%(t,), '\t', 'lAf\t', tab_sep_floats(lAf, highlight_maximum=True)
             print fmt%(t,), '\t', '\t', '+\t\t\t'*n_components
             print fmt%(t,), '\t', 'lem\t', tab_sep_floats(framelogprob[t], highlight_maximum=True)
             print fmt%(t,), '\t', '\t', '|\t\t\t'*n_components
             print fmt%(t,), '\t', '\t', 'v\t\t\t'*n_components
-            print fmt%(t,), '\t', 'lf\t', tab_sep_floats(_fwdlattice[t], highlight_maximum=True, highlight_attr='1;39;4'), '->lse', round(logsumexp(_fwdlattice[t]),2)
+
+
+            for i in range(n_components):
+                annotation_list.append('%+.2f'%(_fwdlattice[t][i]-_fwdlattice[t-1][i], ))
+            print fmt%(t,), '\t', 'lf\t', tab_sep_floats(_fwdlattice[t], annotation_list=annotation_list, highlight_maximum=True, highlight_attr='1;39;4'), '->lse deri', round(log_lik[t]-log_lik[t-1],2)
 
 
         sys.stdout = orig_stdout
@@ -227,6 +235,28 @@ def tamper_startprob(model):
     else:
         raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))
 
+def delete_range_and_get_segments(complete_curve, list_of_range_to_delete):
+    list_of_range_to_delete = sorted(list_of_range_to_delete, key=lambda x:x[0])
+    list_of_xy = []
+    start_idx = 0
+    for r in list_of_range_to_delete:
+        end_idx = r[0]
+        if start_idx < end_idx:
+            list_of_xy.append({
+                'x': range(start_idx, end_idx),
+                'y': complete_curve[start_idx:end_idx],
+            })
+        start_idx = r[1]+1
+    
+    curve_len = len(complete_curve)
+    if start_idx < curve_len:
+        list_of_xy.append({
+            'x': range(start_idx, curve_len),
+            'y': complete_curve[start_idx:curve_len],
+        })
+
+    return list_of_xy
+
 def run(model_save_path, 
     trials_group_by_folder_name,
     parsed_options):
@@ -269,17 +299,44 @@ def run(model_save_path,
 
         model = model_group_by_state[state_no]
         profile_model(model, output_dir, 'state %s raw'%(state_no,))
+
+
         if parsed_options.tamper_transmat:
             tamper_transmat(model)
         if parsed_options.tamper_startprob:
             tamper_startprob(model)
         if tampered:
             profile_model(model, output_dir, 'state %s tampered'%(state_no,))
+
+        log_transmat = util.get_log_transmat(model)
+
         
         log_lik_of_X = np.array(util.fast_log_curve_calculation(X, model))
+        framelogprob_of_X = np.array(util.get_emission_log_prob_matrix(X, model))
+        fwdlattice_of_X = util.get_hidden_state_log_prob_matrix(X, model)
+        max_hstate_of_X = fwdlattice_of_X.argmax(1)
+
+        the_term_of_X = [framelogprob_of_X[0][max_hstate_of_X[0]]]
+        for t in range(1, len(max_hstate_of_X)):
+            hs1 = max_hstate_of_X[t-1]
+            hs2 = max_hstate_of_X[t]
+            the_term_of_X.append(framelogprob_of_X[t][hs2]+log_transmat[hs1][hs2])
+
         profile_log_curve_cal(X, model, output_dir, 'state %s X'%(state_no,), list_of_tampered_range)
 
+
+
         log_lik_of_tampered_X = np.array(util.fast_log_curve_calculation(tampered_X, model))
+        framelogprob_of_tampered_X = np.array(util.get_emission_log_prob_matrix(tampered_X, model))
+        fwdlattice_of_tampered_X = util.get_hidden_state_log_prob_matrix(tampered_X, model)
+        max_hstate_of_tampered_X = fwdlattice_of_tampered_X.argmax(1)
+
+        the_term_of_tampered_X = [framelogprob_of_tampered_X[0][max_hstate_of_tampered_X[0]]]
+        for t in range(1, len(max_hstate_of_tampered_X)):
+            hs1 = max_hstate_of_tampered_X[t-1]
+            hs2 = max_hstate_of_tampered_X[t]
+            the_term_of_tampered_X.append(framelogprob_of_tampered_X[t][hs2]+log_transmat[hs1][hs2])
+
         profile_log_curve_cal(tampered_X, model, output_dir, 'state %s tampered_X'%(state_no,), list_of_tampered_range)
 
 
@@ -287,40 +344,71 @@ def run(model_save_path,
 
 
         deri_of_X = log_lik_of_X.copy()
-        deri_of_X[:-1] = log_lik_of_X[1:]-log_lik_of_X[:-1]
-        deri_of_X[-1] = 0
+        deri_of_X[1:] = log_lik_of_X[1:]-log_lik_of_X[:-1]
+        deri_of_X[0] = 0
 
         deri_of_tampered_X = log_lik_of_tampered_X.copy()
-        deri_of_tampered_X[:-1] = log_lik_of_tampered_X[1:]-log_lik_of_tampered_X[:-1]
-        deri_of_tampered_X[-1] = 0
+        deri_of_tampered_X[1:] = log_lik_of_tampered_X[1:]-log_lik_of_tampered_X[:-1]
+        deri_of_tampered_X[0] = 0
 
         diff = log_lik_of_X-log_lik_of_tampered_X
 
 
 
         fig = plt.figure()
-        ax = fig.add_subplot(211)
-        title = "log lik of the two"
+        bbox_extra_artists = []
+
+        ax = fig.add_subplot(411)
+        title = "log lik"
         ax.set_title(title)
-        ax.plot(log_lik_of_X, color='black', marker='None', linestyle='solid')
-        ax.plot(log_lik_of_tampered_X, color='blue', marker='None', linestyle='solid')
+        ax.plot(log_lik_of_X, color='black', marker='None', linestyle='solid', label='Normal')
+        ax.plot(log_lik_of_tampered_X, color='blue', marker='None', linestyle='solid', label='Tampered')
         for r in list_of_tampered_range:
             ax.axvspan(r[0], r[1], facecolor='red', alpha=0.5)
+        lgd = ax.legend(loc='center left', bbox_to_anchor=(1,0.5))
+        bbox_extra_artists.append(lgd)
 
 
-        ax = fig.add_subplot(212)
-        title = "deri of the two"
+        ax = fig.add_subplot(412)
+        title = "1st deri"
         ax.set_title(title)
-        ax.plot(deri_of_X, color='black', marker='None', linestyle='solid')
-        ax.plot(deri_of_tampered_X, color='blue', marker='None', linestyle='solid')
+        ax.plot(deri_of_X, color='black', marker='None', linestyle='solid', label='Normal')
+        ax.plot(deri_of_tampered_X, color='blue', marker='None', linestyle='solid', label='Tampered')
         for r in list_of_tampered_range:
             ax.axvspan(r[0], r[1], facecolor='red', alpha=0.5)
+        lgd = ax.legend(loc='center left', bbox_to_anchor=(1,0.5))
+        bbox_extra_artists.append(lgd)
+
+
+        ax = fig.add_subplot(413)
+        title = "1st deri and max emission prob of Normal"
+        ax.set_title(title)
+        ax.plot(deri_of_X, color='black', marker='None', linestyle='solid', label='Normal 1st deri')
+        ax.plot(the_term_of_X, color='red', marker='None', linestyle='solid', label='Normal the term')
+        for r in list_of_tampered_range:
+            ax.axvspan(r[0], r[1], facecolor='red', alpha=0.5)
+        lgd = ax.legend(loc='center left', bbox_to_anchor=(1,0.5))
+        bbox_extra_artists.append(lgd)
+
+
+        ax = fig.add_subplot(414)
+        title = "1st deri and max emission prob of Tampered"
+        ax.set_title(title)
+        ax.plot(deri_of_tampered_X, color='blue', marker='None', linestyle='solid', label='Tampered 1st deri')
+        ax.plot(the_term_of_tampered_X, color='red', marker='None', linestyle='solid', label='Tampered the term')
+        for r in list_of_tampered_range:
+            ax.axvspan(r[0], r[1], facecolor='red', alpha=0.5)
+        lgd = ax.legend(loc='center left', bbox_to_anchor=(1,0.5))
+        bbox_extra_artists.append(lgd)
+
 
         title = "output_id %s state %s"%(output_id, state_no)
         fig.suptitle(title)
 
-        fig.savefig(os.path.join(output_dir, title+".eps"), format="eps")
-        fig.savefig(os.path.join(output_dir, title+".png"), format="png")
+        plt.tight_layout()
+
+        fig.savefig(os.path.join(output_dir, title+".eps"), format="eps", bbox_extra_artists=bbox_extra_artists, bbox_inches='tight')
+        fig.savefig(os.path.join(output_dir, title+".png"), format="png", bbox_extra_artists=bbox_extra_artists, bbox_inches='tight')
 
 
 

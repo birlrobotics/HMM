@@ -92,6 +92,40 @@ def get_emission_log_prob_matrix(X, model):
         raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))
 
 
+def log_mask_zero(a):
+    """Computes the log of input probabilities masking divide by zero in log.
+    Notes
+    -----
+    During the M-step of EM-algorithm, very small intermediate start
+    or transition probabilities could be normalized to zero, causing a
+    *RuntimeWarning: divide by zero encountered in log*.
+    This function masks this unharmful warning.
+    """
+    a = np.asarray(a)
+    with np.errstate(divide="ignore"):
+        a_log = np.log(a)
+        a_log[a <= 0] = 0.0
+        return a_log
+
+
+def get_log_transmat(model):
+    import hmmlearn.hmm
+    import hongminhmmpkg.hmm
+    import bnpy
+
+    if issubclass(type(model), hmmlearn.hmm._BaseHMM):
+        from sklearn.utils import check_array, check_random_state
+        from scipy.misc import logsumexp
+
+        log_transmat = log_mask_zero(model.transmat_)
+
+        return log_transmat 
+    elif issubclass(type(model.model), bnpy.HModel):
+        raise Exception('hongmin BNPY not supported for now.')
+    else:
+        raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))
+
+
 def make_trials_of_each_state_the_same_length(_trials_group_by_folder_name):
     import copy
 
