@@ -1,4 +1,7 @@
+import numpy as np
+
 score_hist_stack = []
+
 
 def _debug_score_level(s):
     print 'socre level %s: %s'%(len(score_hist_stack), s)
@@ -54,7 +57,7 @@ def clear_last_score_level():
     del score_hist_stack[-1]
 
 def get_model_generator(model_type, model_config):
-    import numpy as np
+    global score_hist_stack
 
     score_hist_stack = []
     if model_type == 'hmmlearn\'s HMM':

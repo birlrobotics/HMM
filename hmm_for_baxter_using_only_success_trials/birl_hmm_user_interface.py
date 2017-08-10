@@ -69,6 +69,13 @@ def build_parser():
         default = False,
         help="True if you want to plot trials' log likelihood gradient.")
 
+    parser.add_option(
+        "--check-if-score-metric-converge-loglik-curves",
+        action="store_true", 
+        dest="check_if_score_metric_converge_loglik_curves",
+        default = False,
+        help="True if you want to check_if_score_metric_converge_loglik_curves.")
+
     return parser
 
 if __name__ == "__main__":
@@ -168,3 +175,16 @@ if __name__ == "__main__":
             figure_save_path = training_config.figure_save_path,
             threshold_c_value = training_config.threshold_c_value,
             trials_group_by_folder_name = trials_group_by_folder_name)
+
+    if options.check_if_score_metric_converge_loglik_curves is True:
+        print "gonna plot trials' log likelihood."
+        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+
+        import check_if_score_metric_converge_loglik_curves
+        check_if_score_metric_converge_loglik_curves.run(
+            model_save_path = training_config.model_save_path,
+            model_type = training_config.model_type_chosen,
+            figure_save_path = training_config.figure_save_path,
+            threshold_c_value = training_config.threshold_c_value,
+            trials_group_by_folder_name = trials_group_by_folder_name)
+

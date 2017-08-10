@@ -6,14 +6,26 @@ def convert_camel_to_underscore(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
+def get_config_name_abbr(config_name):
+    abbr = ''
+    uncamel_key = convert_camel_to_underscore(config_name)
+    for word in uncamel_key.split('_'): 
+        abbr += word[0]
+    return abbr
+
 def get_model_config_id(model_config):
     model_id = ''
     for config_key in model_config:
-        uncamel_key = convert_camel_to_underscore(config_key)
-        for word in uncamel_key.split('_'): 
-            model_id += word[0]
-        model_id += '_(%s)_'%(model_config[config_key],)
+        model_id += '%s_(%s)_'%(get_config_name_abbr(config_key), model_config[config_key])
     return model_id
+
+def parse_model_config_id(model_id):
+    items = model_id.strip('_').split('_')
+    model_config = {}
+    for idx in range(0, len(items), 2):
+        model_config[items[idx]] = items[idx+1][1:-1]
+        
+    return model_config
 
 def iter_from_X_lengths(X, lengths):
     if lengths is None:
@@ -192,5 +204,12 @@ def inform_config(training_config):
     print "press any key to continue."
     raw_input()
 
+def bring_model_id_back_to_model_config(model_id, template):
+    import copy
+    config_to_return = copy.deepcopy(template)
+    str_model_config = parse_model_config_id(model_id)
+    for config_key in config_to_return:
+        type_of_value = type(config_to_return[config_key])
+        config_to_return[config_key] = type_of_value(str_model_config[get_config_name_abbr(config_key)])
 
-
+    return config_to_return 
