@@ -26,6 +26,14 @@ def build_parser():
         default = False,
         help="read the option name please.")
 
+
+    parser.add_option(
+        "--test-if-gradient-can-detect-state-switch",
+        action="store_true", 
+        dest="test_if_gradient_can_detect_state_switch",
+        default = False,
+        help="read the option name please.")
+
     return parser
 
 if __name__ == "__main__":
@@ -34,10 +42,22 @@ if __name__ == "__main__":
 
     if options.test_if_parallelity_can_be_restored:
         print 'gonna test_if_parallelity_can_be_restored'
-        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import experiment_scripts.test_if_parallelity_can_be_restored
         experiment_scripts.test_if_parallelity_can_be_restored.run(
             model_save_path = training_config.model_save_path,
             trials_group_by_folder_name = trials_group_by_folder_name,
+            parsed_options=options)
+
+    if options.test_if_gradient_can_detect_state_switch:
+        print 'gonna test_if_gradient_can_detect_state_switch'
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+
+        import experiment_scripts.test_if_gradient_can_detect_state_switch
+        experiment_scripts.test_if_gradient_can_detect_state_switch.run(
+            model_save_path = training_config.model_save_path,
+            figure_save_path = training_config.figure_save_path,
+            trials_group_by_folder_name = trials_group_by_folder_name,
+            state_order_group_by_folder_name = state_order_group_by_folder_name,
             parsed_options=options)

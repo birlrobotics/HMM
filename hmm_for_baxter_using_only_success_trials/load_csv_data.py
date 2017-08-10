@@ -6,6 +6,7 @@ def _load_data(path, interested_data_fields, preprocessing_normalize, preprocess
 
     df = df[interested_data_fields].loc[df['.tag'] != 0]
     state_amount = len(df['.tag'].unique())
+    state_order = df['.tag'].unique().tolist()
     one_trial_data_group_by_state = {}
 
     # state no counts from 1
@@ -15,11 +16,12 @@ def _load_data(path, interested_data_fields, preprocessing_normalize, preprocess
             one_trial_data_group_by_state[s] = normalize(one_trial_data_group_by_state[s], norm=norm)
         if preprocessing_scaling:
             one_trial_data_group_by_state[s] = scale(one_trial_data_group_by_state[s], norm=norm)
-    return one_trial_data_group_by_state
+    return one_trial_data_group_by_state, state_order
 
 def run(success_path, interested_data_fields, preprocessing_normalize, preprocessing_scaling, norm_style=""):
     success_trial_amount = 0
     trials_group_by_folder_name = {}
+    state_order_group_by_folder_name = {}
 
     files = os.listdir(success_path)
     for f in files:
@@ -37,11 +39,12 @@ def run(success_path, interested_data_fields, preprocessing_normalize, preproces
             raise Exception("folder %s doesn't have csv file."%(path,))
 
         success_trial_amount += 1
-        one_trial_data_group_by_state = _load_data(path=csv_file_path,
+        one_trial_data_group_by_state, state_order = _load_data(path=csv_file_path,
                                             interested_data_fields = interested_data_fields,
                                             preprocessing_scaling=preprocessing_scaling,
                                             preprocessing_normalize=preprocessing_normalize,
                                             norm=norm_style)
         trials_group_by_folder_name[f] = one_trial_data_group_by_state
+        state_order_group_by_folder_name[f] = state_order
 
-    return trials_group_by_folder_name 
+    return trials_group_by_folder_name, state_order_group_by_folder_name

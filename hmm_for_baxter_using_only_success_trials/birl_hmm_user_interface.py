@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     if options.train_model is True:
         print "gonna train HMM model."
-        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import hmm_model_training
         hmm_model_training.run(
@@ -98,7 +98,7 @@ if __name__ == "__main__":
 
     if options.train_threshold is True:
         print "gonna train threshold."
-        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import log_likelihood_training
         log_likelihood_training.run(
@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     if options.train_derivative_threshold is True:
         print "gonna train derivative threshold."
-        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import derivative_threshold_training 
         derivative_threshold_training.run(
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         print "gonna run online service."
         import hmm_online_service
 
-        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
         one_trial_data_group_by_state = trials_group_by_folder_name.itervalues().next()
         state_amount = len(one_trial_data_group_by_state)
 
@@ -134,7 +134,7 @@ if __name__ == "__main__":
             
     if options.hidden_state_log_prob_plot is True:
         print "gonna plot hidden state log prob."
-        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import hidden_state_log_prob_plot 
         hidden_state_log_prob_plot.run(
@@ -145,7 +145,7 @@ if __name__ == "__main__":
 
     if options.trial_log_likelihood_plot is True:
         print "gonna plot trials' log likelihood."
-        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import trial_log_likelihood_plot
         trial_log_likelihood_plot.run(
@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
     if options.emission_log_prob_plot is True:
         print "gonna plot emission log prob."
-        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import emission_log_prob_plot 
         emission_log_prob_plot.run(
@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
     if options.trial_log_likelihood_gradient_plot is True:
         print "gonna do trial_log_likelihood_gradient_plot."
-        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import trial_log_likelihood_gradient_plot 
         trial_log_likelihood_gradient_plot.run(
@@ -178,7 +178,7 @@ if __name__ == "__main__":
 
     if options.check_if_score_metric_converge_loglik_curves is True:
         print "gonna plot trials' log likelihood."
-        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import check_if_score_metric_converge_loglik_curves
         check_if_score_metric_converge_loglik_curves.run(
