@@ -62,6 +62,13 @@ def build_parser():
         default = False,
         help="True if you want to plot emission log prob.")
 
+    parser.add_option(
+        "--trial-log-likelihood-gradient-plot",
+        action="store_true", 
+        dest="trial_log_likelihood_gradient_plot",
+        default = False,
+        help="True if you want to plot trials' log likelihood gradient.")
+
     return parser
 
 if __name__ == "__main__":
@@ -146,6 +153,17 @@ if __name__ == "__main__":
 
         import emission_log_prob_plot 
         emission_log_prob_plot.run(
+            model_save_path = training_config.model_save_path,
+            figure_save_path = training_config.figure_save_path,
+            threshold_c_value = training_config.threshold_c_value,
+            trials_group_by_folder_name = trials_group_by_folder_name)
+
+    if options.trial_log_likelihood_gradient_plot is True:
+        print "gonna do trial_log_likelihood_gradient_plot."
+        trials_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+
+        import trial_log_likelihood_gradient_plot 
+        trial_log_likelihood_gradient_plot.run(
             model_save_path = training_config.model_save_path,
             figure_save_path = training_config.figure_save_path,
             threshold_c_value = training_config.threshold_c_value,
