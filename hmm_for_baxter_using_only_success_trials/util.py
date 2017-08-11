@@ -165,24 +165,24 @@ def make_trials_of_each_state_the_same_length(_trials_group_by_folder_name):
 
     return trials_group_by_folder_name
 
-def get_trials_group_by_folder_name(training_config):
+def get_trials_group_by_folder_name(training_config, data_class='success'):
     import copy
-    if (hasattr(get_trials_group_by_folder_name, 'done')\
-        and get_trials_group_by_folder_name.done):
-        return copy.deepcopy(get_trials_group_by_folder_name.trials_group_by_folder_name)
 
+    if data_class == 'success':
+        data_path = training_config.success_path
+    elif data_class == 'anomaly':
+        data_path = training_config.anomaly_data_path
 
     import load_csv_data
     trials_group_by_folder_name = load_csv_data.run(
-        success_path = training_config.success_path,
+        data_path = data_path,
         interested_data_fields = training_config.interested_data_fields,
         preprocessing_normalize = training_config.preprocessing_normalize,
         preprocessing_scaling = training_config.preprocessing_scaling
     )
 
-    get_trials_group_by_folder_name.done = True
-    get_trials_group_by_folder_name.trials_group_by_folder_name = trials_group_by_folder_name
-    return copy.deepcopy(get_trials_group_by_folder_name.trials_group_by_folder_name)
+    trials_group_by_folder_name
+    return trials_group_by_folder_name
 
 def inform_config(training_config):
     import json

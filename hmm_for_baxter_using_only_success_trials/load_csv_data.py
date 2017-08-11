@@ -18,14 +18,14 @@ def _load_data(path, interested_data_fields, preprocessing_normalize, preprocess
             one_trial_data_group_by_state[s] = scale(one_trial_data_group_by_state[s], norm=norm)
     return one_trial_data_group_by_state, state_order
 
-def run(success_path, interested_data_fields, preprocessing_normalize, preprocessing_scaling, norm_style=""):
+def run(data_path, interested_data_fields, preprocessing_normalize, preprocessing_scaling, norm_style=""):
     success_trial_amount = 0
     trials_group_by_folder_name = {}
     state_order_group_by_folder_name = {}
 
-    files = os.listdir(success_path)
+    files = os.listdir(data_path)
     for f in files:
-        path = os.path.join(success_path, f)
+        path = os.path.join(data_path, f)
         if not os.path.isdir(path):
             continue
         if f.startswith("bad"):

@@ -34,6 +34,13 @@ def build_parser():
         default = False,
         help="read the option name please.")
 
+    parser.add_option(
+        "--compare-anomay-model-with-normal-model",
+        action="store_true", 
+        dest="compare_anomay_model_with_normal_model",
+        default = False,
+        help="read the option name please.")
+
     return parser
 
 if __name__ == "__main__":
@@ -60,4 +67,14 @@ if __name__ == "__main__":
             figure_save_path = training_config.figure_save_path,
             trials_group_by_folder_name = trials_group_by_folder_name,
             state_order_group_by_folder_name = state_order_group_by_folder_name,
+            parsed_options=options)
+
+    if options.compare_anomay_model_with_normal_model:
+        print 'gonna compare_anomay_model_with_normal_model'
+        normal_trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        anomaly_trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config, data_class='anomaly')
+
+        import experiment_scripts.compare_anomay_model_with_normal_model
+        experiment_scripts.compare_anomay_model_with_normal_model.run(
+            training_config=training_config,
             parsed_options=options)

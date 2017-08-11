@@ -21,6 +21,14 @@ def build_parser():
         help="True if you want to train HMM models.")
 
     parser.add_option(
+        "--train-anomaly-model",
+        action="store_true", 
+        dest="train_anomaly_model",
+        default = False,
+        help="True if you want to train HMM anomaly models.")
+
+
+    parser.add_option(
         "--train-threshold",
         action="store_true", 
         dest="train_threshold",
@@ -95,6 +103,18 @@ if __name__ == "__main__":
             model_config = training_config.model_config,
             score_metric = training_config.score_metric,
             trials_group_by_folder_name = trials_group_by_folder_name)
+
+    if options.train_anomaly_model is True:
+        print "gonna train HMM anomaly_model."
+        anomaly_trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config, data_class='anomaly')
+
+        import hmm_model_training
+        hmm_model_training.run(
+            model_save_path = training_config.anomaly_model_save_path,
+            model_type = training_config.model_type_chosen,
+            model_config = training_config.model_config,
+            score_metric = training_config.score_metric,
+            trials_group_by_folder_name = anomaly_trials_group_by_folder_name)
 
     if options.train_threshold is True:
         print "gonna train threshold."

@@ -33,7 +33,7 @@ config_by_user = {
     'score_metric': score_metric_options[3],
 
     # config for dataset folder
-    'base_path': '/home/sklaw/Desktop/ex/birl/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170724_6states_vision (delete a bad training data)', 
+    'base_path': '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170711',
 
     # config for preprocessing
     'preprocessing_scaling': False,
@@ -62,7 +62,9 @@ model_id     = config_by_user['score_metric']+model_id
 
 
 success_path = os.path.join(config_by_user['base_path'], "success")
+anomaly_data_path = os.path.join(config_by_user['base_path'], "has_anomaly")
 model_save_path = os.path.join(config_by_user['base_path'], "model", config_by_user['data_type_chosen'], config_by_user['model_type_chosen'], model_id)
+anomaly_model_save_path = os.path.join(config_by_user['base_path'], "anomaly_model", config_by_user['data_type_chosen'], config_by_user['model_type_chosen'], model_id)
 figure_save_path = os.path.join(config_by_user['base_path'], "figure", config_by_user['data_type_chosen'], config_by_user['model_type_chosen'], model_id)
 
 exec '\n'.join("%s=%r"%i for i in config_by_user.items())
