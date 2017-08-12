@@ -4,12 +4,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import cm 
 import os
+import ipdb
 
-def color_bg_by_state(state_order, state_color, state_start_idx, ax):
+def color_bg_by_state(state_order, state_color, state_start_idx, ax, ymin=0.0, ymax=1.0):
     for idx in range(len(state_start_idx)-1):
         start_at = state_start_idx[idx]
         end_at = state_start_idx[idx+1]
-        ax.axvspan(start_at, end_at, facecolor=state_color[state_order[idx]], alpha=0.25)
+        ax.axvspan(start_at, end_at, facecolor=state_color[state_order[idx]], alpha=0.25, ymax=ymax, ymin=ymin)
 
 def run(model_save_path, 
     figure_save_path,
@@ -57,19 +58,43 @@ def run(model_save_path,
         ax_loglik = fig.add_subplot(211)
         ax_loglik_gradient = fig.add_subplot(212)
         bbox_extra_artists = []
+
+        log_lik_mat = []
+        log_lik_gradient_mat = []
+        mat_row_color = []
+        mat_row_name = []
         for state_no in model_group_by_state:
             log_lik_curve = np.array(util.fast_log_curve_calculation(
                 X,
                 model_group_by_state[state_no]
             ))
-
             log_lik_gradient_curve = log_lik_curve[1:]-log_lik_curve[:-1]
-            ax_loglik.plot(log_lik_curve, label='state %s'%(state_no,), color=state_color[state_no])
-            ax_loglik_gradient.plot(np.log(log_lik_gradient_curve), label='state %s'%(state_no,), color=state_color[state_no])
+            
+            log_lik_mat.append(log_lik_curve)
+            log_lik_gradient_mat.append(log_lik_gradient_curve)
+            mat_row_color.append(state_color[state_no])
+            mat_row_name.append('state %s'%(state_no,))
+
+        log_lik_mat = np.matrix(log_lik_mat)
+        log_lik_gradient_mat = np.matrix(log_lik_gradient_mat)
+
+
+        log_lik_gradient_mat[log_lik_gradient_mat<0] = 0
+        for row_no in range(log_lik_mat.shape[0]):
+            ax_loglik.plot(log_lik_mat[row_no].tolist()[0], label=mat_row_name[row_no], color=mat_row_color[row_no])
+            ax_loglik_gradient.plot(log_lik_gradient_mat[row_no].tolist()[0], label=mat_row_name[row_no], color=mat_row_color[row_no])
+
+        gradient_argmax= log_lik_gradient_mat.argmax(0)
+        for col_no in range(gradient_argmax.shape[1]):
+            row_no = gradient_argmax[0, col_no]
+            ax_loglik_gradient.plot([col_no], [log_lik_gradient_mat[row_no, col_no]], marker='o', color=mat_row_color[row_no], markersize=2)
+
+
 
 
         color_bg_by_state(state_order, state_color, state_start_idx, ax_loglik)
-        color_bg_by_state(state_order, state_color, state_start_idx, ax_loglik_gradient)
+        
+        color_bg_by_state(state_order, state_color, state_start_idx, ax_loglik_gradient, ymin=0.5, ymax=1.0)
 
         title = "trial %s loglik of all states"%(trial_name,)
         ax_loglik.set_title(title)
@@ -78,9 +103,7 @@ def run(model_save_path,
 
         lgd = ax_loglik.legend(loc='center left', bbox_to_anchor=(1,0.5))
         bbox_extra_artists.append(lgd)
-        lgd = ax_loglik_gradient.legend(loc='center left', bbox_to_anchor=(1,0.5))
-        bbox_extra_artists.append(lgd)
 
         title = "trial %s"%(trial_name,)
-        fig.savefig(os.path.join(output_dir, title+".eps"), format="eps", bbox_extra_artists=bbox_extra_artists, bbox_inches='tight')
-        fig.savefig(os.path.join(output_dir, title+".png"), format="png", bbox_extra_artists=bbox_extra_artists, bbox_inches='tight')
+        #fig.savefig(os.path.join(output_dir, title+".eps"), format="eps", bbox_extra_artists=bbox_extra_artists, bbox_inches='tight', dpi=900)
+        fig.savefig(os.path.join(output_dir, title+".png"), format="png", bbox_extra_artists=bbox_extra_artists, bbox_inches='tight', dpi=900)
