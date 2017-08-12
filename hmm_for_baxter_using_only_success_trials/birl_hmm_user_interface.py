@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     if options.online_service is True:
         print "gonna run online service."
-        import hmm_online_service
+        import hmm_online_service.hmm_online_service as hmm_online_service
 
         trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
         one_trial_data_group_by_state = trials_group_by_folder_name.itervalues().next()
