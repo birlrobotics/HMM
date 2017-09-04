@@ -22,6 +22,13 @@ score_metric_options = [
     '_score_metric_mean_of_std_using_fast_log_cal_',
     '_score_metric_hamming_distance_using_fast_log_cal_',
     '_score_metric_std_of_std_using_fast_log_cal_',
+    '_score_metric_mean_of_std_divied_by_final_log_mean_',
+    '_score_metric_mean_of_std_of_gradient_divied_by_final_log_mean_',
+]
+
+base_path_options = [
+    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170711',
+    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170724_6states_vision (delete a bad training data)',
 ]
 
 
@@ -29,11 +36,11 @@ score_metric_options = [
 config_by_user = {
     # config for types
     'data_type_chosen': data_type_options[2],
-    'model_type_chosen': model_type_options[0],
-    'score_metric': score_metric_options[3],
+    'model_type_chosen': model_type_options[1],
+    'score_metric': score_metric_options[-2],
 
     # config for dataset folder
-    'base_path': '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170711',
+    'base_path': base_path_options[1],
 
     # config for preprocessing
     'preprocessing_scaling': False,

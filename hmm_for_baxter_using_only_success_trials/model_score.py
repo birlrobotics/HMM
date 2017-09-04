@@ -1,5 +1,6 @@
 import util
 import numpy as np
+import ipdb
 
 def score(score_metric, model, X, lengths):
     if score_metric == '_score_metric_worst_stdmeanratio_in_10_slice_':
@@ -53,6 +54,27 @@ def score(score_metric, model, X, lengths):
         curve_mat = np.matrix(log_curves_of_all_trials) 
         std_of_log_curve = curve_mat.std(0)
         score = std_of_log_curve.std()
+    elif score_metric == '_score_metric_mean_of_std_divied_by_final_log_mean_':
+        log_curves_of_all_trials = [
+            util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
+        ]
+        
+        curve_mat = np.matrix(log_curves_of_all_trials) 
+        std_of_log_curve = curve_mat.std(0)
+        mean_of_std = std_of_log_curve.mean()
+        final_log_mean = curve_mat.mean(0)[0, -1]
+        score = abs(mean_of_std/final_log_mean)
+    elif score_metric == '_score_metric_mean_of_std_of_gradient_divied_by_final_log_mean_':
+        log_curves_of_all_trials = [
+            util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
+        ]
+        
+        curve_mat = np.matrix(log_curves_of_all_trials) 
+        gradient_mat = curve_mat[:, 1:]-curve_mat[:, :-1]
+        std_of_log_curve = gradient_mat.std(0)
+        mean_of_std = std_of_log_curve.mean()
+        final_log_mean = gradient_mat.mean(0)[0, -1]
+        score = abs(mean_of_std/final_log_mean)
     else:
         raise Exception('unknown score metric \'%s\''%(score_metric,))
 
