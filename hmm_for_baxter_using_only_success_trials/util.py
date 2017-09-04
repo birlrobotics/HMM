@@ -213,3 +213,24 @@ def bring_model_id_back_to_model_config(model_id, template):
         config_to_return[config_key] = type_of_value(str_model_config[get_config_name_abbr(config_key)])
 
     return config_to_return 
+
+
+def fast_growing_viterbi_paths_cal(X, model):
+    import hmmlearn.hmm
+    import hongminhmmpkg.hmm
+    import bnpy
+
+    if issubclass(type(model), hmmlearn.hmm._BaseHMM):
+        from sklearn.utils import check_array, check_random_state
+        from scipy.misc import logsumexp
+
+        X = check_array(X)
+
+        framelogprob = model._compute_log_likelihood(X[:])
+        logprobij, _fwdlattice = model._do_forward_pass(framelogprob)
+
+        log_curve = [logsumexp(_fwdlattice[i]) for i in range(len(_fwdlattice))]
+
+        return log_curve 
+    else:
+        raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))

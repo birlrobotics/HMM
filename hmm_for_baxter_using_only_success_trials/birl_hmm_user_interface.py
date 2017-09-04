@@ -84,6 +84,13 @@ def build_parser():
         default = False,
         help="True if you want to check_if_score_metric_converge_loglik_curves.")
 
+    parser.add_option(
+        "--check_if_viterbi_path_grow_incrementally",
+        action="store_true", 
+        dest="check_if_viterbi_path_grow_incrementally",
+        default = False,
+        help="True if you want to check_if_viterbi_path_grow_incrementally.")
+
     return parser
 
 if __name__ == "__main__":
@@ -197,7 +204,7 @@ if __name__ == "__main__":
             trials_group_by_folder_name = trials_group_by_folder_name)
 
     if options.check_if_score_metric_converge_loglik_curves is True:
-        print "gonna plot trials' log likelihood."
+        print "gonna check_if_score_metric_converge_loglik_curves."
         trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
         import check_if_score_metric_converge_loglik_curves
@@ -208,3 +215,14 @@ if __name__ == "__main__":
             threshold_c_value = training_config.threshold_c_value,
             trials_group_by_folder_name = trials_group_by_folder_name)
 
+    if options.check_if_viterbi_path_grow_incrementally is True:
+        print "gonna check_if_viterbi_path_grow_incrementally."
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+
+        import check_if_viterbi_path_grow_incrementally
+        check_if_viterbi_path_grow_incrementally.run(
+            model_save_path = training_config.model_save_path,
+            figure_save_path = training_config.figure_save_path,
+            trials_group_by_folder_name = trials_group_by_folder_name,
+            options=options,
+        )
