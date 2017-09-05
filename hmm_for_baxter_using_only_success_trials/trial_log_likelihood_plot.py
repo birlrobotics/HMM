@@ -42,6 +42,7 @@ def assess_threshold_and_decide(
     if not os.path.isdir(figure_save_path+'/trial_log_likelihood_plot'):
         os.makedirs(figure_save_path+'/trial_log_likelihood_plot')
     fig.savefig(os.path.join(figure_save_path, 'trial_log_likelihood_plot', title+".eps"), format="eps")
+    fig.savefig(os.path.join(figure_save_path, 'trial_log_likelihood_plot', title+".png"), format="png")
 
     plt.close(1)
 

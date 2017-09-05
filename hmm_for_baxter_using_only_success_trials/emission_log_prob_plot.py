@@ -20,20 +20,33 @@ def plot_log_prob_of_all_trials(
     list_of_log_prob_mat,
     log_prob_owner, 
     state_no, 
-    figure_save_path):
+    figure_save_path
+):
 
 
     trial_amount = len(list_of_log_prob_mat)
     hidden_state_amount = list_of_log_prob_mat[0].shape[1]
 
-    subplot_per_row = 5 
-    row_amount = int(math.ceil(float(trial_amount)/subplot_per_row))
 
+    subplot_per_row = 4
+
+    subplot_amount = trial_amount*2
+    row_amount = int(math.ceil(float(subplot_amount)/subplot_per_row))
     fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row)
+    if row_amount == 1:
+        ax_mat = ax_mat.reshape(1, 5)
+
+
     ax_list = []
     for i in range(trial_amount):
-        row_no = i/subplot_per_row
-        col_no = i%subplot_per_row
+        j = 2*i
+        row_no = j/subplot_per_row
+        col_no = j%subplot_per_row
+        ax_list.append(ax_mat[row_no, col_no])
+
+        j = 2*i+1
+        row_no = j/subplot_per_row
+        col_no = j%subplot_per_row
         ax_list.append(ax_mat[row_no, col_no])
 
     from matplotlib.pyplot import cm 
@@ -42,12 +55,31 @@ def plot_log_prob_of_all_trials(
     colors_for_hstate = cm.rainbow(np.linspace(0, 1, hidden_state_amount))
     for trial_no in range(trial_amount):
         log_prob_mat = list_of_log_prob_mat[trial_no][:, :].transpose()
-        for hstate_no in range(hidden_state_amount):
-            ax_list[trial_no].plot(log_prob_mat[hstate_no].tolist(), linestyle="solid", color=colors_for_hstate[hstate_no])
 
-        ax_list[trial_no].set_title(log_prob_owner[trial_no])
+        plot_idx = 2*trial_no
+        for hstate_no in range(hidden_state_amount):
+            ax_list[plot_idx].plot(log_prob_mat[hstate_no].tolist(), linestyle="solid", color=colors_for_hstate[hstate_no])
+
+        trial_name = log_prob_owner[trial_no]
+
+        ax_list[plot_idx].set_title(trial_name)
         ymax = np.max(log_prob_mat)
-        ax_list[trial_no].set_ylim(ymin=0, ymax=ymax)
+        ax_list[plot_idx].set_ylim(ymin=0, ymax=ymax)
+
+
+        vp_triangle_img = open(
+            os.path.join(
+                figure_save_path, 
+                'check_if_viterbi_path_grow_incrementally',
+                "state_%s"%state_no, 
+                "%s.png"%trial_name,
+            ), 
+            'rb',
+        )
+        import matplotlib.image as mpimg
+        img=mpimg.imread(vp_triangle_img)
+        plot_idx = 2*trial_no+1
+        ax_list[plot_idx].imshow(img)
         
 
 
