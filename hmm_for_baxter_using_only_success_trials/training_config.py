@@ -29,6 +29,7 @@ score_metric_options = [
 base_path_options = [
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170711',
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170724_6states_vision (delete a bad training data)',
+    '/home/sklaw/Desktop/ex/birl/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170724_6states_vision (delete a bad training data)',
 ]
 
 
@@ -40,7 +41,7 @@ config_by_user = {
     'score_metric': score_metric_options[-2],
 
     # config for dataset folder
-    'base_path': base_path_options[1],
+    'base_path': base_path_options[-1],
 
     # config for preprocessing
     'preprocessing_scaling': False,

@@ -214,6 +214,21 @@ def bring_model_id_back_to_model_config(model_id, template):
 
     return config_to_return 
 
+def log_mask_zero(a):
+    """Computes the log of input probabilities masking divide by zero in log.
+    Notes
+    -----
+    During the M-step of EM-algorithm, very small intermediate start
+    or transition probabilities could be normalized to zero, causing a
+    *RuntimeWarning: divide by zero encountered in log*.
+    This function masks this unharmful warning.
+    """
+    a = np.asarray(a)
+    with np.errstate(divide="ignore"):
+        a_log = np.log(a)
+        a_log[a <= 0] = 0.0
+        return a_log
+
 
 def fast_growing_viterbi_paths_cal(X, model):
     import hmmlearn.hmm
@@ -227,10 +242,44 @@ def fast_growing_viterbi_paths_cal(X, model):
         X = check_array(X)
 
         framelogprob = model._compute_log_likelihood(X[:])
-        logprobij, _fwdlattice = model._do_forward_pass(framelogprob)
+        n_samples, n_components = framelogprob.shape
+        log_startprob = log_mask_zero(model.startprob_)
+        log_transmat = log_mask_zero(model.transmat_)
+        work_buffer = np.empty(n_components)
 
-        log_curve = [logsumexp(_fwdlattice[i]) for i in range(len(_fwdlattice))]
+        list_of_growing_viterbi_paths = []
 
-        return log_curve 
+
+        viterbi_lattice = np.zeros((n_samples, n_components))
+        viterbi_trace = np.zeros((n_samples, n_components))
+        for i in range(n_components):
+            viterbi_lattice[0, i] = log_startprob[i] + framelogprob[0, i]
+            viterbi_trace[0, i] = 0
+
+        # Induction
+        for t in range(1, n_samples):
+            for i in range(n_components):
+                for j in range(n_components):
+                    work_buffer[j] = (log_transmat[j, i]
+                                      + viterbi_lattice[t - 1, j])
+
+                prev_state = np.argmax(work_buffer)
+                viterbi_lattice[t, i] = work_buffer[prev_state] + framelogprob[t, i]
+                viterbi_trace[t, i] = prev_state
+
+            best_state_at_t = np.argmax(viterbi_lattice[t, :])
+
+            viterbi_path = [0 for k in range(t)]
+            viterbi_path[t-1] = best_state_at_t
+            # backtract 
+
+            for k in range(t-1, 0, -1):
+                forward_z = viterbi_path[k]
+                viterbi_path[k-1] = int(viterbi_trace[k, forward_z])
+
+            list_of_growing_viterbi_paths.append(viterbi_path)
+            
+
+        return list_of_growing_viterbi_paths, n_samples, n_components
     else:
         raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))

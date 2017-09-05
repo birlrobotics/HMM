@@ -11,49 +11,38 @@ from matplotlib import pyplot as plt
 import time
 import util
 
-
-
-def assess_threshold_and_decide(
-    np_matrix_traj_by_time, 
-    curve_owner, 
-    state_no, 
-    figure_save_path, 
+def output_growing_viterbi_path_img(
+    list_of_growing_viterbi_paths, 
+    hidden_state_amount, 
+    output_file_path,
 ):
+    from matplotlib.pyplot import cm
+    import numpy as np
 
-    fig = plt.figure(1)
-    ax = fig.add_subplot(111)
+    height = len(list_of_growing_viterbi_paths)
+    width = len(list_of_growing_viterbi_paths[-1])
 
-    trial_amount = np_matrix_traj_by_time.shape[0]
+    colors = [tuple((256*i).astype(int)) for i in cm.rainbow(np.linspace(0, 1, hidden_state_amount))]
 
-    from matplotlib.pyplot import cm 
-    color=iter(cm.rainbow(np.linspace(0, 1, trial_amount)))
+    output_pixels = []
 
-    for row_no in range(np_matrix_traj_by_time.shape[0]):
-        c=next(color)
-        trial_name = curve_owner[row_no]
-        gradient = np_matrix_traj_by_time[row_no][0, 1:]-np_matrix_traj_by_time[row_no][0, :-1]
-        print np_matrix_traj_by_time[row_no] 
-        print gradient
-        ax.plot(gradient.tolist()[0], color=c)
+    for vp in list_of_growing_viterbi_paths:
+        black_to_append = width-len(vp)
+        row = [colors[i] for i in vp]+[(0,0,0) for i in range(black_to_append)]
+        output_pixels += row
 
+    from PIL import Image
 
+    output_dir = os.path.dirname(output_file_path)
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
 
-    title = 'state %s trial likelihood gradient plot'%(state_no,)
-    ax.set_title(title)
+    output_img = Image.new("RGB", (width, height)) # mode,(width,height)
+    output_img.putdata(output_pixels)
+    output_img.save(
+        output_file_path,
+    )
 
-
-    if not os.path.isdir(figure_save_path+'/trial_log_likelihood_gradient_plot'):
-        os.makedirs(figure_save_path+'/trial_log_likelihood_gradient_plot')
-    fig.savefig(os.path.join(figure_save_path, 'trial_log_likelihood_gradient_plot', title+".eps"), format="eps")
-
-
-    plt.close(1)
-
-        
-
-            
-        
-        
     
 def run(model_save_path, 
     figure_save_path,
@@ -77,25 +66,23 @@ def run(model_save_path,
 
     for state_no in model_group_by_state:
 
-        all_log_curves_of_this_state = []
         curve_owner = []
         for trial_name in trials_group_by_folder_name:
             curve_owner.append(trial_name)
-            one_log_curve_of_this_state = [] 
             
-            one_log_curve_of_this_state = util.fast_log_curve_calculation(
+            list_of_growing_viterbi_paths, n_samples, n_components = util.fast_growing_viterbi_paths_cal(
                 trials_group_by_folder_name[trial_name][state_no],
                 model_group_by_state[state_no]
             )
 
-            all_log_curves_of_this_state.append(one_log_curve_of_this_state)
+            output_growing_viterbi_path_img(
+                list_of_growing_viterbi_paths, 
+                n_components,
+                os.path.join(
+                    figure_save_path, 
+                    'check_if_viterbi_path_grow_incrementally',
+                    "state_%s"%state_no, 
+                    "%s.png"%trial_name,
+                ), 
+            )
 
-        # use np matrix to facilitate the computation of mean curve and std 
-        np_matrix_traj_by_time = np.matrix(all_log_curves_of_this_state)
-
-        assess_threshold_and_decide(
-            np_matrix_traj_by_time, 
-            curve_owner, 
-            state_no, 
-            figure_save_path, 
-        )
