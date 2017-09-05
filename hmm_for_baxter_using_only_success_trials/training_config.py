@@ -24,6 +24,7 @@ score_metric_options = [
     '_score_metric_std_of_std_using_fast_log_cal_',
     '_score_metric_mean_of_std_divied_by_final_log_mean_',
     '_score_metric_mean_of_std_of_gradient_divied_by_final_log_mean_',
+    '_score_metric_minus_diff_btw_1st_2ed_emissionprob_',
 ]
 
 base_path_options = [
@@ -42,7 +43,7 @@ config_by_user = {
     'score_metric': score_metric_options[-1],
 
     # config for dataset folder
-    'base_path': base_path_options[-1],
+    'base_path': base_path_options[-2],
 
     # config for preprocessing
     'preprocessing_scaling': False,

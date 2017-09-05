@@ -63,6 +63,10 @@ def run(model_save_path,
             model = model.fit(X, lengths=lengths)
 
             score = model_score.score(score_metric, model, X, lengths)
+            if score == None:
+                print "scorer says to skip this model, will do"
+                continue
+
             model_list.append({
                 "model": model,
                 "now_model_config": now_model_config,

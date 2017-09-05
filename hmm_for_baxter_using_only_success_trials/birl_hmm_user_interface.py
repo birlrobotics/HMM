@@ -181,16 +181,7 @@ if __name__ == "__main__":
             threshold_c_value = training_config.threshold_c_value,
             trials_group_by_folder_name = trials_group_by_folder_name)
 
-    if options.emission_log_prob_plot is True:
-        print "gonna plot emission log prob."
-        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
-        import emission_log_prob_plot 
-        emission_log_prob_plot.run(
-            model_save_path = training_config.model_save_path,
-            figure_save_path = training_config.figure_save_path,
-            threshold_c_value = training_config.threshold_c_value,
-            trials_group_by_folder_name = trials_group_by_folder_name)
 
     if options.trial_log_likelihood_gradient_plot is True:
         print "gonna do trial_log_likelihood_gradient_plot."
@@ -226,3 +217,14 @@ if __name__ == "__main__":
             trials_group_by_folder_name = trials_group_by_folder_name,
             options=options,
         )
+
+    if options.emission_log_prob_plot is True:
+        print "gonna plot emission log prob."
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+
+        import emission_log_prob_plot 
+        emission_log_prob_plot.run(
+            model_save_path = training_config.model_save_path,
+            figure_save_path = training_config.figure_save_path,
+            threshold_c_value = training_config.threshold_c_value,
+            trials_group_by_folder_name = trials_group_by_folder_name)

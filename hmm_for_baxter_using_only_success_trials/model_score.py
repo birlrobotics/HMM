@@ -75,6 +75,22 @@ def score(score_metric, model, X, lengths):
         mean_of_std = std_of_log_curve.mean()
         final_log_mean = gradient_mat.mean(0)[0, -1]
         score = abs(mean_of_std/final_log_mean)
+    elif score_metric == '_score_metric_minus_diff_btw_1st_2ed_emissionprob_':
+       
+        score_of_trials = []
+        for i, j in util.iter_from_X_lengths(X, lengths):
+            framelogprob = util.get_emission_log_prob_matrix(X[i:j], model)
+
+            if framelogprob.shape[1] == 1:
+                print 'hidden state amount = 1, but _score_metric_minus_diff_btw_1st_2ed_emissionprob_ wants hidden state amount > 1, so no score for this turn'
+                return None
+
+            framelogprob.sort(1)
+            diff_btw_1st_2ed_eprob = framelogprob[:, -1]-framelogprob[:, -2]
+            score_of_trials.append(np.sum(diff_btw_1st_2ed_eprob)/(j-i))
+
+        score = -np.array(score_of_trials).mean()
+
     else:
         raise Exception('unknown score metric \'%s\''%(score_metric,))
 
