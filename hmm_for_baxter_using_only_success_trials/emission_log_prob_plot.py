@@ -10,6 +10,7 @@ from math import (
 from matplotlib import pyplot as plt
 import time
 import util
+import math
 
 import ipdb
 
@@ -24,35 +25,39 @@ def plot_log_prob_of_all_trials(
 
     trial_amount = len(list_of_log_prob_mat)
     hidden_state_amount = list_of_log_prob_mat[0].shape[1]
-    fig, ax_list = plt.subplots(nrows=hidden_state_amount)
-    if hidden_state_amount == 1:
-        ax_list = [ax_list]
+
+    subplot_per_row = 5 
+    row_amount = int(math.ceil(float(trial_amount)/subplot_per_row))
+
+    fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row)
+    ax_list = []
+    for i in range(trial_amount):
+        row_no = i/subplot_per_row
+        col_no = i%subplot_per_row
+        ax_list.append(ax_mat[row_no, col_no])
 
     from matplotlib.pyplot import cm 
     import numpy as np
 
-    color=iter(cm.rainbow(np.linspace(0, 1, trial_amount)))
-    for i in range(trial_amount):
-        c=next(color)
-        log_prob_mat = list_of_log_prob_mat[i][:, :].transpose()
+    colors_for_hstate = cm.rainbow(np.linspace(0, 1, hidden_state_amount))
+    for trial_no in range(trial_amount):
+        log_prob_mat = list_of_log_prob_mat[trial_no][:, :].transpose()
+        for hstate_no in range(hidden_state_amount):
+            ax_list[trial_no].plot(log_prob_mat[hstate_no].tolist(), linestyle="solid", color=colors_for_hstate[hstate_no])
 
-        hidden_state_amount = log_prob_mat.shape[0]
-
-        for row_no in range(hidden_state_amount):
-            if i == 0:
-                ax_list[row_no].plot(log_prob_mat[row_no].tolist(), linestyle="solid", color=c)
-                title = 'state %s log prob of emission function for hidden state %s log_prob plot'%(state_no, row_no)
-                ax_list[row_no].set_title(title)
-            else:
-                ax_list[row_no].plot(log_prob_mat[row_no].tolist(), linestyle="solid", color=c)
+        ax_list[trial_no].set_title(log_prob_owner[trial_no])
+        ymax = np.max(log_prob_mat)
+        ax_list[trial_no].set_ylim(ymin=0, ymax=ymax)
+        
 
 
-
+    fig.set_size_inches(4*subplot_per_row,4*row_amount)
 
     if not os.path.isdir(figure_save_path+'/emission_log_prob_plot'):
         os.makedirs(figure_save_path+'/emission_log_prob_plot')
     title = 'state %s emission log_prob plot'%(state_no,)
     fig.savefig(os.path.join(figure_save_path, 'emission_log_prob_plot', title+".eps"), format="eps")
+    fig.savefig(os.path.join(figure_save_path, 'emission_log_prob_plot', title+".png"), format="png")
     plt.close(1)
     
 def run(model_save_path, 
