@@ -146,10 +146,6 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
             anomaly_detected = True
 
         if anomaly_detected:
-            print 'anomaly detected, restart anomaly detection.'
-            self.calculator = log_likelihood_incremental_calculator.interface.get_calculator(self.model_group_by_state[now_skill])
-            self.prev_loglik = None
-
             self.anomaly_point.append([len(self.metric_observation), now_gradient])
 
         self.metric_observation.append(now_gradient)

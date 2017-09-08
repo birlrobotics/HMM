@@ -34,7 +34,7 @@ def plot_log_prob_of_all_trials(
     row_amount = int(math.ceil(float(subplot_amount)/subplot_per_row))
     fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row)
     if row_amount == 1:
-        ax_mat = ax_mat.reshape(1, 5)
+        ax_mat = ax_mat.reshape(1, -1)
 
 
     ax_list = []

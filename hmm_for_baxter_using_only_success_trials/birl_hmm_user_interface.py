@@ -106,6 +106,13 @@ def build_parser():
         default = False,
         help="True if you want to plot_skill_identification_and_anomaly_detection.")
 
+    parser.add_option("--trial_class",
+        action="store", 
+        type="string", 
+        dest="trial_class",
+        default = None,
+    )
+
     return parser
 
 if __name__ == "__main__":
@@ -256,7 +263,12 @@ if __name__ == "__main__":
             trials_group_by_folder_name = trials_group_by_folder_name)
 
     if options.plot_skill_identification_and_anomaly_detection is True:
-        anomaly_trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config, data_class='anomaly')
+
+
+        if options.trial_class is None:
+            raise Exception("options.trial_class is needed for options.plot_skill_identification_and_anomaly_detection")
+        
+        anomaly_trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config, data_class=options.trial_class)
         one_trial_data_group_by_state = anomaly_trials_group_by_folder_name.itervalues().next()
         state_amount = len(one_trial_data_group_by_state)
         import plot_skill_identification_and_anomaly_detection
@@ -267,5 +279,6 @@ if __name__ == "__main__":
             anomaly_detection_metric = training_config.anomaly_detection_metric,
             trials_group_by_folder_name = anomaly_trials_group_by_folder_name,
             state_order_group_by_folder_name = state_order_group_by_folder_name,
+            trial_class=options.trial_class,
         )
 
