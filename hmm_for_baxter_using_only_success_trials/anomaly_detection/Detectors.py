@@ -24,6 +24,7 @@ class BaseDetector(object):
 
         self.metric_observation = []
         self.metric_threshold = []
+        self.anomaly_point = []
 
     def identify_skill(self, sample):
         for state_no in self.loglik_incre_cal_group_by_state:
@@ -39,6 +40,9 @@ class BaseDetector(object):
     def plot_metric_data(self, ax):
         ax.plot(self.metric_observation, color='blue')
         ax.plot(self.metric_threshold, color='red')
+
+        for point in self.anomaly_point:
+            ax.plot(point[0], point[1], marker='o', color='red', linestyle='None')
 
 class DetectorBasedOnLoglikCurve(BaseDetector):
     def __init__(self, model_group_by_state, threshold_curve_group_by_state):
@@ -89,6 +93,8 @@ class DetectorBasedOnLoglikCurve(BaseDetector):
             print 'anomaly detected, restart anomaly detection.'
             self.calculator = log_likelihood_incremental_calculator.interface.get_calculator(self.model_group_by_state[now_skill])
             self.now_skill_t = 0
+
+            self.anomaly_point.append([len(self.metric_observation), now_loglik])
 
         self.metric_observation.append(now_loglik)
         self.metric_threshold.append(now_threshold)
@@ -144,6 +150,8 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
             self.calculator = log_likelihood_incremental_calculator.interface.get_calculator(self.model_group_by_state[now_skill])
             self.prev_loglik = None
 
+            self.anomaly_point.append([len(self.metric_observation), now_gradient])
+
         self.metric_observation.append(now_gradient)
         self.metric_threshold.append(now_threshold)
         return now_skill, anomaly_detected, now_gradient
@@ -151,19 +159,3 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
 
 
 
-
-
-
-        # remain from the other detector
-        if len(data_loglik_curve) < 2:
-            print "data log lik curve too short to extract gradient, can\'t perform anomaly detection."
-            return now_skill, None
-
-        threshold_constant = self.threshold_constant_group_by_state[now_skill]
-        gradient_of_data_loglik_curve = data_loglik_curve[-1]-data_loglik_curve[-2]
-
-        anomaly_detected = False
-        if gradient_of_data_loglik_curve <= threshold_constant:
-            anomaly_detected = True
-
-        return now_skill, anomaly_detected

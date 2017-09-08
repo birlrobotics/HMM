@@ -29,15 +29,10 @@ def run(
         X = np.vstack([trials_group_by_folder_name[trial_name][i] for i in state_order_group_by_folder_name[trial_name]])
 
         skill_seq = []
-        anomaly_time_t = []
         
         for t in range(0, X.shape[0]):
             now_skill, anomaly_detected, log_lik = detector.add_one_smaple_and_identify_skill_and_detect_anomaly(X[t].reshape(1,-1))
             skill_seq.append(now_skill)
-            anomaly_time_t.append(t)
-
-            if anomaly_detected:
-                anomaly_time_t.append(t)
 
         fig = plt.figure()        
         ax = fig.add_subplot(111)
