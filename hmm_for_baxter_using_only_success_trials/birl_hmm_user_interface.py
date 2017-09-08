@@ -29,11 +29,19 @@ def build_parser():
 
 
     parser.add_option(
-        "--train-threshold",
+        "--learn_threshold_for_log_likelihood",
         action="store_true", 
-        dest="train_threshold",
+        dest="learn_threshold_for_log_likelihood",
         default = False,
-        help="True if you want to train log likelihook curve threshold.")
+        help="True if you want to learn_threshold_for_log_likelihood.")
+
+    parser.add_option(
+        "--learn_threshold_for_gradient_of_log_likelihood",
+        action="store_true", 
+        dest="learn_threshold_for_gradient_of_log_likelihood",
+        default = False,
+        help="True if you want to learn_threshold_for_gradient_of_log_likelihood.")
+
 
     parser.add_option(
         "--train-derivative-threshold",
@@ -91,6 +99,13 @@ def build_parser():
         default = False,
         help="True if you want to check_if_viterbi_path_grow_incrementally.")
 
+    parser.add_option(
+        "--plot_skill_identification_and_anomaly_detection",
+        action="store_true", 
+        dest="plot_skill_identification_and_anomaly_detection",
+        default = False,
+        help="True if you want to plot_skill_identification_and_anomaly_detection.")
+
     return parser
 
 if __name__ == "__main__":
@@ -123,12 +138,23 @@ if __name__ == "__main__":
             score_metric = training_config.score_metric,
             trials_group_by_folder_name = anomaly_trials_group_by_folder_name)
 
-    if options.train_threshold is True:
-        print "gonna train threshold."
+    if options.learn_threshold_for_log_likelihood is True:
+        print "gonna learn_threshold_for_log_likelihood."
         trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
 
-        import log_likelihood_training
-        log_likelihood_training.run(
+        import learn_threshold_for_log_likelihood
+        learn_threshold_for_log_likelihood.run(
+            model_save_path = training_config.model_save_path,
+            figure_save_path = training_config.figure_save_path,
+            threshold_c_value = training_config.threshold_c_value,
+            trials_group_by_folder_name = trials_group_by_folder_name)
+
+    if options.learn_threshold_for_gradient_of_log_likelihood is True:
+        print "gonna learn_threshold_for_gradient_of_log_likelihood."
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+
+        import learn_threshold_for_gradient_of_log_likelihood
+        learn_threshold_for_gradient_of_log_likelihood.run(
             model_save_path = training_config.model_save_path,
             figure_save_path = training_config.figure_save_path,
             threshold_c_value = training_config.threshold_c_value,
@@ -228,3 +254,18 @@ if __name__ == "__main__":
             figure_save_path = training_config.figure_save_path,
             threshold_c_value = training_config.threshold_c_value,
             trials_group_by_folder_name = trials_group_by_folder_name)
+
+    if options.plot_skill_identification_and_anomaly_detection is True:
+        anomaly_trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config, data_class='anomaly')
+        one_trial_data_group_by_state = anomaly_trials_group_by_folder_name.itervalues().next()
+        state_amount = len(one_trial_data_group_by_state)
+        import plot_skill_identification_and_anomaly_detection
+        plot_skill_identification_and_anomaly_detection.run(
+            model_save_path = training_config.model_save_path, 
+            figure_save_path = training_config.figure_save_path,
+            state_amount = state_amount,
+            anomaly_detection_metric = training_config.anomaly_detection_metric,
+            trials_group_by_folder_name = anomaly_trials_group_by_folder_name,
+            state_order_group_by_folder_name = state_order_group_by_folder_name,
+        )
+

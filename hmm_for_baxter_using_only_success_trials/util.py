@@ -283,3 +283,4 @@ def fast_growing_viterbi_paths_cal(X, model):
         return list_of_growing_viterbi_paths, n_samples, n_components
     else:
         raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))
+

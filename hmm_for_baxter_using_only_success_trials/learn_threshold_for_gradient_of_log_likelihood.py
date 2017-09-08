@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 import os
-import pandas as pd
 import numpy as np
 from sklearn.externals import joblib
-from math import (
-    log,
-    exp
-)
 from matplotlib import pyplot as plt
 import time
 import util
@@ -14,44 +9,43 @@ import util
 
 
 def assess_threshold_and_decide(
-    np_matrix_traj_by_time, 
+    gradient_traj_by_time, 
     curve_owner, 
     state_no, 
     figure_save_path, 
-    score_time_cost_per_point):
+):
 
     fig = plt.figure(1)
     ax = fig.add_subplot(111)
 
-    trial_amount = np_matrix_traj_by_time.shape[0]
-
-    from matplotlib.pyplot import cm 
-    color=iter(cm.rainbow(np.linspace(0, 1, trial_amount)))
-
-    for row_no in range(np_matrix_traj_by_time.shape[0]):
-        c=next(color)
+    # plot log curves of all trials
+    for row_no in range(gradient_traj_by_time.shape[0]):
         trial_name = curve_owner[row_no]
-        gradient = np_matrix_traj_by_time[row_no][0, 1:]-np_matrix_traj_by_time[row_no][0, :-1]
-        ax.plot(gradient.tolist()[0], color=c)
+        if row_no == 0:
+            ax.plot(gradient_traj_by_time[row_no].tolist()[0], linestyle="dashed", color='gray', label='trials')
+        else:
+            ax.plot(gradient_traj_by_time[row_no].tolist()[0], linestyle="dashed", color='gray')
 
+    min_gradient = gradient_traj_by_time.min()
+    max_gradient = gradient_traj_by_time.max()
+    gradient_range = max_gradient-min_gradient
 
+    threshold = min_gradient-gradient_range/2
 
-    title = 'state %s trial likelihood gradient plot'%(state_no,)
+    title = 'state %s use threshold %s'%(state_no, threshold, )
     ax.set_title(title)
 
+    output_dir = os.path.join(figure_save_path, 'threshold_for_gradient_of_log_likelihood')
 
-    if not os.path.isdir(figure_save_path+'/trial_log_likelihood_gradient_plot'):
-        os.makedirs(figure_save_path+'/trial_log_likelihood_gradient_plot')
-    fig.savefig(os.path.join(figure_save_path, 'trial_log_likelihood_gradient_plot', title+".eps"), format="eps")
-    fig.savefig(os.path.join(figure_save_path, 'trial_log_likelihood_gradient_plot', title+".png"), format="png")
-
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+    ax.axhline(y=threshold, linestyle='solid', color='red')
+    fig.savefig(os.path.join(output_dir, "state %s.eps"%(state_no, )), format="eps")
+    fig.savefig(os.path.join(output_dir, "state %s.png"%(state_no, )), format="png")
 
     plt.close(1)
-
         
-
-            
-        
+    return threshold
         
     
 def run(model_save_path, 
@@ -66,9 +60,6 @@ def run(model_save_path,
     one_trial_data_group_by_state = trials_group_by_folder_name.itervalues().next()
     state_amount = len(one_trial_data_group_by_state)
 
-    threshold_constant = 10
-    threshold_offset = 10
-
     model_group_by_state = {}
     for state_no in range(1, state_amount+1):
         try:
@@ -77,9 +68,9 @@ def run(model_save_path,
             print 'model of state %s not found'%(state_no,)
             continue
 
+    threshold_group_by_state = {}
+
     for state_no in model_group_by_state:
-        compute_score_time_cost = 0
-        total_step_times = 0
 
 
         all_log_curves_of_this_state = []
@@ -88,26 +79,27 @@ def run(model_save_path,
             curve_owner.append(trial_name)
             one_log_curve_of_this_state = [] 
 
-            start_time = time.time()
-            
             one_log_curve_of_this_state = util.fast_log_curve_calculation(
                 trials_group_by_folder_name[trial_name][state_no],
                 model_group_by_state[state_no]
             )
-
-            compute_score_time_cost += time.time()-start_time
-            total_step_times += len(trials_group_by_folder_name[trial_name][state_no])
 
             all_log_curves_of_this_state.append(one_log_curve_of_this_state)
 
         # use np matrix to facilitate the computation of mean curve and std 
         np_matrix_traj_by_time = np.matrix(all_log_curves_of_this_state)
 
-        score_time_cost_per_point = float(compute_score_time_cost)/total_step_times
+        gradient_traj_by_time = np_matrix_traj_by_time[:, 1:]-np_matrix_traj_by_time[:, :-1]
 
-        assess_threshold_and_decide(
-            np_matrix_traj_by_time, 
+        threshold_group_by_state[state_no] = assess_threshold_and_decide(
+            gradient_traj_by_time, 
             curve_owner, 
             state_no, 
             figure_save_path, 
-            score_time_cost_per_point)
+        )
+
+    if not os.path.isdir(model_save_path):
+        os.makedirs(model_save_path)
+   
+    if len(threshold_group_by_state) != 0:
+        joblib.dump(threshold_group_by_state, model_save_path+"/threshold_for_gradient_of_log_likelihood.pkl")

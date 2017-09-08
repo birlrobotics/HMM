@@ -31,49 +31,26 @@ def assess_threshold_and_decide(
 
     # plot mean-c*std log curve
     for c in np.arange(0, 20, 2):
-        ax.plot((mean_of_log_curve-c*std_of_log_curve).tolist()[0], label="mean-%s*std"%(c,), linestyle='solid')
+        ax.plot((mean_of_log_curve-c*std_of_log_curve).tolist()[0], label="mean-%s*std"%(c,), linestyle='dotted')
 
+    c = threshold_c_value
+    title = 'state %s use threshold with c=%s'%(state_no, c, )
+    ax.set_title(title)
 
-    fig.show()
+    output_dir = os.path.join(figure_save_path, 'threshold_for_log_likelihood')
 
-    if threshold_c_value is None:
-        # decide c in an interactive way
-        print "\n\nenter c (default 0.1) to visualize mean-c*std or enter ok to use this c as final threshold:"
-        c = 0.1 # this is default
-        while True:
-            i_str = raw_input()
-            if i_str == 'ok':
-                title = 'state %s use threshold with c=%s (on average use %ss to compute each log likelihood point)'%(state_no, c, score_time_cost_per_point)
-                ax.set_title(title)
-                if not os.path.isdir(figure_save_path+'/threshold_assessment'):
-                    os.makedirs(figure_save_path+'/threshold_assessment')
-                fig.savefig(os.path.join(figure_save_path, 'threshold_assessment', title+".eps"), format="eps")
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+    ax.plot((mean_of_log_curve-c*std_of_log_curve).tolist()[0], label="mean-%s*std"%(c,), linestyle='solid')
+    fig.savefig(os.path.join(output_dir, "state %s threshold_c %s.eps"%(state_no, c)), format="eps")
+    fig.savefig(os.path.join(output_dir, "state %s threshold_c %s.png"%(state_no, c)), format="png")
 
-                plt.close(1)
-                return mean_of_log_curve-c*std_of_log_curve
-            try:
-                c = float(i_str)
-                ax.plot((mean_of_log_curve-c*std_of_log_curve).tolist()[0], label="mean-%s*std"%(c,), linestyle='dotted')
-                fig.show()
-            except ValueError:
-                print 'bad input'
+    plt.close(1)
+
+    if threshold_c_value == 0:
+        return mean_of_log_curve
     else:
-        c = threshold_c_value
-        title = 'state %s use threshold with c=%s (on average use %ss to compute each log likelihood point)'%(state_no, c, score_time_cost_per_point)
-        ax.set_title(title)
-        if not os.path.isdir(figure_save_path+'/threshold_assessment'):
-            os.makedirs(figure_save_path+'/threshold_assessment')
-        fig.savefig(os.path.join(figure_save_path, 'threshold_assessment', title+".eps"), format="eps")
-
-        plt.close(1)
-
-        if threshold_c_value == 0:
-            return mean_of_log_curve
-        else:
-            return mean_of_log_curve-c*std_of_log_curve
-        
-
-            
+        return mean_of_log_curve-c*std_of_log_curve
         
         
     
@@ -97,9 +74,9 @@ def run(model_save_path,
             print 'model of state %s not found'%(state_no,)
             continue
 
-    expected_log = []
-    std_of_log = []
-    threshold = []
+    expected_log = {}
+    std_of_log = {}
+    threshold = {}
 
 
 
@@ -143,13 +120,13 @@ def run(model_save_path,
             state_no, 
             figure_save_path, 
             score_time_cost_per_point)
-        expected_log.append(mean_of_log_curve.tolist()[0])
-        threshold.append(decided_threshold_log_curve.tolist()[0])
-        std_of_log.append(std_of_log_curve.tolist()[0])
+        expected_log[state_no] = mean_of_log_curve.tolist()[0]
+        threshold[state_no] = decided_threshold_log_curve.tolist()[0]
+        std_of_log[state_no] = std_of_log_curve.tolist()[0]
 
     if not os.path.isdir(model_save_path):
         os.makedirs(model_save_path)
         
-    joblib.dump(expected_log, model_save_path+"/expected_log.pkl")
-    joblib.dump(threshold, model_save_path+"/threshold.pkl")
-    joblib.dump(std_of_log, model_save_path+"/std_of_log.pkl")
+    joblib.dump(expected_log, model_save_path+"/mean_of_log_likelihood.pkl")
+    joblib.dump(threshold, model_save_path+"/threshold_for_log_likelihood.pkl")
+    joblib.dump(std_of_log, model_save_path+"/std_of_log_likelihood.pkl")

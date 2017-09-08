@@ -15,6 +15,7 @@ model_type_options = [
     'hmmlearn\'s GMMHMM',
 ]
 from model_config_store import model_store
+
 score_metric_options = [
     '_score_metric_last_time_stdmeanratio_',
     '_score_metric_worst_stdmeanratio_in_10_slice_',
@@ -25,6 +26,15 @@ score_metric_options = [
     '_score_metric_mean_of_std_divied_by_final_log_mean_',
     '_score_metric_mean_of_std_of_gradient_divied_by_final_log_mean_',
     '_score_metric_minus_diff_btw_1st_2ed_emissionprob_',
+    '_score_metric_minus_diff_btw_1st_2ed(>=0)_divide_maxeprob_emissionprob_',
+    '_score_metric_minus_diff_btw_1st_2ed(delete<0)_divide_maxeprob_emissionprob_',
+    '_score_metric_mean_of_(std_of_(max_emissionprob_of_trials))_',
+    '_score_metric_duration_of_(diff_btw_1st_2ed_emissionprob_<_10)_',
+]
+
+anomaly_detection_metric_options = [
+    'loglik<threshold=(mean-c*std)',
+    'gradient<threshold=(min-range/2)',
 ]
 
 base_path_options = [
@@ -40,10 +50,11 @@ config_by_user = {
     # config for types
     'data_type_chosen': data_type_options[2],
     'model_type_chosen': model_type_options[0],
-    'score_metric': score_metric_options[-1],
+    'score_metric': '_score_metric_duration_of_(diff_btw_1st_2ed_emissionprob_<_10)_',
+    'anomaly_detection_metric': anomaly_detection_metric_options[1],
 
     # config for dataset folder
-    'base_path': base_path_options[-2],
+    'base_path': base_path_options[-1],
 
     # config for preprocessing
     'preprocessing_scaling': False,
@@ -54,7 +65,7 @@ config_by_user = {
     'deri_threshold': 200,
 
     # threshold training c value in threshold=mean-c*std
-    'threshold_c_value': 0
+    'threshold_c_value': 5
 }
 
 # auto config generation

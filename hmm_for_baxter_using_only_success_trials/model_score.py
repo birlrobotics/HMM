@@ -91,6 +91,95 @@ def score(score_metric, model, X, lengths):
 
         score = -np.array(score_of_trials).mean()
 
+    elif score_metric == '_score_metric_minus_diff_btw_1st_2ed(>=0)_divide_maxeprob_emissionprob_':
+       
+        score_of_trials = []
+        for i, j in util.iter_from_X_lengths(X, lengths):
+            framelogprob = util.get_emission_log_prob_matrix(X[i:j], model)
+
+            if framelogprob.shape[1] == 1:
+                print 'hidden state amount = 1, but _score_metric_minus_diff_btw_1st_2ed_emissionprob_ wants hidden state amount > 1, so no score for this turn'
+                return None
+
+            framelogprob.sort(1)
+            eprob_2ed = framelogprob[:, -2].clip(min=0)
+            eprob_1st = framelogprob[:, -1].clip(min=0)
+
+            max_eprob = np.max(eprob_1st)
+            if max_eprob == 0:
+                print 'max_eprob = 0, so no score for this turn'
+                return None
+
+            diff_btw_1st_2ed_eprob = eprob_1st-eprob_2ed
+            score_of_trials.append(np.sum(diff_btw_1st_2ed_eprob)/(max_eprob*(j-i)))
+
+        score = -np.array(score_of_trials).mean()
+
+    elif score_metric == '_score_metric_minus_diff_btw_1st_2ed(delete<0)_divide_maxeprob_emissionprob_':
+       
+        score_of_trials = []
+        for i, j in util.iter_from_X_lengths(X, lengths):
+            framelogprob = util.get_emission_log_prob_matrix(X[i:j], model)
+
+            if framelogprob.shape[1] == 1:
+                print 'hidden state amount = 1, but _score_metric_minus_diff_btw_1st_2ed_emissionprob_ wants hidden state amount > 1, so no score for this turn'
+                return None
+
+            framelogprob.sort(1)
+            eprob_2ed = framelogprob[:, -2]
+            eprob_1st = framelogprob[:, -1]
+
+            entry_filter = eprob_2ed > 0
+            eprob_2ed = eprob_2ed[entry_filter]
+            eprob_1st = eprob_1st[entry_filter]
+
+            entry_length = len(eprob_2ed)
+            if entry_length == 0:
+                print 'entry_length = 0, so no score for this turn'
+                return None
+
+            max_eprob = np.max(eprob_1st)
+            if max_eprob == 0:
+                print 'max_eprob = 0, so no score for this turn'
+                return None
+
+            diff_btw_1st_2ed_eprob = eprob_1st-eprob_2ed
+            score_of_trials.append(np.sum(diff_btw_1st_2ed_eprob)/(max_eprob*entry_length))
+
+        score = -np.array(score_of_trials).mean()
+
+    elif score_metric == '_score_metric_mean_of_(std_of_(max_emissionprob_of_trials))_':
+      
+        mat = []  
+        for i, j in util.iter_from_X_lengths(X, lengths):
+            framelogprob = util.get_emission_log_prob_matrix(X[i:j], model)
+
+            if framelogprob.shape[1] == 1:
+                print 'hidden state amount = 1, but _score_metric_minus_diff_btw_1st_2ed_emissionprob_ wants hidden state amount > 1, so no score for this turn'
+                return None
+
+            max_omissionprb = framelogprob.max(1)
+            mat.append(max_omissionprb)
+        mat = np.matrix(mat)
+        std_list = mat.std(0)
+        score = std_list.mean()
+    elif score_metric == '_score_metric_duration_of_(diff_btw_1st_2ed_emissionprob_<_10)_':
+       
+        score_of_trials = []
+        for i, j in util.iter_from_X_lengths(X, lengths):
+            framelogprob = util.get_emission_log_prob_matrix(X[i:j], model)
+
+            if framelogprob.shape[1] == 1:
+                print 'hidden state amount = 1, but _score_metric_minus_diff_btw_1st_2ed_emissionprob_ wants hidden state amount > 1, so no score for this turn'
+                return None
+
+            framelogprob.sort(1)
+            diff_btw_1st_2ed_eprob = framelogprob[:, -1]-framelogprob[:, -2]
+            duration = (diff_btw_1st_2ed_eprob<10).sum()
+            
+            score_of_trials.append(float(duration)/(j-i))
+
+        score = np.array(score_of_trials).mean()
     else:
         raise Exception('unknown score metric \'%s\''%(score_metric,))
 
