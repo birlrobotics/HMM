@@ -51,7 +51,7 @@ config_by_user = {
     'data_type_chosen': data_type_options[2],
     'model_type_chosen': model_type_options[0],
     'score_metric': '_score_metric_duration_of_(diff_btw_1st_2ed_emissionprob_<_10)_',
-    'anomaly_detection_metric': anomaly_detection_metric_options[1],
+    'anomaly_detection_metric': anomaly_detection_metric_options[0],
 
     # config for dataset folder
     'base_path': base_path_options[-1],

@@ -1,6 +1,6 @@
 model_store = {
     'hmmlearn\'s HMM': {
-        'use': 'c1',
+        'use': 'config_that_make_state_1_diverge_for_20170711data',
         'config_set': {
             'default': {
                 'hmm_max_train_iteration': 100,
@@ -31,6 +31,11 @@ model_store = {
                 'hmm_max_train_iteration': 100000,
                 'hmm_hidden_state_amount': 5,
                 'gaussianhmm_covariance_type_string': 'full',
+            },
+            'config_that_make_state_1_diverge_for_20170711data': {
+                'hmm_max_train_iteration': 100000,
+                'hmm_hidden_state_amount': 2,
+                'gaussianhmm_covariance_type_string': 'diag',
             },
         }
     },
