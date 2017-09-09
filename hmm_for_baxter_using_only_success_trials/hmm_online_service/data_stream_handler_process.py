@@ -18,7 +18,7 @@ class TagMultimodalTopicHandler(multiprocessing.Process):
         self.com_queue = com_queue
 
     def callback_multimodal(self, data):
-        data_header = data.endpoint_state.header
+        data_header = data.header
         smach_state = data.tag
 
         one_frame_data = []

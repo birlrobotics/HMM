@@ -57,7 +57,7 @@ def run(
         skill_seq = []
         
         for t in range(0, X.shape[0]):
-            now_skill, anomaly_detected, log_lik = detector.add_one_smaple_and_identify_skill_and_detect_anomaly(X[t].reshape(1,-1))
+            now_skill, anomaly_detected, metric, threshold = detector.add_one_smaple_and_identify_skill_and_detect_anomaly(X[t].reshape(1,-1))
             skill_seq.append(now_skill)
 
         detector.plot_metric_data(ax)

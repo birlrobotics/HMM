@@ -64,7 +64,7 @@ class DetectorBasedOnLoglikCurve(BaseDetector):
             print 'now_skill is None so we can\'t perform anomaly detection.'
             self.metric_observation.append(now_loglik)
             self.metric_threshold.append(now_threshold)
-            return now_skill, None, now_loglik
+            return now_skill, None, now_loglik, now_threshold
     
         if now_skill != prev_skill:
             print "now_skill != prev_skill, gonna switch model and restart anomaly detection."
@@ -82,7 +82,7 @@ class DetectorBasedOnLoglikCurve(BaseDetector):
             print 'input data is longer than threshold curve so we can\'t perform anomaly detection.'
             self.metric_observation.append(now_loglik)
             self.metric_threshold.append(now_threshold)
-            return now_skill, None, now_loglik
+            return now_skill, None, now_loglik, now_threshold
 
         now_threshold = threshold_curve[t]
         anomaly_detected = False
@@ -94,7 +94,7 @@ class DetectorBasedOnLoglikCurve(BaseDetector):
 
         self.metric_observation.append(now_loglik)
         self.metric_threshold.append(now_threshold)
-        return now_skill, anomaly_detected, now_loglik
+        return now_skill, None, now_loglik, now_threshold
 
 class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
     def __init__(self, model_group_by_state, threshold_constant_group_by_state):
@@ -116,7 +116,7 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
             print 'now_skill is None so we can\'t perform anomaly detection.'
             self.metric_observation.append(now_gradient)
             self.metric_threshold.append(now_threshold)
-            return now_skill, None, now_gradient
+            return now_skill, None, now_gradient, now_threshold
     
         if now_skill != prev_skill:
             print "now_skill != prev_skill, gonna switch model and restart anomaly detection."
@@ -133,7 +133,7 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
             print 'we don\' have prev_loglik for now_skill, gonna wait one more run.'
             self.metric_observation.append(now_gradient)
             self.metric_threshold.append(now_threshold)
-            return now_skill, None, now_gradient
+            return now_skill, None, now_gradient, now_threshold
 
         now_gradient = now_loglik-prev_loglik
         now_threshold = threshold_constant
@@ -146,7 +146,7 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
 
         self.metric_observation.append(now_gradient)
         self.metric_threshold.append(now_threshold)
-        return now_skill, anomaly_detected, now_gradient
+        return now_skill, None, now_gradient, now_threshold
         
 
 

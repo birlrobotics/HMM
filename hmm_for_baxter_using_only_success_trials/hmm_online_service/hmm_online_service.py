@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 
 import rospy
-def run(interested_data_fields, model_save_path, state_amount, deri_threshold):
+def run(
+    interested_data_fields, 
+    model_save_path, 
+    state_amount, 
+    anomaly_detection_metric,
+):
     from multiprocessing import Queue
     import data_stream_handler_process
     com_queue_of_receiver = Queue()
@@ -10,12 +15,12 @@ def run(interested_data_fields, model_save_path, state_amount, deri_threshold):
         com_queue_of_receiver,
     )
 
-    import anomaly_detection_process 
+    import state_classification_then_anomaly_detection_process
     com_queue_of_anomaly_detection = Queue()
-    process_anomaly_detection = anomaly_detection_process.AnomalyDetector(
+    process_anomaly_detection = state_classification_then_anomaly_detection_process.IdSkillThenDetectAnomaly(
         model_save_path,
         state_amount,
-        deri_threshold,
+        anomaly_detection_metric,
         com_queue_of_anomaly_detection,    
     )
 
@@ -35,14 +40,3 @@ def run(interested_data_fields, model_save_path, state_amount, deri_threshold):
 
     process_receiver.shutdown()
     process_anomaly_detection.shutdown()
-    '''
-    thread1 = ROSThread(interested_data_fields)  
-    thread2 = HMMThreadForAnomalyDetection(model_save_path, state_amount, deri_threshold)
-    #thread3 = HMMThreadForStateClassification(model_save_path, state_amount)
-    thread1.setDaemon(True)
-    thread2.setDaemon(True)
-    #thread3.setDaemon(True)
-    thread1.start()  
-    thread2.start()
-    #thread3.start()
-    '''
