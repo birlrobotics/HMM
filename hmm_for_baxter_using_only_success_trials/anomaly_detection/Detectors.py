@@ -90,10 +90,6 @@ class DetectorBasedOnLoglikCurve(BaseDetector):
             anomaly_detected = True
 
         if anomaly_detected:
-            print 'anomaly detected, restart anomaly detection.'
-            self.calculator = log_likelihood_incremental_calculator.interface.get_calculator(self.model_group_by_state[now_skill])
-            self.now_skill_t = 0
-
             self.anomaly_point.append([len(self.metric_observation), now_loglik])
 
         self.metric_observation.append(now_loglik)

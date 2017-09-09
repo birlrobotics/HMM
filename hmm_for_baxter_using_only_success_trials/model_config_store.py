@@ -1,6 +1,6 @@
 model_store = {
     'hmmlearn\'s HMM': {
-        'use': 'config_that_make_state_1_diverge_for_20170711data',
+        'use': 'c1_less_iter_less_maxhstate',
         'config_set': {
             'default': {
                 'hmm_max_train_iteration': 100,
