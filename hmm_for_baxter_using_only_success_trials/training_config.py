@@ -44,6 +44,7 @@ base_path_options = [
     '/home/sklaw/Desktop/ex/birl/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170711',
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170908',
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170909(wrench data synced)',
+    '/home/sklaw/Desktop/ex/birl/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170909_calibrated_wrench_data',
 ]
 
 
@@ -86,6 +87,7 @@ model_id     = config_by_user['score_metric']+model_id
 
 success_path = os.path.join(config_by_user['base_path'], "success")
 anomaly_data_path = os.path.join(config_by_user['base_path'], "has_anomaly")
+test_success_data_path = os.path.join(config_by_user['base_path'], "success_for_test")
 model_save_path = os.path.join(config_by_user['base_path'], "model", config_by_user['data_type_chosen'], config_by_user['model_type_chosen'], model_id)
 anomaly_model_save_path = os.path.join(config_by_user['base_path'], "anomaly_model", config_by_user['data_type_chosen'], config_by_user['model_type_chosen'], model_id)
 figure_save_path = os.path.join(config_by_user['base_path'], "figure", config_by_user['data_type_chosen'], config_by_user['model_type_chosen'], model_id)

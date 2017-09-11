@@ -264,22 +264,27 @@ if __name__ == "__main__":
             trials_group_by_folder_name = trials_group_by_folder_name)
 
     if options.plot_skill_identification_and_anomaly_detection is True:
-
-
         if options.trial_class is None:
             raise Exception("options.trial_class is needed for options.plot_skill_identification_and_anomaly_detection")
+
+        data_class = options.trial_class
+        if data_class == 'success':
+            data_path = training_config.success_path
+        elif data_class == 'anomaly':
+            data_path = training_config.anomaly_data_path
+        elif data_class == 'test_success':
+            data_path = training_config.test_success_data_path
+        else:
+            raise Exception("unknown data class %s"%data_class)
+
         
-        anomaly_trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config, data_class=options.trial_class)
-        one_trial_data_group_by_state = anomaly_trials_group_by_folder_name.itervalues().next()
-        state_amount = len(one_trial_data_group_by_state)
         import plot_skill_identification_and_anomaly_detection
         plot_skill_identification_and_anomaly_detection.run(
             model_save_path = training_config.model_save_path, 
             figure_save_path = training_config.figure_save_path,
-            state_amount = state_amount,
             anomaly_detection_metric = training_config.anomaly_detection_metric,
-            trials_group_by_folder_name = anomaly_trials_group_by_folder_name,
-            state_order_group_by_folder_name = state_order_group_by_folder_name,
             trial_class=options.trial_class,
+            data_path=data_path,
+            interested_data_fields = training_config.interested_data_fields,
         )
 

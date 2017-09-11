@@ -172,6 +172,8 @@ def get_trials_group_by_folder_name(training_config, data_class='success'):
         data_path = training_config.success_path
     elif data_class == 'anomaly':
         data_path = training_config.anomaly_data_path
+    elif data_class == 'test_success':
+        data_path = training_config.test_success_data_path
     else:
         raise Exception("unknown data class %s"%data_class)
 

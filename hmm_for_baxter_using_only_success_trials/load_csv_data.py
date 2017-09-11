@@ -19,7 +19,6 @@ def _load_data(path, interested_data_fields, preprocessing_normalize, preprocess
     return one_trial_data_group_by_state, state_order
 
 def run(data_path, interested_data_fields, preprocessing_normalize, preprocessing_scaling, norm_style=""):
-    success_trial_amount = 0
     trials_group_by_folder_name = {}
     state_order_group_by_folder_name = {}
 
@@ -38,7 +37,6 @@ def run(data_path, interested_data_fields, preprocessing_normalize, preprocessin
         else:
             raise Exception("folder %s doesn't have csv file."%(path,))
 
-        success_trial_amount += 1
         one_trial_data_group_by_state, state_order = _load_data(path=csv_file_path,
                                             interested_data_fields = interested_data_fields,
                                             preprocessing_scaling=preprocessing_scaling,
