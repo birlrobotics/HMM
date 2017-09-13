@@ -37,8 +37,12 @@ class BaseDetector(object):
 
         return most_probable_skill
         
-    def plot_metric_data(self, ax):
+    def plot_metric_data(self, ax, plot_metric_observation_only=False):
         ax.plot(self.metric_observation, color='blue')
+    
+        if plot_metric_observation_only:
+            return
+    
         ax.plot(self.metric_threshold, color='red')
 
         for point in self.anomaly_point:
@@ -52,8 +56,9 @@ class DetectorBasedOnLoglikCurve(BaseDetector):
         self.calculator = None
         self.now_skill_t = None
 
-    def add_one_smaple_and_identify_skill_and_detect_anomaly(self, sample):
-        now_skill = BaseDetector.identify_skill(self, sample)
+    def add_one_smaple_and_identify_skill_and_detect_anomaly(self, sample, now_skill=None):
+        if now_skill is None:
+            now_skill = BaseDetector.identify_skill(self, sample)
         prev_skill = self.prev_skill
         self.prev_skill = now_skill
 
@@ -104,8 +109,9 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
         self.prev_loglik = None
         self.calculator = None
 
-    def add_one_smaple_and_identify_skill_and_detect_anomaly(self, sample):
-        now_skill = BaseDetector.identify_skill(self, sample)
+    def add_one_smaple_and_identify_skill_and_detect_anomaly(self, sample, now_skill=None):
+        if now_skill is None:
+            now_skill = BaseDetector.identify_skill(self, sample)
         prev_skill = self.prev_skill
         self.prev_skill = now_skill
 

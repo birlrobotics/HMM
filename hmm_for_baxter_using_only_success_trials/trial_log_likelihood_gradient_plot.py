@@ -8,7 +8,6 @@ from math import (
     exp
 )
 from matplotlib import pyplot as plt
-import time
 import util
 
 
@@ -17,8 +16,9 @@ def assess_threshold_and_decide(
     np_matrix_traj_by_time, 
     curve_owner, 
     state_no, 
-    figure_save_path, 
-    score_time_cost_per_point):
+    output_dir, 
+    data_class,
+):
 
     fig = plt.figure(1)
     ax = fig.add_subplot(111)
@@ -32,18 +32,20 @@ def assess_threshold_and_decide(
         c=next(color)
         trial_name = curve_owner[row_no]
         gradient = np_matrix_traj_by_time[row_no][0, 1:]-np_matrix_traj_by_time[row_no][0, :-1]
-        ax.plot(gradient.tolist()[0], color=c)
+        ax.plot(gradient.tolist()[0], color=c, label='trial \"%s\"'%curve_owner[row_no])
+        
 
 
 
-    title = 'state %s trial likelihood gradient plot'%(state_no,)
+    title = 'trial class \"%s\": graident of log-likelihood output by skill model %s'%(data_class, state_no, )
     ax.set_title(title)
+    ax.set_xlabel('time step')
+    ax.set_ylabel('log probability')
+    ax.legend(loc='best')
 
-
-    if not os.path.isdir(figure_save_path+'/trial_log_likelihood_gradient_plot'):
-        os.makedirs(figure_save_path+'/trial_log_likelihood_gradient_plot')
-    fig.savefig(os.path.join(figure_save_path, 'trial_log_likelihood_gradient_plot', title+".eps"), format="eps")
-    fig.savefig(os.path.join(figure_save_path, 'trial_log_likelihood_gradient_plot', title+".png"), format="png")
+    fig.tight_layout()
+    fig.savefig(os.path.join(output_dir, title+".eps"), format="eps")
+    fig.savefig(os.path.join(output_dir, title+".png"), format="png")
 
 
     plt.close(1)
@@ -57,9 +59,17 @@ def assess_threshold_and_decide(
 def run(model_save_path, 
     figure_save_path,
     threshold_c_value,
-    trials_group_by_folder_name):
+    trials_group_by_folder_name,
+    data_class,
+):
 
-
+    output_dir = os.path.join(
+        figure_save_path,
+        "gradient_of_log_likelihood_plot",
+        data_class,
+    )
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
         
     trials_group_by_folder_name = util.make_trials_of_each_state_the_same_length(trials_group_by_folder_name)
 
@@ -78,8 +88,6 @@ def run(model_save_path,
             continue
 
     for state_no in model_group_by_state:
-        compute_score_time_cost = 0
-        total_step_times = 0
 
 
         all_log_curves_of_this_state = []
@@ -88,26 +96,22 @@ def run(model_save_path,
             curve_owner.append(trial_name)
             one_log_curve_of_this_state = [] 
 
-            start_time = time.time()
-            
             one_log_curve_of_this_state = util.fast_log_curve_calculation(
                 trials_group_by_folder_name[trial_name][state_no],
                 model_group_by_state[state_no]
             )
 
-            compute_score_time_cost += time.time()-start_time
-            total_step_times += len(trials_group_by_folder_name[trial_name][state_no])
 
             all_log_curves_of_this_state.append(one_log_curve_of_this_state)
 
         # use np matrix to facilitate the computation of mean curve and std 
         np_matrix_traj_by_time = np.matrix(all_log_curves_of_this_state)
 
-        score_time_cost_per_point = float(compute_score_time_cost)/total_step_times
 
         assess_threshold_and_decide(
             np_matrix_traj_by_time, 
             curve_owner, 
             state_no, 
-            figure_save_path, 
-            score_time_cost_per_point)
+            output_dir, 
+            data_class,
+        )

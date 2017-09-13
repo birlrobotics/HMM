@@ -218,15 +218,23 @@ if __name__ == "__main__":
 
 
     if options.trial_log_likelihood_gradient_plot is True:
+
+        if options.trial_class is None:
+            raise Exception("options.trial_class is needed for options.trial_log_likelihood_gradient_plot")
+
+        data_class = options.trial_class
+
         print "gonna do trial_log_likelihood_gradient_plot."
-        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config, data_class=data_class)
 
         import trial_log_likelihood_gradient_plot 
         trial_log_likelihood_gradient_plot.run(
             model_save_path = training_config.model_save_path,
             figure_save_path = training_config.figure_save_path,
             threshold_c_value = training_config.threshold_c_value,
-            trials_group_by_folder_name = trials_group_by_folder_name)
+            trials_group_by_folder_name = trials_group_by_folder_name,
+            data_class=data_class,
+        )
 
     if options.check_if_score_metric_converge_loglik_curves is True:
         print "gonna check_if_score_metric_converge_loglik_curves."
