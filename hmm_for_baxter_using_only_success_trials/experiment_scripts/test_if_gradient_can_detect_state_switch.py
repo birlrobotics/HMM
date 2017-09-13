@@ -9,9 +9,10 @@ import math
 
 def color_bg_by_state(state_order, state_color, state_start_idx, ax, ymin=0.0, ymax=1.0):
     for idx in range(len(state_start_idx)-1):
+        color = util.rgba_to_rgb_using_white_bg(state_color[state_order[idx]][:3], 0.25)
         start_at = state_start_idx[idx]
         end_at = state_start_idx[idx+1]
-        ax.axvspan(start_at, end_at, facecolor=state_color[state_order[idx]], alpha=0.25, ymax=ymax, ymin=ymin)
+        ax.axvspan(start_at, end_at, facecolor=color, ymax=ymax, ymin=ymin)
 
 def run(model_save_path, 
     figure_save_path,
@@ -46,12 +47,14 @@ def run(model_save_path,
 
     trial_amount = len(trials_group_by_folder_name)
     subpolt_amount_for_each_trial = 2
-    subplot_per_row = 2
+    subplot_per_row = 1
     subplot_amount = trial_amount*subpolt_amount_for_each_trial
     row_amount = int(math.ceil(float(subplot_amount)/subplot_per_row))
     fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row)
     if row_amount == 1:
         ax_mat = ax_mat.reshape(1, -1)
+    if subplot_per_row == 1:
+        ax_mat = ax_mat.reshape(-1, 1)
 
     ax_list = []
     for i in range(trial_amount):
@@ -84,6 +87,11 @@ def run(model_save_path,
         ax_loglik_gradient = ax_list[plot_idx+1]
 
 
+        color_bg_by_state(state_order, state_color, state_start_idx, ax_loglik)
+        
+        color_bg_by_state(state_order, state_color, state_start_idx, ax_loglik_gradient)
+
+
         log_lik_mat = []
         log_lik_gradient_mat = []
         mat_row_color = []
@@ -110,15 +118,13 @@ def run(model_save_path,
             ax_loglik_gradient.plot(log_lik_gradient_mat[row_no].tolist()[0], label=mat_row_name[row_no], color=mat_row_color[row_no])
 
 
-        color_bg_by_state(state_order, state_color, state_start_idx, ax_loglik)
-        
-        color_bg_by_state(state_order, state_color, state_start_idx, ax_loglik_gradient)
 
-        title = "log-likelihood of 5 HMM models"
+
+        title = "log-likelihood of %s HMM models"%state_amount
         ax_loglik.set_title(title)
         ax_loglik.set_ylabel('log probability')
         ax_loglik.set_xlabel('time step')
-        title = "gradient of log-likelihood of 5 HMM models"
+        title = "gradient of log-likelihood of %s HMM models"%state_amount
         ax_loglik_gradient.set_title(title)
         ax_loglik_gradient.set_ylabel('log probability')
         ax_loglik_gradient.set_xlabel('time step')
@@ -126,7 +132,7 @@ def run(model_save_path,
         title = "trial %s"%(trial_name,)
 
 
-    fig.set_size_inches(6*subplot_per_row,3*row_amount)
+    fig.set_size_inches(8*subplot_per_row,2*row_amount)
     fig.tight_layout()
     fig.savefig(os.path.join(output_dir, "test_if_gradient_can_detect_state_switch.png"), format="png")
     fig.savefig(os.path.join(output_dir, "test_if_gradient_can_detect_state_switch.eps"), format="eps")

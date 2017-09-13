@@ -68,7 +68,7 @@ def plot_log_prob_of_all_trials(
 
         trial_name = log_prob_owner[trial_no]
 
-        ax_list[plot_idx].set_title('emission probabilities')
+        ax_list[plot_idx].set_title('emission probabilities of %s hidden states'%hidden_state_amount)
         ax_list[plot_idx].set_xlabel('time step')
         ax_list[plot_idx].set_ylabel('log probability')
         ymax = np.max(log_prob_mat)
@@ -101,7 +101,7 @@ def plot_log_prob_of_all_trials(
         ymax = np.max(log_prob_mat)
         
 
-    fig.set_size_inches(4*subplot_per_row,4*row_amount)
+    fig.set_size_inches(4*subplot_per_row, 4*row_amount)
 
     if not os.path.isdir(figure_save_path+'/emission_log_prob_plot'):
         os.makedirs(figure_save_path+'/emission_log_prob_plot')

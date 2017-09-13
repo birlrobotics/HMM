@@ -6,6 +6,7 @@ import os
 import math
 import anomaly_detection.interface
 import pandas as pd
+import util
 
 def load_data(
     data_path, 
@@ -130,14 +131,17 @@ def run(
                 continue
             skill = skill_seq[t-1]
             end_t = t
-            ax.axvspan(start_t, end_t, facecolor=state_color[skill], alpha=0.25, ymax=0.5, ymin=0)
+
+            color = util.rgba_to_rgb_using_white_bg(state_color[skill], 0.25)
+            ax.axvspan(start_t, end_t, facecolor=color, ymax=0.5, ymin=0)
             start_t = t
                 
         for state_no in state_idx_range_by_folder_name[trial_name]:
             state_range = state_idx_range_by_folder_name[trial_name][state_no]
             start_t = state_range[0]
             end_t = state_range[1]
-            ax.axvspan(start_t, end_t, facecolor=state_color[state_no], alpha=0.5, ymax=1, ymin=0.5)
+            color = util.rgba_to_rgb_using_white_bg(state_color[state_no], 0.5)
+            ax.axvspan(start_t, end_t, facecolor=color, ymax=1, ymin=0.5)
 
         for anomaly_start_idx in anomaly_start_idx_group_by_folder_name[trial_name]:
             ax.axvline(x=anomaly_start_idx, color='yellow')

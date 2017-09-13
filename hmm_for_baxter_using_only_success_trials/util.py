@@ -288,3 +288,7 @@ def fast_growing_viterbi_paths_cal(X, model):
     else:
         raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))
 
+
+def rgba_to_rgb_using_white_bg(rgb_array, alpha):
+    return [i*alpha+(1-alpha) for i in rgb_array]
+    
