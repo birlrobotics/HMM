@@ -65,13 +65,13 @@ def load_data(
 
     return trials_group_by_folder_name, state_idx_range_by_folder_name, anomaly_start_idx_group_by_folder_name
 
-
 def color_bg(
     state_amount, 
     skill_seq, 
     ax, 
     state_idx_range_group_by_state,
     list_of_anomaly_start_idx,
+    pred_start_idx_group_by_state = None,
     color_identified_skills = True,
 ):
     state_color = {}
@@ -87,9 +87,15 @@ def color_bg(
             skill = skill_seq[t-1]
             end_t = t
 
-            color = util.rgba_to_rgb_using_white_bg(state_color[skill], 0.5)
+            color = util.rgba_to_rgb_using_white_bg(state_color[skill], 1)
             ax.axvspan(start_t, end_t, facecolor=color, ymax=0.5, ymin=0, lw=0)
             start_t = t
+
+    if pred_start_idx_group_by_state is not None:
+        for state_no in pred_start_idx_group_by_state:
+            start_idx = pred_start_idx_group_by_state[state_no]
+            ax.axvline(x=start_idx, color='black', ymax=0.5, ls='dashed')
+            
             
     if color_identified_skills:
         ymin = 0.5
@@ -101,11 +107,38 @@ def color_bg(
         end_t = state_range[1]
         color = util.rgba_to_rgb_using_white_bg(state_color[state_no], 1)
         ax.axvspan(start_t, end_t, facecolor=color, ymax=1, ymin=ymin, lw=0)
+        ax.axvline(x=start_t, color='black', ymax=1, ymin=0.5, ls='dashed')
+
+    ax.axhline(y=0.5, color='black', lw=1)
 
     for anomaly_start_idx in list_of_anomaly_start_idx:
         ax.axvline(x=anomaly_start_idx, color='yellow')
 
 
+def get_pred_skill_start_idx(skill_seq, the_way_to_mark_skill_begins):
+    if the_way_to_mark_skill_begins == 'first_occurrence':
+        start_idx_group_by_state = {}
+        for idx in range(len(skill_seq)):
+            now_skill = skill_seq[idx]
+            if now_skill not in start_idx_group_by_state:
+                start_idx_group_by_state[now_skill] = idx
+        return start_idx_group_by_state
+    elif the_way_to_mark_skill_begins == 'first_10_successive_occurrence':
+        start_idx_group_by_state = {}
+        count_dict = {}
+        for idx in range(len(skill_seq)):
+            now_skill = skill_seq[idx]
+            if now_skill not in start_idx_group_by_state:
+                if now_skill not in count_dict:
+                    count_dict = {}
+                    count_dict[now_skill] = 1
+                else:
+                    count_dict[now_skill] += 1 
+
+                if count_dict[now_skill] == 10:
+                    start_idx_group_by_state[now_skill] = idx-9
+                    count_dict = {}
+        return start_idx_group_by_state
 
 
 def run(
@@ -130,7 +163,7 @@ def run(
         os.makedirs(output_dir)
 
     trial_amount = len(trials_group_by_folder_name)
-    subpolt_amount_for_each_trial = 1
+    subpolt_amount_for_each_trial = 2 
     subplot_per_row = 1
     subplot_amount = trial_amount*subpolt_amount_for_each_trial
     row_amount = int(math.ceil(float(subplot_amount)/subplot_per_row))
@@ -155,11 +188,17 @@ def run(
     for trial_name in trials_group_by_folder_name:
         trial_count += 1
 
-        plot_idx = trial_count*1
-        ax_using_skill_id_service = ax_list[plot_idx]
-        ax_using_skill_id_service.set_title("true skills (upper half)\ncompared with\npredicted skills (lower half with light colors)") 
-        ax_using_skill_id_service.set_yticklabels([])
-        ax_using_skill_id_service.set_xlabel("time step")
+        plot_idx = trial_count*2
+        ax_mark_skill_begin_by_first_occurrence = ax_list[plot_idx]
+        ax_mark_skill_begin_by_first_occurrence.set_title("mark first occurrence as skill beginning") 
+        ax_mark_skill_begin_by_first_occurrence.set_yticklabels([])
+        ax_mark_skill_begin_by_first_occurrence.set_xlabel("time step")
+
+        plot_idx = trial_count*2+1
+        ax_mark_skill_begin_by_first_10_successive_occurrence = ax_list[plot_idx]
+        ax_mark_skill_begin_by_first_10_successive_occurrence.set_title("mark first 10 successive occurrences as skill beginning") 
+        ax_mark_skill_begin_by_first_10_successive_occurrence.set_yticklabels([])
+        ax_mark_skill_begin_by_first_10_successive_occurrence.set_xlabel("time step")
 
         # use skill id service
         detector_using_skill_id_service = anomaly_detection.interface.get_anomaly_detector(
@@ -175,12 +214,27 @@ def run(
             now_skill, anomaly_detected, metric, threshold = detector_using_skill_id_service.add_one_smaple_and_identify_skill_and_detect_anomaly(X[t].reshape(1,-1))
             skill_seq.append(now_skill)
 
+        pred_start_idx_group_by_state = get_pred_skill_start_idx(skill_seq, the_way_to_mark_skill_begins= 'first_occurrence')
+
         color_bg(
             state_amount, 
             skill_seq, 
-            ax_using_skill_id_service, 
+            ax_mark_skill_begin_by_first_occurrence, 
             state_idx_range_by_folder_name[trial_name],
             anomaly_start_idx_group_by_folder_name[trial_name],
+            pred_start_idx_group_by_state = pred_start_idx_group_by_state,
+        )
+
+
+        pred_start_idx_group_by_state = get_pred_skill_start_idx(skill_seq, the_way_to_mark_skill_begins= 'first_10_successive_occurrence')
+
+        color_bg(
+            state_amount, 
+            skill_seq, 
+            ax_mark_skill_begin_by_first_10_successive_occurrence, 
+            state_idx_range_by_folder_name[trial_name],
+            anomaly_start_idx_group_by_folder_name[trial_name],
+            pred_start_idx_group_by_state = pred_start_idx_group_by_state,
         )
 
 
