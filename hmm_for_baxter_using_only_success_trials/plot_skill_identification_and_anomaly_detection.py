@@ -115,6 +115,10 @@ def color_bg(
         ax.axvline(x=anomaly_start_idx, color='yellow')
 
 
+    ax.text(-250, 0.75, 'True', rotation=90)
+    ax.text(-250, 0.35, 'Estimated', rotation=90)
+
+
 def get_pred_skill_start_idx(skill_seq, the_way_to_mark_skill_begins):
     if the_way_to_mark_skill_begins == 'first_occurrence':
         start_idx_group_by_state = {}
