@@ -102,8 +102,10 @@ def color_bg(
         color = util.rgba_to_rgb_using_white_bg(state_color[state_no], 0.5)
         ax.axvspan(start_t, end_t, facecolor=color, ymax=1, ymin=ymin)
 
+    ymin,ymax = ax.get_ylim()
     for anomaly_start_idx in list_of_anomaly_start_idx:
-        ax.axvline(x=anomaly_start_idx, color='yellow')
+        ax.axvline(x=anomaly_start_idx, color='red')
+        ax.text(anomaly_start_idx-100, ymax-0.17*(ymax-ymin), 'anomaly about to happen', rotation=90)
 
 
 
@@ -124,20 +126,21 @@ def run(
     output_dir = os.path.join(
         figure_save_path,
         "anomaly_detection_assessment",
-        trial_class,
     )
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
     trial_amount = len(trials_group_by_folder_name)
-    subpolt_amount_for_each_trial = 2
-    subplot_per_row = 2 
+    subpolt_amount_for_each_trial = 1
+    subplot_per_row = 1
     subplot_amount = trial_amount*subpolt_amount_for_each_trial
     row_amount = int(math.ceil(float(subplot_amount)/subplot_per_row))
     fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row)
-    if row_amount == 1:
+    if row_amount == 1 and subplot_per_row == 1:
+        ax_mat = np.array([ax_mat]).reshape(1, 1)
+    elif row_amount == 1:
         ax_mat = ax_mat.reshape(1, -1)
-    if subplot_per_row == 1:
+    elif subplot_per_row == 1:
         ax_mat = ax_mat.reshape(-1, 1)
 
     ax_list = []
@@ -153,14 +156,10 @@ def run(
     for trial_name in trials_group_by_folder_name:
         trial_count += 1
 
+        '''
         plot_idx = trial_count*2
         ax_using_skill_id_service = ax_list[plot_idx]
         ax_using_skill_id_service.set_title("anomaly detection for trial \"%s\" using skill identification serviece"%trial_name)
-        plot_idx = trial_count*2+1
-        ax_using_given_skill = ax_list[plot_idx]
-        ax_using_given_skill.set_title("anomaly detection for trial \"%s\" using given skill"%trial_name)
-
-
         # use skill id service
         detector_using_skill_id_service = anomaly_detection.interface.get_anomaly_detector(
             model_save_path, 
@@ -184,8 +183,14 @@ def run(
             state_idx_range_by_folder_name[trial_name],
             anomaly_start_idx_group_by_folder_name[trial_name],
         )
+        '''
 
         # use given skill
+        plot_idx = trial_count
+        ax_using_given_skill = ax_list[plot_idx]
+        ax_using_given_skill.set_title("trial class \"%s\"\ngradient of log-likelihood over a robot task\nconsisting of 5 skills modeled by 5 HMMs"%trial_class)
+        ax_using_given_skill.set_ylabel("log probability")
+        ax_using_given_skill.set_xlabel("time step")
         detector_using_given_skill = anomaly_detection.interface.get_anomaly_detector(
             model_save_path, 
             state_amount,
@@ -217,12 +222,10 @@ def run(
             color_identified_skills = False,
         )
 
-        title = '%s detection metric %s'%(output_dir, anomaly_detection_metric)
-        filename = "anoamly_detection_metric_%s"%(anomaly_detection_metric, )
-        safe_filename = filename.replace("/","_divide_")
-
-
-    fig.set_size_inches(8*subplot_per_row,8*row_amount)
+    filename = "trial_class_%s_anoamly_detection_metric_%s"%(trial_class, anomaly_detection_metric, )
+    safe_filename = filename.replace("/","_divide_")
+    fig.set_size_inches(8*subplot_per_row, 4*row_amount)
+    fig.tight_layout()
     fig.savefig(os.path.join(output_dir, safe_filename+'.eps'), format="eps")
     fig.savefig(os.path.join(output_dir, safe_filename+'.png'), format="png")
 
