@@ -105,7 +105,7 @@ def color_bg(
     ymin,ymax = ax.get_ylim()
     for anomaly_start_idx in list_of_anomaly_start_idx:
         ax.axvline(x=anomaly_start_idx, color='red')
-        ax.text(anomaly_start_idx-100, ymax-0.17*(ymax-ymin), 'anomaly about to happen', rotation=90)
+        ax.text(anomaly_start_idx-100, ymax-0.17*(ymax-ymin), 'anomaly before occurrence', rotation=90)
 
 
 
