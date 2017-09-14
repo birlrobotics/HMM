@@ -261,7 +261,8 @@ def run(
     filename = "skill_identifacation_cmat"
     safe_filename = filename.replace("/","_divide_")
     fig.colorbar(cax, shrink=0.5)
-    fig.set_size_inches(8, 8)
+    fig.set_size_inches(8, 4)
+    fig.tight_layout()
     fig.savefig(os.path.join(output_dir, safe_filename+'.eps'), format="eps")
     fig.savefig(os.path.join(output_dir, safe_filename+'.png'), format="png")
 
