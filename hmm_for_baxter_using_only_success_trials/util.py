@@ -1,5 +1,6 @@
 import numpy as np
 import ipdb
+from matplotlib.pyplot import cm 
 
 def convert_camel_to_underscore(name):
     import re
@@ -292,3 +293,40 @@ def fast_growing_viterbi_paths_cal(X, model):
 def rgba_to_rgb_using_white_bg(rgb_array, alpha):
     return [i*alpha+(1-alpha) for i in rgb_array]
     
+def plot_confusion_matrix(
+    cm, 
+    classes,
+    ax,
+    normalize=False,
+    cmap=cm.Blues,
+):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+
+    cax = ax.imshow(cm, interpolation='nearest', cmap=cmap)
+    tick_marks = np.arange(len(classes))
+    ax.set_xticks(tick_marks)
+    ax.set_yticks(tick_marks)
+    ax.set_xticklabels(classes)
+    ax.set_yticklabels(classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+
+    import itertools
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        ax.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    ax.set_ylabel('True label')
+    ax.set_xlabel('Predicted label')
+    
+    return cax

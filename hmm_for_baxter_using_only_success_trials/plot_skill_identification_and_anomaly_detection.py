@@ -130,8 +130,8 @@ def run(
         os.makedirs(output_dir)
 
     trial_amount = len(trials_group_by_folder_name)
-    subpolt_amount_for_each_trial = 2
-    subplot_per_row = 2 
+    subpolt_amount_for_each_trial = 3 
+    subplot_per_row = 3 
     subplot_amount = trial_amount*subpolt_amount_for_each_trial
     row_amount = int(math.ceil(float(subplot_amount)/subplot_per_row))
     fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row)
@@ -149,32 +149,55 @@ def run(
             col_no = j%subplot_per_row
             ax_list.append(ax_mat[row_no, col_no])
 
+    cmat_sum = None
+
     trial_count = -1
     for trial_name in trials_group_by_folder_name:
         trial_count += 1
+        print trial_name
 
-        plot_idx = trial_count*2
+        plot_idx = trial_count*3
         ax_using_skill_id_service = ax_list[plot_idx]
         ax_using_skill_id_service.set_title("anomaly detection for trial \"%s\" using skill identification serviece"%trial_name)
-        plot_idx = trial_count*2+1
-        ax_using_given_skill = ax_list[plot_idx]
-        ax_using_given_skill.set_title("anomaly detection for trial \"%s\" using given skill"%trial_name)
-
-
         # use skill id service
         detector_using_skill_id_service = anomaly_detection.interface.get_anomaly_detector(
             model_save_path, 
             state_amount,
             anomaly_detection_metric,
         )
-
-        print trial_name
         X = trials_group_by_folder_name[trial_name]
         skill_seq = []
         for t in range(0, X.shape[0]):
             now_skill, anomaly_detected, metric, threshold = detector_using_skill_id_service.add_one_smaple_and_identify_skill_and_detect_anomaly(X[t].reshape(1,-1))
             skill_seq.append(now_skill)
 
+        
+        y_true = np.zeros(X.shape[0])
+        for state_no in state_idx_range_by_folder_name[trial_name]:
+            state_range = state_idx_range_by_folder_name[trial_name][state_no]
+            start_idx = state_range[0]
+            end_idx = state_range[1]
+            y_true[start_idx: end_idx+1] = state_no
+
+        if 0 in y_true:
+            raise Exception("0 in y_true")
+
+        y_pred = skill_seq
+    
+        from sklearn.metrics import confusion_matrix
+
+        cmat = confusion_matrix(y_true=y_true, y_pred=y_pred)
+        if cmat_sum is None:
+            cmat_sum = cmat
+        else:
+            cmat_sum += cmat
+
+
+        plot_idx = trial_count*3+1
+        ax_for_cm_plot = ax_list[plot_idx]
+        util.plot_confusion_matrix(cmat, ['skill %s'%i for i in range(1, state_amount+1)], normalize=True, ax=ax_for_cm_plot)
+
+        '''
         detector_using_skill_id_service.plot_metric_data(ax_using_skill_id_service, plot_metric_observation_only=True)
 
         color_bg(
@@ -184,7 +207,12 @@ def run(
             state_idx_range_by_folder_name[trial_name],
             anomaly_start_idx_group_by_folder_name[trial_name],
         )
+        '''
 
+        '''
+        plot_idx = trial_count*2+1
+        ax_using_given_skill = ax_list[plot_idx]
+        ax_using_given_skill.set_title("anomaly detection for trial \"%s\" using given skill"%trial_name)
         # use given skill
         detector_using_given_skill = anomaly_detection.interface.get_anomaly_detector(
             model_save_path, 
@@ -216,18 +244,24 @@ def run(
             anomaly_start_idx_group_by_folder_name[trial_name],
             color_identified_skills = False,
         )
+        '''
 
-        title = '%s detection metric %s'%(output_dir, anomaly_detection_metric)
-        filename = "anoamly_detection_metric_%s"%(anomaly_detection_metric, )
-        safe_filename = filename.replace("/","_divide_")
-
-
+    filename = "anoamly_detection_metric_%s"%(anomaly_detection_metric, )
+    safe_filename = filename.replace("/","_divide_")
     fig.set_size_inches(8*subplot_per_row,8*row_amount)
     fig.savefig(os.path.join(output_dir, safe_filename+'.eps'), format="eps")
     fig.savefig(os.path.join(output_dir, safe_filename+'.png'), format="png")
 
+    fig, ax = plt.subplots(nrows=1, ncols=1)
+    print 'cmat_sum'
+    print cmat_sum
+    cax = util.plot_confusion_matrix(cmat_sum, ['skill %s'%i for i in range(1, state_amount+1)], normalize=True, ax=ax)
 
-
-
-
+    ax.set_title("confusion matrix of skill identification")
+    filename = "skill_identifacation_cmat"
+    safe_filename = filename.replace("/","_divide_")
+    fig.colorbar(cax, shrink=0.5)
+    fig.set_size_inches(8, 8)
+    fig.savefig(os.path.join(output_dir, safe_filename+'.eps'), format="eps")
+    fig.savefig(os.path.join(output_dir, safe_filename+'.png'), format="png")
 
