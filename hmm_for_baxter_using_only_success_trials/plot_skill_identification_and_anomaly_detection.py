@@ -218,28 +218,25 @@ def run(
             now_skill, anomaly_detected, metric, threshold = detector_using_skill_id_service.add_one_smaple_and_identify_skill_and_detect_anomaly(X[t].reshape(1,-1))
             skill_seq.append(now_skill)
 
+        print 'first_occurrence'
         pred_start_idx_group_by_state = get_pred_skill_start_idx(skill_seq, the_way_to_mark_skill_begins= 'first_occurrence')
+        for state_no in state_idx_range_by_folder_name[trial_name]:
+            state_range = state_idx_range_by_folder_name[trial_name][state_no]
+            length = state_range[1]-state_range[0]+1
+            pred_start_idx = pred_start_idx_group_by_state[state_no]
+            offset = pred_start_idx-state_range[0]
+            print 'state_no', state_no, 'pred_percentage', float(offset)/length
 
-        color_bg(
-            state_amount, 
-            skill_seq, 
-            ax_mark_skill_begin_by_first_occurrence, 
-            state_idx_range_by_folder_name[trial_name],
-            anomaly_start_idx_group_by_folder_name[trial_name],
-            pred_start_idx_group_by_state = pred_start_idx_group_by_state,
-        )
-
-
+        print 'first_10_successive_occurrence'
         pred_start_idx_group_by_state = get_pred_skill_start_idx(skill_seq, the_way_to_mark_skill_begins= 'first_10_successive_occurrence')
+        for state_no in state_idx_range_by_folder_name[trial_name]:
+            state_range = state_idx_range_by_folder_name[trial_name][state_no]
+            length = state_range[1]-state_range[0]+1
+            pred_start_idx = pred_start_idx_group_by_state[state_no]
+            offset = pred_start_idx-state_range[0]
+            print 'state_no', state_no, 'pred_percentage', float(offset)/length
 
-        color_bg(
-            state_amount, 
-            skill_seq, 
-            ax_mark_skill_begin_by_first_10_successive_occurrence, 
-            state_idx_range_by_folder_name[trial_name],
-            anomaly_start_idx_group_by_folder_name[trial_name],
-            pred_start_idx_group_by_state = pred_start_idx_group_by_state,
-        )
+        raw_input()
 
 
     filename = "anoamly_detection_metric_%s"%(anomaly_detection_metric, )
