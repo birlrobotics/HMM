@@ -47,14 +47,17 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
 
             smach_state = latest_data_tuple[constant.smach_state_idx]
             if smach_state == 0:
-                print 'smach_state = 0, anomaly_detection will keep down'
+                self.detector.reset()
                 continue
 
             data_frame = latest_data_tuple[constant.data_frame_idx]
             data_header = latest_data_tuple[constant.data_header_idx]
 
-            now_skill, anomaly_detected, metric, threshold = self.detector.add_one_smaple_and_identify_skill_and_detect_anomaly(np.array(data_frame).reshape(1,-1))
+            now_skill, anomaly_detected, metric, threshold = self.detector.add_one_smaple_and_identify_skill_and_detect_anomaly(np.array(data_frame).reshape(1,-1), now_skill=smach_state)
+
+            rospy.loginfo("anomaly_detected:%s"%anomaly_detected)
             if anomaly_detected:
+                rospy.loginfo("anomaly_detected:%s"%anomaly_detected)
                 anomaly_detection_signal_pub.publish(data_header) 
     
             if now_skill is not None:

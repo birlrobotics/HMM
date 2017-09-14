@@ -48,6 +48,9 @@ class BaseDetector(object):
         for point in self.anomaly_point:
             ax.plot(point[0], point[1], marker='o', color='red', linestyle='None')
 
+    def reset(self):
+        pass
+
 class DetectorBasedOnLoglikCurve(BaseDetector):
     def __init__(self, model_group_by_state, threshold_curve_group_by_state):
         BaseDetector.__init__(self, model_group_by_state)
@@ -55,6 +58,9 @@ class DetectorBasedOnLoglikCurve(BaseDetector):
         self.prev_skill = None
         self.calculator = None
         self.now_skill_t = None
+
+    def reset(self):
+        self.prev_skill = None
 
     def add_one_smaple_and_identify_skill_and_detect_anomaly(self, sample, now_skill=None):
         if now_skill is None:
@@ -99,7 +105,7 @@ class DetectorBasedOnLoglikCurve(BaseDetector):
 
         self.metric_observation.append(now_loglik)
         self.metric_threshold.append(now_threshold)
-        return now_skill, None, now_loglik, now_threshold
+        return now_skill, anomaly_detected, now_loglik, now_threshold
 
 class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
     def __init__(self, model_group_by_state, threshold_constant_group_by_state):
@@ -108,6 +114,9 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
         self.prev_skill = None
         self.prev_loglik = None
         self.calculator = None
+
+    def reset(self):
+        self.prev_skill = None
 
     def add_one_smaple_and_identify_skill_and_detect_anomaly(self, sample, now_skill=None):
         if now_skill is None:
@@ -152,7 +161,7 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
 
         self.metric_observation.append(now_gradient)
         self.metric_threshold.append(now_threshold)
-        return now_skill, None, now_gradient, now_threshold
+        return now_skill, anomaly_detected, now_gradient, now_threshold
         
 
 
