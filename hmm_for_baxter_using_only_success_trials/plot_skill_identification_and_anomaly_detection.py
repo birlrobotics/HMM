@@ -115,8 +115,8 @@ def color_bg(
         ax.axvline(x=anomaly_start_idx, color='yellow')
 
 
-    ax.text(-250, 0.75, 'True', rotation=90)
-    ax.text(-250, 0.35, 'Estimated', rotation=90)
+    ax.text(-450, 0.75, 'True')
+    ax.text(-450, 0.25, 'Estimate')
 
 
 def get_pred_skill_start_idx(skill_seq, the_way_to_mark_skill_begins):
@@ -194,13 +194,13 @@ def run(
 
         plot_idx = trial_count*2
         ax_mark_skill_begin_by_first_occurrence = ax_list[plot_idx]
-        ax_mark_skill_begin_by_first_occurrence.set_title("mark first occurrence as skill beginning") 
+        ax_mark_skill_begin_by_first_occurrence.set_title("use first skill occurrence as skill beginning") 
         ax_mark_skill_begin_by_first_occurrence.set_yticklabels([])
         ax_mark_skill_begin_by_first_occurrence.set_xlabel("time step")
 
         plot_idx = trial_count*2+1
         ax_mark_skill_begin_by_first_10_successive_occurrence = ax_list[plot_idx]
-        ax_mark_skill_begin_by_first_10_successive_occurrence.set_title("mark first 10 successive occurrences as skill beginning") 
+        ax_mark_skill_begin_by_first_10_successive_occurrence.set_title("use first 10 successive skill occurrences as skill beginning") 
         ax_mark_skill_begin_by_first_10_successive_occurrence.set_yticklabels([])
         ax_mark_skill_begin_by_first_10_successive_occurrence.set_xlabel("time step")
 
@@ -245,7 +245,7 @@ def run(
     filename = "anoamly_detection_metric_%s"%(anomaly_detection_metric, )
     safe_filename = filename.replace("/","_divide_")
 
-    fig.set_size_inches(8*subplot_per_row,4*row_amount)
+    fig.set_size_inches(8*subplot_per_row,2*row_amount)
 
     fig. tight_layout()
     fig.savefig(os.path.join(output_dir, safe_filename+'.eps'), format="eps")
