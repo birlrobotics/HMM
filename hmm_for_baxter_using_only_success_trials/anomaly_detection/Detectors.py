@@ -44,7 +44,7 @@ class BaseDetector(object):
         if plot_metric_observation_only:
             return
     
-        ax.plot(self.metric_threshold, color='red')
+        ax.plot(self.metric_threshold, color='red', ls='dashed')
 
         for point in self.anomaly_point:
             ax.plot(point[0], point[1], marker='o', color='red', linestyle='None')

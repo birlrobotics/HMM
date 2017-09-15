@@ -88,7 +88,7 @@ def color_bg(
             end_t = t
 
             color = util.rgba_to_rgb_using_white_bg(state_color[skill], 0.25)
-            ax.axvspan(start_t, end_t, facecolor=color, ymax=0.5, ymin=0)
+            ax.axvspan(start_t, end_t, facecolor=color, ymax=0.5, ymin=0, lw=0)
             start_t = t
             
     if color_identified_skills:
@@ -100,7 +100,7 @@ def color_bg(
         start_t = state_range[0]
         end_t = state_range[1]
         color = util.rgba_to_rgb_using_white_bg(state_color[state_no], 0.5)
-        ax.axvspan(start_t, end_t, facecolor=color, ymax=1, ymin=ymin)
+        ax.axvspan(start_t, end_t, facecolor=color, ymax=1, ymin=ymin, lw=0)
 
     ymin,ymax = ax.get_ylim()
     for anomaly_start_idx in list_of_anomaly_start_idx:
@@ -131,8 +131,8 @@ def run(
         os.makedirs(output_dir)
 
     trial_amount = len(trials_group_by_folder_name)
-    subpolt_amount_for_each_trial = 1
-    subplot_per_row = 1
+    subpolt_amount_for_each_trial = 3 
+    subplot_per_row = 2
     subplot_amount = trial_amount*subpolt_amount_for_each_trial
     row_amount = int(math.ceil(float(subplot_amount)/subplot_per_row))
     fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row)
@@ -152,80 +152,80 @@ def run(
             col_no = j%subplot_per_row
             ax_list.append(ax_mat[row_no, col_no])
 
+    anomaly_detection_metric_options = [
+        'loglik<threshold=(mean-c*std)',
+        'gradient<threshold=(min-range/2)',
+        'deri_of_diff',
+    ]
+
     trial_count = -1
     for trial_name in trials_group_by_folder_name:
         trial_count += 1
 
-        '''
-        plot_idx = trial_count*2
-        ax_using_skill_id_service = ax_list[plot_idx]
-        ax_using_skill_id_service.set_title("anomaly detection for trial \"%s\" using skill identification serviece"%trial_name)
-        # use skill id service
-        detector_using_skill_id_service = anomaly_detection.interface.get_anomaly_detector(
-            model_save_path, 
-            state_amount,
-            anomaly_detection_metric,
-        )
+        metric_count = -1
+        for anomaly_detection_metric in anomaly_detection_metric_options:
+            metric_count += 1
 
-        print trial_name
-        X = trials_group_by_folder_name[trial_name]
-        skill_seq = []
-        for t in range(0, X.shape[0]):
-            now_skill, anomaly_detected, metric, threshold = detector_using_skill_id_service.add_one_smaple_and_identify_skill_and_detect_anomaly(X[t].reshape(1,-1))
-            skill_seq.append(now_skill)
+            # use given skill
+            plot_idx = metric_count*2+trial_count
+            ax_using_given_skill = ax_list[plot_idx]
 
-        detector_using_skill_id_service.plot_metric_data(ax_using_skill_id_service, plot_metric_observation_only=True)
+            title = ""
+            if trial_count == 0:
+                title += "anomalous trial using "
+            else:
+                title += "successful trial using "
 
-        color_bg(
-            state_amount, 
-            skill_seq, 
-            ax_using_skill_id_service, 
-            state_idx_range_by_folder_name[trial_name],
-            anomaly_start_idx_group_by_folder_name[trial_name],
-        )
-        '''
+            if metric_count == 0:
+                title += "magnitude-based metric"
+            elif metric_count == 1:
+                title += "gradient-based metric"
+            else:
+                title += "derivative-of-difference metric"
+                
 
-        # use given skill
-        plot_idx = trial_count
-        ax_using_given_skill = ax_list[plot_idx]
-        ax_using_given_skill.set_title(trial_name)
-        ax_using_given_skill.set_ylabel("log probability")
-        ax_using_given_skill.set_xlabel("time step")
-        detector_using_given_skill = anomaly_detection.interface.get_anomaly_detector(
-            model_save_path, 
-            state_amount,
-            anomaly_detection_metric,
-        )
+            ax_using_given_skill.set_title(title)
 
-        print trial_name
-        X = trials_group_by_folder_name[trial_name]
-        skill_seq = []
+            if trial_count == 0:
+                ax_using_given_skill.set_ylabel("log probability")
+            if metric_count == 2:
+                ax_using_given_skill.set_xlabel("time step")
+            else:
+                ax_using_given_skill.set_xticks([])
+            detector_using_given_skill = anomaly_detection.interface.get_anomaly_detector(
+                model_save_path, 
+                state_amount,
+                anomaly_detection_metric,
+            )
 
-        state_idx_range_by_folder_name[trial_name]
-        for t in range(0, X.shape[0]):
-            for state_no in state_idx_range_by_folder_name[trial_name]:
-                state_range = state_idx_range_by_folder_name[trial_name][state_no]
-                if t >= state_range[0] and t <= state_range[1]:
-                    given_skill = state_no
+            print trial_name
+            X = trials_group_by_folder_name[trial_name]
+            skill_seq = []
 
-            now_skill, anomaly_detected, metric, threshold = detector_using_given_skill.add_one_smaple_and_identify_skill_and_detect_anomaly(X[t].reshape(1,-1), now_skill=given_skill)
-            skill_seq.append(now_skill)
+            state_idx_range_by_folder_name[trial_name]
+            for t in range(0, X.shape[0]):
+                for state_no in state_idx_range_by_folder_name[trial_name]:
+                    state_range = state_idx_range_by_folder_name[trial_name][state_no]
+                    if t >= state_range[0] and t <= state_range[1]:
+                        given_skill = state_no
 
-        detector_using_given_skill.plot_metric_data(ax_using_given_skill)
+                now_skill, anomaly_detected, metric, threshold = detector_using_given_skill.add_one_smaple_and_identify_skill_and_detect_anomaly(X[t].reshape(1,-1), now_skill=given_skill)
+                skill_seq.append(now_skill)
 
-        color_bg(
-            state_amount, 
-            skill_seq, 
-            ax_using_given_skill, 
-            state_idx_range_by_folder_name[trial_name],
-            anomaly_start_idx_group_by_folder_name[trial_name],
-            color_identified_skills = False,
-        )
+            detector_using_given_skill.plot_metric_data(ax_using_given_skill)
+
+            color_bg(
+                state_amount, 
+                skill_seq, 
+                ax_using_given_skill, 
+                state_idx_range_by_folder_name[trial_name],
+                anomaly_start_idx_group_by_folder_name[trial_name],
+                color_identified_skills = False,
+            )
 
     filename = "trial_class_%s_anoamly_detection_metric_%s"%(trial_class, anomaly_detection_metric, )
     safe_filename = filename.replace("/","_divide_")
-    fig.set_size_inches(8*subplot_per_row, 4*row_amount)
-    fig.tight_layout()
+    fig.set_size_inches(12*subplot_per_row, 4*row_amount)
     fig.savefig(os.path.join(output_dir, safe_filename+'.eps'), format="eps")
     fig.savefig(os.path.join(output_dir, safe_filename+'.png'), format="png")
 
