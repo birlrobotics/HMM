@@ -135,7 +135,7 @@ def run(
     subplot_per_row = 2
     subplot_amount = trial_amount*subpolt_amount_for_each_trial
     row_amount = int(math.ceil(float(subplot_amount)/subplot_per_row))
-    fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row)
+    fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row, sharex=True)
     if row_amount == 1 and subplot_per_row == 1:
         ax_mat = np.array([ax_mat]).reshape(1, 1)
     elif row_amount == 1:
@@ -167,7 +167,11 @@ def run(
             metric_count += 1
 
             # use given skill
-            plot_idx = metric_count*2+trial_count
+            if metric_count == 0:
+                plot_idx = 2*2+trial_count
+            else:
+                plot_idx = metric_count*2+trial_count-2
+    
             ax_using_given_skill = ax_list[plot_idx]
 
             title = ""
