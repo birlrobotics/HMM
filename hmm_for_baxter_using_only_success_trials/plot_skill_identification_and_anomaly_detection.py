@@ -188,7 +188,7 @@ def run(
         # use given skill
         plot_idx = trial_count
         ax_using_given_skill = ax_list[plot_idx]
-        ax_using_given_skill.set_title("trial class \"%s\"\ngradient of log-likelihood over a robot task\nconsisting of 5 skills modeled by 5 HMMs"%trial_class)
+        ax_using_given_skill.set_title(trial_name)
         ax_using_given_skill.set_ylabel("log probability")
         ax_using_given_skill.set_xlabel("time step")
         detector_using_given_skill = anomaly_detection.interface.get_anomaly_detector(
@@ -211,7 +211,7 @@ def run(
             now_skill, anomaly_detected, metric, threshold = detector_using_given_skill.add_one_smaple_and_identify_skill_and_detect_anomaly(X[t].reshape(1,-1), now_skill=given_skill)
             skill_seq.append(now_skill)
 
-        detector_using_given_skill.plot_metric_data(ax_using_given_skill, plot_metric_observation_only=True)
+        detector_using_given_skill.plot_metric_data(ax_using_given_skill)
 
         color_bg(
             state_amount, 
