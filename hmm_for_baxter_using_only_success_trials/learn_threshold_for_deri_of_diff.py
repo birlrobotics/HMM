@@ -94,7 +94,6 @@ def run(model_save_path,
         diff_traj_by_time = np_matrix_traj_by_time-mean_of_log_curve
         deri_of_diff_traj_by_time = diff_traj_by_time[:, 1:]-diff_traj_by_time[:, :-1]
         mean_curve_group_by_state[state_no] = mean_of_log_curve
-        ipdb.set_trace()
         threshold_group_by_state[state_no] = assess_threshold_and_decide(
             deri_of_diff_traj_by_time, 
             curve_owner, 
