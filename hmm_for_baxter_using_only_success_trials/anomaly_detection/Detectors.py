@@ -1,5 +1,6 @@
 import log_likelihood_incremental_calculator.interface
 import numpy as np
+import ipdb
 
 class BaseDetector(object):
     def __init__(self, model_group_by_state):
@@ -163,6 +164,80 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
         self.metric_threshold.append(now_threshold)
         return now_skill, anomaly_detected, now_gradient, now_threshold
         
+class DetectorBasedOnDeriOfDiff(BaseDetector):
+    def __init__(
+        self, 
+        model_group_by_state, 
+        threshold_curve_group_by_state,
+        mean_curve_group_by_state
+):
+        BaseDetector.__init__(self, model_group_by_state)
+        self.threshold_curve_group_by_state = threshold_curve_group_by_state
+        self.mean_curve_group_by_state = mean_curve_group_by_state
+        self.prev_skill = None
 
+        self.calculator = None
+        self.now_skill_t = None
+        self.prev_diff = None
 
+    def reset(self):
+        self.prev_skill = None
 
+    def add_one_smaple_and_identify_skill_and_detect_anomaly(self, sample, now_skill=None):
+        if now_skill is None:
+            now_skill = BaseDetector.identify_skill(self, sample)
+        prev_skill = self.prev_skill
+        self.prev_skill = now_skill
+
+        now_deri_of_diff = None
+        now_threshold = None
+
+        if now_skill is None:
+            print 'now_skill is None so we can\'t perform anomaly detection.'
+            self.metric_observation.append(now_deri_of_diff)
+            self.metric_threshold.append(now_threshold)
+            return now_skill, None, now_deri_of_diff, now_threshold
+    
+        if now_skill != prev_skill:
+            print "now_skill != prev_skill, gonna switch model and restart anomaly detection."
+            self.calculator = log_likelihood_incremental_calculator.interface.get_calculator(self.model_group_by_state[now_skill])
+            self.now_skill_t = 0
+            self.prev_diff = None
+
+        t = self.now_skill_t
+        self.now_skill_t += 1
+
+        threshold_constant = self.threshold_curve_group_by_state[now_skill]
+        mean_curve = self.mean_curve_group_by_state[now_skill]
+
+        if t >= mean_curve.shape[1]:
+            print 'input data is longer than threshold curve so we can\'t perform anomaly detection.'
+            self.metric_observation.append(now_deri_of_diff)
+            self.metric_threshold.append(now_threshold)
+            return now_skill, None, now_deri_of_diff, now_threshold
+
+        now_threshold = threshold_constant
+        now_mean = mean_curve[0, t]
+
+        now_loglik = self.calculator.add_one_sample_and_get_loglik(sample)
+        now_diff = now_loglik-now_mean
+        prev_diff = self.prev_diff
+        self.prev_diff = now_diff
+
+        if prev_diff is None:
+            print 'we don\' have prev_diff for now_skill, gonna wait one more run.'
+            self.metric_observation.append(now_deri_of_diff)
+            self.metric_threshold.append(now_threshold)
+            return now_skill, None, now_deri_of_diff, now_threshold
+
+        now_deri_of_diff = now_diff-prev_diff
+        anomaly_detected = False
+        if now_deri_of_diff <= now_threshold:
+            anomaly_detected = True
+
+        if anomaly_detected:
+            self.anomaly_point.append([len(self.metric_observation), now_deri_of_diff])
+
+        self.metric_observation.append(now_deri_of_diff)
+        self.metric_threshold.append(now_threshold)
+        return now_skill, anomaly_detected, now_deri_of_diff, now_threshold

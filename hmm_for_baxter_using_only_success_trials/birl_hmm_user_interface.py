@@ -42,6 +42,12 @@ def build_parser():
         default = False,
         help="True if you want to learn_threshold_for_gradient_of_log_likelihood.")
 
+    parser.add_option(
+        "--learn_threshold_for_deri_of_diff",
+        action="store_true", 
+        dest="learn_threshold_for_deri_of_diff",
+        default = False,
+        help="True if you want to learn_threshold_for_deri_of_diff.")
 
     parser.add_option(
         "--train-derivative-threshold",
@@ -162,6 +168,17 @@ if __name__ == "__main__":
 
         import learn_threshold_for_gradient_of_log_likelihood
         learn_threshold_for_gradient_of_log_likelihood.run(
+            model_save_path = training_config.model_save_path,
+            figure_save_path = training_config.figure_save_path,
+            threshold_c_value = training_config.threshold_c_value,
+            trials_group_by_folder_name = trials_group_by_folder_name)
+
+    if options.learn_threshold_for_deri_of_diff is True:
+        print "gonna learn_threshold_for_deri_of_diff."
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+
+        import learn_threshold_for_deri_of_diff
+        learn_threshold_for_deri_of_diff.run(
             model_save_path = training_config.model_save_path,
             figure_save_path = training_config.figure_save_path,
             threshold_c_value = training_config.threshold_c_value,

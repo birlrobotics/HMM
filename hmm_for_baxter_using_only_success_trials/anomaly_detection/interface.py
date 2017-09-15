@@ -20,3 +20,7 @@ def get_anomaly_detector(
     elif anomaly_detection_metric == 'gradient<threshold=(min-range/2)':
         threshold_pkl_data = joblib.load(os.path.join(model_save_path, 'threshold_for_gradient_of_log_likelihood.pkl'))
         return Detectors.DetectorBasedOnGradientOfLoglikCurve(model_group_by_state, threshold_pkl_data)
+    elif anomaly_detection_metric == 'deri_of_diff':
+        threshold_pkl_data = joblib.load(os.path.join(model_save_path, 'threshold_for_deri_of_diff.pkl'))
+        mean_curve_group_by_state = joblib.load(os.path.join(model_save_path, 'mean_curve_group_by_state.pkl'))
+        return Detectors.DetectorBasedOnDeriOfDiff(model_group_by_state, threshold_pkl_data, mean_curve_group_by_state)
