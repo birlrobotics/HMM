@@ -135,7 +135,7 @@ def run(
     subplot_per_row = 1
     subplot_amount = trial_amount*subpolt_amount_for_each_trial
     row_amount = int(math.ceil(float(subplot_amount)/subplot_per_row))
-    fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row)
+    fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row, sharex=True)
     if row_amount == 1 and subplot_per_row == 1:
         ax_mat = np.array([ax_mat]).reshape(1, 1)
     elif row_amount == 1:
@@ -186,11 +186,17 @@ def run(
         '''
 
         # use given skill
-        plot_idx = trial_count
+        if trial_count == 0:
+            plot_idx = 1 
+        else:
+            plot_idx = 0
         ax_using_given_skill = ax_list[plot_idx]
-        ax_using_given_skill.set_title("trial class \"%s\"\ngradient of log-likelihood over a robot task\nconsisting of 5 skills modeled by 5 HMMs"%trial_class)
+        ax_using_given_skill.set_title("trial class \"%s\" gradient of log-likelihood over a robot task consisting of 5 skills modeled by 5 HMMs"%trial_class)
         ax_using_given_skill.set_ylabel("log probability")
-        ax_using_given_skill.set_xlabel("time step")
+        if plot_idx == 0:
+            pass
+        else:
+            ax_using_given_skill.set_xlabel("time step")
         detector_using_given_skill = anomaly_detection.interface.get_anomaly_detector(
             model_save_path, 
             state_amount,
@@ -224,7 +230,7 @@ def run(
 
     filename = "trial_class_%s_anoamly_detection_metric_%s"%(trial_class, anomaly_detection_metric, )
     safe_filename = filename.replace("/","_divide_")
-    fig.set_size_inches(8*subplot_per_row, 4*row_amount)
+    fig.set_size_inches(16*subplot_per_row, 4*row_amount)
     fig.tight_layout()
     fig.savefig(os.path.join(output_dir, safe_filename+'.eps'), format="eps")
     fig.savefig(os.path.join(output_dir, safe_filename+'.png'), format="png")
