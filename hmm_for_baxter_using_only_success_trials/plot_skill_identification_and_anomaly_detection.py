@@ -8,6 +8,10 @@ import anomaly_detection.interface
 import pandas as pd
 import util
 
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 def load_data(
     data_path, 
     interested_data_fields,
