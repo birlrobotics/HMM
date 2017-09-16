@@ -180,6 +180,18 @@ def score(score_metric, model, X, lengths):
             score_of_trials.append(float(duration)/(j-i))
 
         score = np.array(score_of_trials).mean()
+    elif score_metric == '_score_metric_positive_divergent_models_':
+        log_curves_of_all_trials = [
+            util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
+        ]
+        
+        curve_mat = np.matrix(log_curves_of_all_trials) 
+        std_of_log_curve = curve_mat.std(0)
+        mean_of_std = std_of_log_curve.mean()
+        final_log_mean = curve_mat.mean(0)[0, -1]
+        if final_log_mean < 0:
+            return None
+        score = -mean_of_std/final_log_mean
     else:
         raise Exception('unknown score metric \'%s\''%(score_metric,))
 
