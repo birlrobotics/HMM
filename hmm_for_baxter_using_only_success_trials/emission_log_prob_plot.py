@@ -14,7 +14,9 @@ import math
 
 import ipdb
 
-
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 
 def plot_log_prob_of_all_trials(
     gradient_traj_by_time,
