@@ -8,6 +8,10 @@ import anomaly_detection.interface
 import pandas as pd
 import util
 
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 def load_data(
     data_path, 
     interested_data_fields,
@@ -192,10 +196,8 @@ def run(
 
             if trial_count == 0:
                 ax_using_given_skill.set_ylabel("log probability")
-            if metric_count == 2:
+            if plot_idx >= 4:
                 ax_using_given_skill.set_xlabel("time step")
-            else:
-                ax_using_given_skill.set_xticks([])
             detector_using_given_skill = anomaly_detection.interface.get_anomaly_detector(
                 model_save_path, 
                 state_amount,
