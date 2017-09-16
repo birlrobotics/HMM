@@ -8,6 +8,10 @@ import anomaly_detection.interface
 import pandas as pd
 import util
 
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 def load_data(
     data_path, 
     interested_data_fields,
@@ -187,15 +191,16 @@ def run(
 
         # use given skill
         if trial_count == 0:
-            plot_idx = 1 
-        else:
             plot_idx = 0
+        else:
+            plot_idx = 1
         ax_using_given_skill = ax_list[plot_idx]
-        ax_using_given_skill.set_title("trial class \"%s\" gradient of log-likelihood over a robot task consisting of 5 skills modeled by 5 HMMs"%trial_class)
         ax_using_given_skill.set_ylabel("log probability")
         if plot_idx == 0:
+            ax_using_given_skill.set_title("trial class \"success\" gradient of log-likelihood over a robot task consisting of 5 skills modeled by 5 HMMs")
             pass
         else:
+            ax_using_given_skill.set_title("trial class \"anomaly\" gradient of log-likelihood over a robot task consisting of 5 skills modeled by 5 HMMs")
             ax_using_given_skill.set_xlabel("time step")
         detector_using_given_skill = anomaly_detection.interface.get_anomaly_detector(
             model_save_path, 
