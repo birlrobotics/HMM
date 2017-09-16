@@ -6,6 +6,9 @@ from matplotlib.pyplot import cm
 import os
 import ipdb
 import math
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 
 def color_bg_by_state(state_order, state_color, state_start_idx, ax, ymin=0.0, ymax=1.0):
     for idx in range(len(state_start_idx)-1):
