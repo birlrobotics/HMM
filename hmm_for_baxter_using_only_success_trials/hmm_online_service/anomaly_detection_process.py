@@ -45,7 +45,7 @@ class AnomalyDetector(multiprocessing.Process):
         if arrived_length < 10:
             return hmm_log
 
-        if arrived_state == 0:
+        if arrived_state <= 0:
             return hmm_log 
 
         try:    
@@ -98,7 +98,7 @@ class AnomalyDetector(multiprocessing.Process):
             data_frame = latest_data_tuple[constant.data_frame_idx]
             smach_state = latest_data_tuple[constant.smach_state_idx]
             data_header = latest_data_tuple[constant.data_header_idx]
-            if smach_state == 0:
+            if smach_state <= 0:
                 arrived_state = 0 
                 arrived_data = []
             elif smach_state != arrived_state:

@@ -21,7 +21,7 @@ class HMMThreadForStateClassification(threading.Thread):
 
         hmm_state_copy = hmm_state
 
-        if hmm_state_copy == 0:
+        if hmm_state_copy <= 0:
             return None
 
         msgs_group_by_state = {}
