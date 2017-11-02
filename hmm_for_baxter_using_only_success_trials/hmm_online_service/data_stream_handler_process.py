@@ -6,7 +6,7 @@ from birl_sim_examples.msg import (
 )
 
 class TagMultimodalTopicHandler(multiprocessing.Process):
-    def __init__(self, interested_data_fields, com_queue):
+    def __init__(self, interested_data_fields, com_queue, node_name="TagMultimodalTopicHandler"):
         multiprocessing.Process.__init__(self)     
 
         interested_data_fields = copy.deepcopy(interested_data_fields)
@@ -16,6 +16,7 @@ class TagMultimodalTopicHandler(multiprocessing.Process):
         del(interested_data_fields[tag_idx])
         self.interested_data_fields = interested_data_fields
         self.com_queue = com_queue
+        self.node_name = node_name
 
     def callback_multimodal(self, data):
         data_header = data.header
@@ -29,7 +30,7 @@ class TagMultimodalTopicHandler(multiprocessing.Process):
 
     def run(self):
         # set up Subscribers
-        rospy.init_node("TagMultimodalTopicHandler", anonymous=True)
+        rospy.init_node(self.node_name, anonymous=True)
         rospy.Subscriber("/tag_multimodal", Tag_MultiModal, self.callback_multimodal)
         rospy.loginfo('/tag_multimodal subscribed')
 
