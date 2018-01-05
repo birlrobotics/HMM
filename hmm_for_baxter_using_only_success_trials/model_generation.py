@@ -1,5 +1,5 @@
 import numpy as np
-
+import ipdb
 score_hist_stack = []
 
 
@@ -158,13 +158,12 @@ def get_model_generator(model_type, model_config):
                         }
 
                         yield model, now_model_config 
+
     elif model_type == 'BNPY\'s HMM':
         import hongminhmmpkg.hmm
 
-
         if type(model_config['hmm_max_train_iteration']) is not list:
             model_config['hmm_max_train_iteration'] = [model_config['hmm_max_train_iteration']]
-
 
         if type(model_config['alloModel']) is not list:
             model_config['alloModel'] = [model_config['alloModel']]
@@ -211,3 +210,31 @@ def get_model_generator(model_type, model_config):
                             }
 
                             yield model, now_model_config 
+
+    elif model_type == 'PYHSMM\'s HSMM':
+        import hongminhsmmpkg.hmm
+        if type(model_config['hmm_max_train_iteration']) is not list:
+            model_config['hmm_max_train_iteration'] = [model_config['hmm_max_train_iteration']]
+        if type(model_config['hmm_hidden_state_amount']) is not list:
+            model_config['hmm_hidden_state_amount'] = [model_config['hmm_hidden_state_amount']]
+        if type(model_config['max_duration_length']) is not list:
+            model_config['max_duration_length'] = [model_config['max_duration_length']]
+
+        for hmm_max_train_iteration in  model_config['hmm_max_train_iteration']:
+            for hmm_hidden_state_amount in model_config['hmm_hidden_state_amount']:
+                for max_duration_length in model_config['max_duration_length']:
+                    init_new_score_level()
+                    model = hongminhsmmpkg.hmm.HongminHSMM(
+                        SAVE_FIGURES = False,
+                        hmm_max_train_iteration = hmm_max_train_iteration,
+                        hmm_hidden_state_amount = hmm_hidden_state_amount,
+                        max_duration_length     = max_duration_length,
+                        )
+
+                    now_model_config = {
+                        'SAVE_FIGURES' : False,
+                        'hmm_max_train_iteration' :hmm_max_train_iteration,
+                        'hmm_hidden_state_amount' :hmm_hidden_state_amount,
+                        'max_duration_length'     :max_duration_length,
+                    }
+                    yield model, now_model_config

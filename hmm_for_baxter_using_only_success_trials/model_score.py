@@ -10,6 +10,7 @@ def score(score_metric, model, X, lengths):
         slice_10_std = matrix.std(0)
         slice_10_stme_ratio = slice_10_std/slice_10_means
         score = slice_10_stme_ratio.max()
+
     elif score_metric == '_score_metric_last_time_stdmeanratio_':
         final_time_step_log_lik = [
             model.score(X[i:j]) for i, j in util.iter_from_X_lengths(X, lengths)
@@ -18,6 +19,7 @@ def score(score_metric, model, X, lengths):
         mean = abs(matrix.mean())
         std = matrix.std()
         score = std/mean
+
     elif score_metric == '_score_metric_sum_stdmeanratio_using_fast_log_cal_':
         final_time_step_log_lik = [
             util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
@@ -27,6 +29,7 @@ def score(score_metric, model, X, lengths):
         mean_of_log_curve = curve_mat.mean(0)
         std_of_log_curve = curve_mat.std(0)
         score = abs(std_of_log_curve/mean_of_log_curve).mean()
+
     elif score_metric == '_score_metric_mean_of_std_using_fast_log_cal_':
         log_curves_of_all_trials = [
             util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
@@ -35,6 +38,7 @@ def score(score_metric, model, X, lengths):
         curve_mat = np.matrix(log_curves_of_all_trials) 
         std_of_log_curve = curve_mat.std(0)
         score = std_of_log_curve.mean()
+
     elif score_metric == '_score_metric_hamming_distance_using_fast_log_cal_':
         import scipy.spatial.distance as sp_dist
         log_lik = [util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
@@ -54,6 +58,7 @@ def score(score_metric, model, X, lengths):
         curve_mat = np.matrix(log_curves_of_all_trials) 
         std_of_log_curve = curve_mat.std(0)
         score = std_of_log_curve.std()
+
     elif score_metric == '_score_metric_mean_of_std_divied_by_final_log_mean_':
         log_curves_of_all_trials = [
             util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
@@ -68,15 +73,14 @@ def score(score_metric, model, X, lengths):
         log_curves_of_all_trials = [
             util.fast_log_curve_calculation(X[i:j], model) for i, j in util.iter_from_X_lengths(X, lengths)
         ]
-        
         curve_mat = np.matrix(log_curves_of_all_trials) 
         gradient_mat = curve_mat[:, 1:]-curve_mat[:, :-1]
         std_of_log_curve = gradient_mat.std(0)
         mean_of_std = std_of_log_curve.mean()
         final_log_mean = gradient_mat.mean(0)[0, -1]
         score = abs(mean_of_std/final_log_mean)
+
     elif score_metric == '_score_metric_minus_diff_btw_1st_2ed_emissionprob_':
-       
         score_of_trials = []
         for i, j in util.iter_from_X_lengths(X, lengths):
             framelogprob = util.get_emission_log_prob_matrix(X[i:j], model)
@@ -88,7 +92,6 @@ def score(score_metric, model, X, lengths):
             framelogprob.sort(1)
             diff_btw_1st_2ed_eprob = framelogprob[:, -1]-framelogprob[:, -2]
             score_of_trials.append(np.sum(diff_btw_1st_2ed_eprob)/(j-i))
-
         score = -np.array(score_of_trials).mean()
 
     elif score_metric == '_score_metric_minus_diff_btw_1st_2ed(>=0)_divide_maxeprob_emissionprob_':

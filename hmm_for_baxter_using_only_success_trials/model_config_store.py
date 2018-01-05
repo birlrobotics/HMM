@@ -39,12 +39,13 @@ model_store = {
             },
         }
     },
+
     'BNPY\'s HMM': {
-        'use': 'b1',
+        'use': 'default',
         'config_set': {
             'default': {
                 'hmm_max_train_iteration': 100,
-                'hmm_hidden_state_amount': 4,
+                'hmm_hidden_state_amount': 20,
                 'alloModel' : 'HDPHMM',     
                 'obsModel'  : 'Gauss',     
                 'varMethod' : 'moVB',
@@ -58,6 +59,18 @@ model_store = {
             },
         }
     },
+    
+    'PYHSMM\'s HSMM': {
+        'use': 'default',
+        'config_set': {
+            'default': {
+                'hmm_max_train_iteration': 150,
+                'hmm_hidden_state_amount': 5,
+                'max_duration_length' : 1000,     
+            },
+        }
+    },
+
     'hmmlearn\'s GMMHMM': {
         'use': 'd1',
         'config_set': {

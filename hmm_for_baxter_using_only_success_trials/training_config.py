@@ -10,7 +10,8 @@ data_type_options = [
 
 model_type_options = [
     'hmmlearn\'s HMM', 
-    'BNPY\'s HMM',
+    'BNPY\'s HMM',    
+    'PYHSMM\'s HSMM',
     'hmmlearn\'s GMMHMM',
 ]
 from model_config_store import model_store
@@ -50,6 +51,7 @@ base_path_options = [
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170914_state_transition_wait_2s',
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170914_use_old_tagpuber',
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170918_old_puber',
+    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_HONGMINWU/samePoint_3targetPoints',
 ]
 
 import birl.robot_introspection_pkg.multi_modal_config as mmc
@@ -58,8 +60,8 @@ import birl.robot_introspection_pkg.multi_modal_config as mmc
 config_by_user = {
     # config for types
     'data_type_chosen': mmc.modality_chosen,
-    'model_type_chosen': model_type_options[0],
-    'score_metric': '_score_metric_duration_of_(diff_btw_1st_2ed_emissionprob_<_10)_',
+    'model_type_chosen': model_type_options[2],
+    'score_metric': '_score_metric_last_time_stdmeanratio_',
     'anomaly_detection_metric': anomaly_detection_metric_options[1],
 
     # config for dataset folder

@@ -116,9 +116,12 @@ def build_parser():
         action="store", 
         type="string", 
         dest="trial_class",
-        default = None,
-    )
-
+        default = None,)
+    parser.add_option("--skill_identification",
+        action="store_true", 
+        dest="skill_identification",
+        default = False,
+        help = 'True for skill identification')
     return parser
 
 if __name__ == "__main__":
@@ -312,4 +315,12 @@ if __name__ == "__main__":
             data_path=data_path,
             interested_data_fields = training_config.interested_data_fields,
         )
+    if options.skill_identification is True:
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        import skill_identification
+        skill_identification.run(
+            model_save_path = training_config.model_save_path,
+            figure_save_path = training_config.figure_save_path,
+            trials_group_by_folder_name = trials_group_by_folder_name,)
+    
 

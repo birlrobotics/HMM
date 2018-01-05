@@ -21,7 +21,6 @@ def _load_data(path, interested_data_fields, preprocessing_normalize, preprocess
 def run(data_path, interested_data_fields, preprocessing_normalize, preprocessing_scaling, norm_style=""):
     trials_group_by_folder_name = {}
     state_order_group_by_folder_name = {}
-
     files = os.listdir(data_path)
     for f in files:
         path = os.path.join(data_path, f)
@@ -29,8 +28,9 @@ def run(data_path, interested_data_fields, preprocessing_normalize, preprocessin
             continue
         if f.startswith("bad"):
             continue
-
-        if os.path.isfile(os.path.join(path, f+'-tag_multimodal.csv')):
+        if os.path.isfile(os.path.join(path, 'joint_friendly_tag_multimodal_tranformed_from_'+f+'.csv')):
+            csv_file_path = os.path.join(path, 'joint_friendly_tag_multimodal_tranformed_from_'+f+'.csv')
+        elif os.path.isfile(os.path.join(path, f+'-tag_multimodal.csv')):
             csv_file_path = os.path.join(path, f+'-tag_multimodal.csv')
         elif os.path.isfile(os.path.join(path, 'tag_multimodal.csv')):
             csv_file_path = os.path.join(path, 'tag_multimodal.csv')

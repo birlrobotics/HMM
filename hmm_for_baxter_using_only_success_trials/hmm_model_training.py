@@ -16,8 +16,7 @@ def run(model_save_path,
     model_type,
     model_config,
     score_metric,
-    trials_group_by_folder_name):
-
+        trials_group_by_folder_name, **kargs):
 
     trials_group_by_folder_name = util.make_trials_of_each_state_the_same_length(trials_group_by_folder_name)
     list_of_trials = trials_group_by_folder_name.values() 
@@ -57,10 +56,9 @@ def run(model_save_path,
             print '-'*20
             print 'in state', state_no, ' working on config:', now_model_config
 
-
             X = training_data_group_by_state[state_no]
             lengths = training_length_array_group_by_state[state_no]
-            model = model.fit(X, lengths=lengths)
+            model = model.fit(X, lengths=lengths, state_no = state_no, **kargs)
 
             score = model_score.score(score_metric, model, X, lengths)
             if score == None:
