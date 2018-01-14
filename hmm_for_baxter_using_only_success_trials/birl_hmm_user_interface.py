@@ -1,6 +1,7 @@
 from optparse import OptionParser
 import training_config
 import util
+import ipdb
 
 def warn(*args, **kwargs):
     if 'category' in kwargs and kwargs['category'] == DeprecationWarning:
@@ -130,6 +131,7 @@ if __name__ == "__main__":
     if options.train_model is True:
         print "gonna train HMM model."
         trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        test_trials_group_by_folder_name, test_state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config, data_class="test_success")
 
         import hmm_model_training
         hmm_model_training.run(
@@ -137,7 +139,9 @@ if __name__ == "__main__":
             model_type = training_config.model_type_chosen,
             model_config = training_config.model_config,
             score_metric = training_config.score_metric,
-            trials_group_by_folder_name = trials_group_by_folder_name)
+            trials_group_by_folder_name = trials_group_by_folder_name,
+            test_trials_group_by_folder_name=test_trials_group_by_folder_name,
+        )
 
     if options.train_anomaly_model is True:
         print "gonna train HMM anomaly_model."

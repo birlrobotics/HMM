@@ -179,15 +179,14 @@ def get_trials_group_by_folder_name(training_config, data_class='success'):
         raise Exception("unknown data class %s"%data_class)
 
     import load_csv_data
-    trials_group_by_folder_name = load_csv_data.run(
+    trials_group_by_folder_name, state_order_group_by_folder_name = load_csv_data.run(
         data_path = data_path,
         interested_data_fields = training_config.interested_data_fields,
         preprocessing_normalize = training_config.preprocessing_normalize,
         preprocessing_scaling = training_config.preprocessing_scaling
     )
 
-    trials_group_by_folder_name
-    return trials_group_by_folder_name
+    return trials_group_by_folder_name, state_order_group_by_folder_name
 
 def inform_config(training_config):
     import json

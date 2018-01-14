@@ -30,6 +30,7 @@ score_metric_options = [
     '_score_metric_minus_diff_btw_1st_2ed(delete<0)_divide_maxeprob_emissionprob_',
     '_score_metric_mean_of_(std_of_(max_emissionprob_of_trials))_',
     '_score_metric_duration_of_(diff_btw_1st_2ed_emissionprob_<_10)_',
+    '_score_metric_sum_of_loglik_',
 ]
 
 anomaly_detection_metric_options = [
@@ -54,7 +55,7 @@ config_by_user = {
     # config for types
     'data_type_chosen': data_type_options[2],
     'model_type_chosen': model_type_options[0],
-    'score_metric': '_score_metric_duration_of_(diff_btw_1st_2ed_emissionprob_<_10)_',
+    'score_metric': score_metric_options[-1],
     'anomaly_detection_metric': anomaly_detection_metric_options[2],
 
     # config for dataset folder

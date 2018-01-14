@@ -16,17 +16,22 @@ def run(model_save_path,
     model_type,
     model_config,
     score_metric,
-    trials_group_by_folder_name):
+    trials_group_by_folder_name,
+    test_trials_group_by_folder_name
+):
 
 
     trials_group_by_folder_name = util.make_trials_of_each_state_the_same_length(trials_group_by_folder_name)
-    list_of_trials = trials_group_by_folder_name.values() 
+    list_of_training_trial = trials_group_by_folder_name.values() 
 
+
+    test_trials_group_by_folder_name = util.make_trials_of_each_state_the_same_length(test_trials_group_by_folder_name)
+    list_of_test_trial = test_trials_group_by_folder_name.values() 
 
     if not os.path.isdir(model_save_path):
         os.makedirs(model_save_path)
 
-    one_trial_data_group_by_state = list_of_trials[0]
+    one_trial_data_group_by_state = list_of_training_trial[0]
     state_amount = len(one_trial_data_group_by_state)
 
 
@@ -37,14 +42,30 @@ def run(model_save_path,
 
     for state_no in range(1, state_amount+1):
         length_array = []
-        for trial_no in range(len(list_of_trials)):
-            length_array.append(list_of_trials[trial_no][state_no].shape[0])
+        for trial_no in range(len(list_of_training_trial)):
+            length_array.append(list_of_training_trial[trial_no][state_no].shape[0])
             if trial_no == 0:
-                data_tempt = list_of_trials[trial_no][state_no]
+                data_tempt = list_of_training_trial[trial_no][state_no]
             else:
-                data_tempt = np.concatenate((data_tempt,list_of_trials[trial_no][state_no]),axis = 0)
+                data_tempt = np.concatenate((data_tempt,list_of_training_trial[trial_no][state_no]),axis = 0)
         training_data_group_by_state[state_no] = data_tempt
         training_length_array_group_by_state[state_no] = length_array
+
+
+    test_data_group_by_state = {}
+    test_length_array_group_by_state = {}
+
+    for state_no in range(1, state_amount+1):
+        length_array = []
+        for trial_no in range(len(list_of_test_trial)):
+            length_array.append(list_of_test_trial[trial_no][state_no].shape[0])
+            if trial_no == 0:
+                data_tempt = list_of_test_trial[trial_no][state_no]
+            else:
+                data_tempt = np.concatenate((data_tempt,list_of_test_trial[trial_no][state_no]),axis = 0)
+        test_data_group_by_state[state_no] = data_tempt
+        test_length_array_group_by_state[state_no] = length_array
+
 
     if not os.path.isdir(model_save_path):
         os.makedirs(model_save_path)
@@ -59,10 +80,17 @@ def run(model_save_path,
 
 
             X = training_data_group_by_state[state_no]
-            lengths = training_length_array_group_by_state[state_no]
-            model = model.fit(X, lengths=lengths)
+            training_lengths = training_length_array_group_by_state[state_no]
+            model = model.fit(X, lengths=training_lengths)
 
-            score = model_score.score(score_metric, model, X, lengths)
+            test_X = test_data_group_by_state[state_no]
+            test_lengths = test_length_array_group_by_state[state_no]
+            try:
+                score = model_score.score(score_metric, model, test_X, test_lengths)
+            except ValueError as e:
+                print "scorer failed to score this model, will ignore it"
+                continue
+                
             if score == None:
                 print "scorer says to skip this model, will do"
                 continue
@@ -79,6 +107,10 @@ def run(model_save_path,
             model_generation.update_now_score(score)
 
         sorted_model_list = sorted(model_list, key=lambda x:x['score'])
+
+        if len(sorted_model_list) == 0:
+            print "cannot train model for state %s"%(state_no,)
+            continue 
 
         best = sorted_model_list[0]
         model_id = util.get_model_config_id(best['now_model_config'])
