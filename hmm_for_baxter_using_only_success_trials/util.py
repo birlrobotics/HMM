@@ -1,5 +1,6 @@
 import numpy as np
 import ipdb
+import os
 
 def convert_camel_to_underscore(name):
     import re
@@ -292,3 +293,36 @@ def fast_growing_viterbi_paths_cal(X, model):
 def rgba_to_rgb_using_white_bg(rgb_array, alpha):
     return [i*alpha+(1-alpha) for i in rgb_array]
     
+
+def output_growing_viterbi_path_img(
+    list_of_growing_viterbi_paths, 
+    hidden_state_amount, 
+    output_file_path,
+):
+    from matplotlib.pyplot import cm
+    import numpy as np
+
+    height = len(list_of_growing_viterbi_paths)
+    width = len(list_of_growing_viterbi_paths[-1])
+
+    colors = [tuple((256*i).astype(int)) for i in cm.rainbow(np.linspace(0, 1, hidden_state_amount))]
+
+    output_pixels = []
+
+    for vp in list_of_growing_viterbi_paths:
+        black_to_append = width-len(vp)
+        row = [colors[i] for i in vp]+[(0,0,0) for i in range(black_to_append)]
+        output_pixels += row
+
+    from PIL import Image
+
+    output_dir = os.path.dirname(output_file_path)
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+
+    output_img = Image.new("RGB", (width, height)) # mode,(width,height)
+    output_img.putdata(output_pixels)
+    output_img.save(
+        output_file_path,
+    )
+

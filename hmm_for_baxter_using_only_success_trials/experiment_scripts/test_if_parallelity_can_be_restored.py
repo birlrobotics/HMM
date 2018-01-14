@@ -293,6 +293,27 @@ def run(model_save_path,
 
     for state_no in model_group_by_state:
         X = one_trial_data_group_by_state[state_no]
+
+        list_of_growing_viterbi_paths, n_samples, n_components = util.fast_growing_viterbi_paths_cal(
+            X,
+            model_group_by_state[state_no]
+        )
+
+        util.output_growing_viterbi_path_img(
+            list_of_growing_viterbi_paths, 
+            n_components,
+            os.path.join(
+                output_dir,
+                'check_if_viterbi_path_grow_incrementally_state_%s.png'%state_no, 
+            ), 
+        )
+
+
+
+
+
+
+
         all_Xs = [trials_group_by_folder_name[trial_name][state_no]\
                 for trial_name in trials_group_by_folder_name]
         tampered_X, list_of_tampered_range = tamper_input_mat(X.copy(), all_Xs)
