@@ -108,6 +108,24 @@ def run(model_save_path,
             mat_row_color.append(state_color[state_no])
             mat_row_name.append('state %s'%(state_no,))
 
+
+            list_of_growing_viterbi_paths, n_samples, n_components = util.fast_growing_viterbi_paths_cal(
+                X,
+                model_group_by_state[state_no]
+            )
+
+            util.output_growing_viterbi_path_img(
+                list_of_growing_viterbi_paths, 
+                n_components,
+                os.path.join(
+                    output_dir,
+                    'check_if_viterbi_path_grow_incrementally_state_%s_trail_name_%s.png'%(state_no, trial_name),
+                ), 
+            )
+
+
+
+
         log_lik_mat = np.matrix(log_lik_mat)
         log_lik_gradient_mat = np.matrix(log_lik_gradient_mat)
 
