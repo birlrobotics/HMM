@@ -2,6 +2,7 @@ from optparse import OptionParser
 import training_config
 import util
 import ipdb
+import os
 
 def warn(*args, **kwargs):
     if 'category' in kwargs and kwargs['category'] == DeprecationWarning:
@@ -113,11 +114,12 @@ def build_parser():
         default = False,
         help="True if you want to plot_skill_identification_and_anomaly_detection.")
 
-    parser.add_option("--trial_class",
+    parser.add_option("--trial-class",
         action="store", 
         type="string", 
         dest="trial_class",
         default = None,
+        help="success or test_success"
     )
 
     return parser
@@ -226,15 +228,22 @@ if __name__ == "__main__":
             trials_group_by_folder_name = trials_group_by_folder_name)
 
     if options.trial_log_likelihood_plot is True:
-        print "gonna plot trials' log likelihood."
-        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
+        if options.trial_class is None:
+            raise Exception("options.trial_class is needed for options.trial_log_likelihood_plot")
+
+        data_class = options.trial_class
+
+        print "gonna do trial_log_likelihood_plot."
+        trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config, data_class=data_class)
 
         import trial_log_likelihood_plot
         trial_log_likelihood_plot.run(
             model_save_path = training_config.model_save_path,
             figure_save_path = training_config.figure_save_path,
             threshold_c_value = training_config.threshold_c_value,
-            trials_group_by_folder_name = trials_group_by_folder_name)
+            trials_group_by_folder_name = trials_group_by_folder_name,
+            data_class=data_class,
+        )
 
 
 

@@ -55,9 +55,17 @@ def assess_threshold_and_decide(
 def run(model_save_path, 
     figure_save_path,
     threshold_c_value,
-    trials_group_by_folder_name):
+    trials_group_by_folder_name,
+    data_class,
+):
 
-
+    output_dir = os.path.join(
+        figure_save_path,
+        "log_likelihood_plot",
+        data_class,
+    )
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
         
     trials_group_by_folder_name = util.make_trials_of_each_state_the_same_length(trials_group_by_folder_name)
 
@@ -107,5 +115,5 @@ def run(model_save_path,
             np_matrix_traj_by_time, 
             curve_owner, 
             state_no, 
-            figure_save_path, 
+            output_dir, 
             score_time_cost_per_point)
