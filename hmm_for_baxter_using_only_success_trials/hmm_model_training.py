@@ -11,12 +11,17 @@ import ipdb
 import copy
 import model_generation
 import model_score
+import training_config
+import matplotlib.pylab as plt
+import pandas as pd
+from matplotlib import cm
+from matplotlib import colors
     
 def run(model_save_path, 
     model_type,
     model_config,
     score_metric,
-        trials_group_by_folder_name, **kargs):
+        trials_group_by_folder_name, **kwargs):
 
     trials_group_by_folder_name = util.make_trials_of_each_state_the_same_length(trials_group_by_folder_name)
     list_of_trials = trials_group_by_folder_name.values() 
@@ -27,9 +32,6 @@ def run(model_save_path,
 
     one_trial_data_group_by_state = list_of_trials[0]
     state_amount = len(one_trial_data_group_by_state)
-
-
-
 
     training_data_group_by_state = {}
     training_length_array_group_by_state = {}
@@ -58,8 +60,7 @@ def run(model_save_path,
 
             X = training_data_group_by_state[state_no]
             lengths = training_length_array_group_by_state[state_no]
-            model = model.fit(X, lengths=lengths, state_no = state_no, **kargs)
-
+            model = model.fit(X, lengths=lengths)
             score = model_score.score(score_metric, model, X, lengths)
             if score == None:
                 print "scorer says to skip this model, will do"
@@ -115,4 +116,36 @@ def run(model_save_path,
             separators = (',\n', ': ')
         )
 
+        # plot the hidden state sequence for each state
+        print 
+        print
+        print 'Finish fitting the posterior model -> Generating the hidden state sequence...' 
+        print
+        print
+        if model_type == 'hmmlearn\'s HMM':
+            print 'TBD'
+        elif model_type == 'BNPY\'s HMM':
+            plt.close("all")
+            Xdf = pd.DataFrame(X)
+            Xdf.plot()
+            '''
+            ax = plt.gca()
+            im_data  = np.tile(model.z, 2)
+            cmap =cm.get_cmap('jet',np.max(model.z))
+            print np.unique(model.z)
+            ax.imshow(im_data[None], aspect='auto', interpolation='nearest', vmin = 0, vmax = np.max(model.z), cmap = cmap)
+            '''
+            plt.draw()
+
+        elif model_type == 'PYHSMM\'s HSMM':
+            model.plot_stateseq(model.states_list[0])
+        elif model_type == 'hmmlearn\'s GMMHMM':
+            print 'TBD'
+        else:
+            print 'Sorry, this model cannot obtain the hidden state sequence'
+            return
+        plt.gcf().suptitle('The hidden state_sequence of state_%d' % (state_no))
+        if not os.path.isdir(training_config.figure_save_path + '/hidden_state_sequence_plot'):
+            os.makedirs(training_config.figure_save_path + '/hidden_state_sequence_plot')
+        plt.gcf().savefig(os.path.join(training_config.figure_save_path, 'hidden_state_sequence_plot', str(state_no) + ".eps"), format="eps")
 

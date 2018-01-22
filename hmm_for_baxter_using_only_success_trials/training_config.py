@@ -60,7 +60,7 @@ import birl.robot_introspection_pkg.multi_modal_config as mmc
 config_by_user = {
     # config for types
     'data_type_chosen': mmc.modality_chosen,
-    'model_type_chosen': model_type_options[2],
+    'model_type_chosen': model_type_options[1],
     'score_metric': '_score_metric_last_time_stdmeanratio_',
     'anomaly_detection_metric': anomaly_detection_metric_options[1],
 
@@ -68,8 +68,8 @@ config_by_user = {
     'base_path': base_path_options[-1],
 
     # config for preprocessing
-    'preprocessing_scaling': False,
-    'preprocessing_normalize': False,
+    'preprocessing_scaling': True, # scaled data has zero mean and unit variance
+    'preprocessing_normalize': False, # normalize the individual samples to have unit norm "l1" or 'l2'
     'norm_style': 'l2',
 
     # threshold of derivative used in hmm online anomaly detection

@@ -185,7 +185,8 @@ def get_trials_group_by_folder_name(training_config, data_class='success'):
         data_path = data_path,
         interested_data_fields = training_config.interested_data_fields,
         preprocessing_normalize = training_config.preprocessing_normalize,
-        preprocessing_scaling = training_config.preprocessing_scaling
+        preprocessing_scaling = training_config.preprocessing_scaling,
+        norm_style = training_config.norm_style        
     )
 
     trials_group_by_folder_name
