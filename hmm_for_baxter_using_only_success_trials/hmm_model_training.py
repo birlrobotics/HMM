@@ -16,7 +16,8 @@ import matplotlib.pylab as plt
 import pandas as pd
 from matplotlib import cm
 from matplotlib import colors
-    
+import ipdb    
+
 def run(model_save_path, 
     model_type,
     model_config,
@@ -26,6 +27,7 @@ def run(model_save_path,
     trials_group_by_folder_name = util.make_trials_of_each_state_the_same_length(trials_group_by_folder_name)
     list_of_trials = trials_group_by_folder_name.values() 
 
+    trials_amount = len(trials_group_by_folder_name)
 
     if not os.path.isdir(model_save_path):
         os.makedirs(model_save_path)
@@ -122,30 +124,40 @@ def run(model_save_path,
         print 'Finish fitting the posterior model -> Generating the hidden state sequence...' 
         print
         print
+        plt.close("all")
+        fig, ax  = plt.subplots(nrows=1, ncols=1)
+      #  Xdf = pd.DataFrame(X) # plot the original multimodal signals
+      #  Xdf.plot()
+      #  ax = plt.gca()
         if model_type == 'hmmlearn\'s HMM':
-            print 'TBD'
+            _, model.z = model.decode(X, algorithm="viterbi")
         elif model_type == 'BNPY\'s HMM':
-            plt.close("all")
-            Xdf = pd.DataFrame(X)
-            Xdf.plot()
-            '''
-            ax = plt.gca()
-            im_data  = np.tile(model.z, 2)
-            cmap =cm.get_cmap('jet',np.max(model.z))
-            print np.unique(model.z)
-            ax.imshow(im_data[None], aspect='auto', interpolation='nearest', vmin = 0, vmax = np.max(model.z), cmap = cmap)
-            '''
-            plt.draw()
-
+            model.z = model.z
         elif model_type == 'PYHSMM\'s HSMM':
-            model.plot_stateseq(model.states_list[0])
+            model.z = model.model.stateseqs[0]
         elif model_type == 'hmmlearn\'s GMMHMM':
-            print 'TBD'
+            _, model.z = model.decode(X, algorithm="viterbi")
         else:
             print 'Sorry, this model cannot obtain the hidden state sequence'
             return
+  
+        '''
+        im_data  = np.tile(model.z, 2)
+        cmap =cm.get_cmap('jet',np.max(model.z))
+        print np.unique(model.z)
+        ax.imshow(im_data[None], aspect='auto', interpolation='nearest', vmin = 0, vmax = np.max(model.z), cmap = cmap, alpha = 0.5)
+        '''
+        trial_len = len(model.z) / trials_amount
+        color=iter(cm.rainbow(np.linspace(0, 1, trials_amount)))
+        for iTrial in range(trials_amount):
+            ax.plot(model.z[iTrial*trial_len:(iTrial+1)*trial_len], color=next(color)) #, linewidth=2.0
+            plt.draw()
         plt.gcf().suptitle('The hidden state_sequence of state_%d' % (state_no))
         if not os.path.isdir(training_config.figure_save_path + '/hidden_state_sequence_plot'):
             os.makedirs(training_config.figure_save_path + '/hidden_state_sequence_plot')
-        plt.gcf().savefig(os.path.join(training_config.figure_save_path, 'hidden_state_sequence_plot', str(state_no) + ".eps"), format="eps")
+        plt.gcf().savefig(os.path.join(training_config.figure_save_path, 'hidden_state_sequence_plot', str(state_no) + ".jpg"), format="jpg")
+        zdf = pd.DataFrame(model.z)
+        zdf.to_csv(os.path.join(training_config.figure_save_path, 'hidden_state_sequence_plot', str(state_no) + '.csv'))
+
+
 

@@ -62,7 +62,7 @@ import birl.robot_introspection_pkg.multi_modal_config as mmc
 config_by_user = {
     # config for types
     'data_type_chosen':  mmc.modality_chosen,
-    'model_type_chosen':  'BNPY\'s HMM',
+    'model_type_chosen':  'hmmlearn\'s GMMHMM',
     'score_metric': '_score_metric_last_time_stdmeanratio_',
     'anomaly_detection_metric': anomaly_detection_metric_options[1],
 

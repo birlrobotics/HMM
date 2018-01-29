@@ -1,10 +1,10 @@
 model_store = {
     'hmmlearn\'s HMM': {
-        'use': 'c1_less_iter_less_maxhstate',
+        'use': 'default',
         'config_set': {
             'default': {
-                'hmm_max_train_iteration': 100,
-                'hmm_hidden_state_amount': 4,
+                'hmm_max_train_iteration': 10000,
+                'hmm_hidden_state_amount': 5,
                 'gaussianhmm_covariance_type_string': 'diag',
             },
             'c1': {
@@ -40,43 +40,12 @@ model_store = {
         }
     },
 
-    'BNPY\'s HMM': {
-        'use': 'default',
-        'config_set': {
-            'default': {
-                'hmm_max_train_iteration': 100,
-                'hmm_hidden_state_amount': 20,
-                'alloModel' : 'HDPHMM',     
-                'obsModel'  : 'Gauss',     
-                'varMethod' : 'moVB',
-            },
-            'b1': {
-                'hmm_max_train_iteration': 100000,
-                'hmm_max_hidden_state_amount': 100,
-                'alloModel' : 'HDPHMM',     
-                'obsModel'  : ['Gauss', 'DiagGauss', 'ZeroMeanGauss'],     
-                'varMethod' : ['moVB', 'memoVB'],
-            },
-        }
-    },
-    
-    'PYHSMM\'s HSMM': {
-        'use': 'default',
-        'config_set': {
-            'default': {
-                'hmm_max_train_iteration': 100,
-                'hmm_hidden_state_amount': 5,
-                'max_duration_length' : 1000,     
-            },
-        }
-    },
-
     'hmmlearn\'s GMMHMM': {
-        'use': 'd1',
+        'use': 'default',
         'config_set': {
             'default': {
-                'hmm_max_train_iteration': 100,
-                'hmm_hidden_state_amount': 4,
+                'hmm_max_train_iteration': 10000,
+                'hmm_hidden_state_amount': 5,
                 'gaussianhmm_covariance_type_string': 'diag',
                 'GMM_state_amount': 10,
             },
@@ -97,6 +66,46 @@ model_store = {
                 'hmm_max_hidden_state_amount': 100,
                 'gaussianhmm_covariance_type_string': ['diag', 'spherical', 'full', 'tied'],
                 'GMM_max_state_amount': 100,
+            },
+        }
+    },
+
+    'BNPY\'s HMM': {
+        'use': 'auto',
+        'config_set': {
+            'default': {
+                'hmm_max_train_iteration': 10000,
+                'hmm_hidden_state_amount': 5,
+                'alloModel' : 'HDPHMM',     
+                'obsModel'  : 'Gauss',     
+                'varMethod' : 'moVB',
+            },
+
+            'auto': {
+                'hmm_max_train_iteration': 10000,
+                'hmm_hidden_state_amount': 5,
+                'alloModel' : 'HDPHMM',     
+                'obsModel'  : 'AutoRegGauss',     
+                'varMethod' : 'memoVB',
+            },
+
+            'b1': {
+                'hmm_max_train_iteration': 10000,
+                'hmm_max_hidden_state_amount': 10,
+                'alloModel' : 'HDPHMM',     
+                'obsModel'  : ['Gauss', 'DiagGauss', 'ZeroMeanGauss'],     
+                'varMethod' : ['moVB', 'memoVB'],
+            },
+        }
+    },
+    
+    'PYHSMM\'s HSMM': {
+        'use': 'default',
+        'config_set': {
+            'default': {
+                'hmm_max_train_iteration': 1000,
+                'hmm_hidden_state_amount': 5,
+                'max_duration_length' : 1000,     
             },
         }
     },

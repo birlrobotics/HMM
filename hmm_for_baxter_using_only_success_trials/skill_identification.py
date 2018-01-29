@@ -46,5 +46,5 @@ def run(model_save_path,
         ax.set_title(title)
         if not os.path.isdir(figure_save_path + '/skill_identification_plot'):
             os.makedirs(figure_save_path + '/skill_identification_plot')
-        fig.savefig(os.path.join(figure_save_path, 'skill_identification_plot', title + ".eps"), format="eps")
+        fig.savefig(os.path.join(figure_save_path, 'skill_identification_plot', title + ".jpg"), format="jpg")
         plt.close(1)
