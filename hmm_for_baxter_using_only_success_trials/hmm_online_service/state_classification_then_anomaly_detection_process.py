@@ -27,14 +27,15 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
             state_amount,
             anomaly_detection_metric,
         )
+        self.anomaly_detection_metric = anomaly_detection_metric
 
     def run(self):
 
         rospy.init_node("", anonymous=True)
         anomaly_detection_signal_pub = rospy.Publisher("/anomaly_detection_signal", Header, queue_size=100)
-        anomaly_detection_metric_pub = rospy.Publisher("/anomaly_detection_metric", Float64, queue_size=100)
-        anomaly_detection_threshold_pub = rospy.Publisher("/anomaly_detection_threshold", Float64, queue_size=100)
-        identified_skill_pub = rospy.Publisher("/identified_skill", Int8, queue_size=100)
+        anomaly_detection_metric_pub = rospy.Publisher("/anomaly_detection_metric_%s"%self.anomaly_detection_metric, Float64, queue_size=100)
+        anomaly_detection_threshold_pub = rospy.Publisher("/anomaly_detection_threshold_%s"%self.anomaly_detection_metric, Float64, queue_size=100)
+        identified_skill_pub = rospy.Publisher("/identified_skill_%s"%self.anomaly_detection_metric, Int8, queue_size=100)
         rospy.loginfo('/hmm_online_result published')
 
         arrived_state = 0 
@@ -46,7 +47,7 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
 
 
             smach_state = latest_data_tuple[constant.smach_state_idx]
-            if smach_state == 0:
+            if smach_state <= 0:
                 self.detector.reset()
                 continue
 
@@ -63,5 +64,6 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
             if now_skill is not None:
                 identified_skill_pub.publish(now_skill) 
 
-            anomaly_detection_metric_pub.publish(metric)
-            anomaly_detection_threshold_pub.publish(threshold)
+            if metric is not None and threshold is not None:
+                anomaly_detection_metric_pub.publish(metric)
+                anomaly_detection_threshold_pub.publish(threshold)
