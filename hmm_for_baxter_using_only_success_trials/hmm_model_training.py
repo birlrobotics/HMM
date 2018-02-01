@@ -9,8 +9,8 @@ from sklearn.preprocessing import (
 import util
 import ipdb
 import copy
-import model_generation
-import model_score
+from introspection_model_handler import model_generation
+from introspection_model_handler import train_model
     
 def run(model_save_path, 
     model_type,
@@ -38,79 +38,31 @@ def run(model_save_path,
 
 
     training_data_group_by_state = {}
-    training_length_array_group_by_state = {}
-
-    for state_no in range(1, state_amount+1):
-        length_array = []
-        for trial_no in range(len(list_of_training_trial)):
-            length_array.append(list_of_training_trial[trial_no][state_no].shape[0])
-            if trial_no == 0:
-                data_tempt = list_of_training_trial[trial_no][state_no]
-            else:
-                data_tempt = np.concatenate((data_tempt,list_of_training_trial[trial_no][state_no]),axis = 0)
-        training_data_group_by_state[state_no] = data_tempt
-        training_length_array_group_by_state[state_no] = length_array
-
-
     test_data_group_by_state = {}
-    test_length_array_group_by_state = {}
-
     for state_no in range(1, state_amount+1):
-        length_array = []
+        training_data_group_by_state[state_no] = []
+        test_data_group_by_state[state_no] = []
+        for trial_no in range(len(list_of_training_trial)):
+            training_data_group_by_state[state_no].append( 
+                list_of_training_trial[trial_no][state_no]
+            )
         for trial_no in range(len(list_of_test_trial)):
-            length_array.append(list_of_test_trial[trial_no][state_no].shape[0])
-            if trial_no == 0:
-                data_tempt = list_of_test_trial[trial_no][state_no]
-            else:
-                data_tempt = np.concatenate((data_tempt,list_of_test_trial[trial_no][state_no]),axis = 0)
-        test_data_group_by_state[state_no] = data_tempt
-        test_length_array_group_by_state[state_no] = length_array
-
+            test_data_group_by_state[state_no].append( 
+                list_of_test_trial[trial_no][state_no]
+            )
 
     if not os.path.isdir(model_save_path):
         os.makedirs(model_save_path)
 
     for state_no in range(1, state_amount+1):
-        model_list = []
-        model_generator = model_generation.get_model_generator(model_type, model_config)
-        for model, now_model_config in model_generator:
-            print
-            print '-'*20
-            print 'in state', state_no, ' working on config:', now_model_config
-
-
-            X = training_data_group_by_state[state_no]
-            training_lengths = training_length_array_group_by_state[state_no]
-            model = model.fit(X, lengths=training_lengths)
-
-            test_X = test_data_group_by_state[state_no]
-            test_lengths = test_length_array_group_by_state[state_no]
-            try:
-                score = model_score.score(score_metric, model, test_X, test_lengths)
-            except ValueError as e:
-                print "scorer failed to score this model, will ignore it"
-                continue
-                
-            if score == None:
-                print "scorer says to skip this model, will do"
-                continue
-
-            model_list.append({
-                "model": model,
-                "now_model_config": now_model_config,
-                "score": score
-            })
-            print 'score:', score 
-            print '='*20
-            print 
-
-            model_generation.update_now_score(score)
-
-        sorted_model_list = sorted(model_list, key=lambda x:x['score'])
-
-        if len(sorted_model_list) == 0:
-            print "cannot train model for state %s"%(state_no,)
-            continue 
+        print 'state_no', state_no
+        sorted_model_list = train_model.run(
+            list_of_train_mat = training_data_group_by_state[state_no],
+            list_of_test_mat = test_data_group_by_state[state_no],
+            model_type=model_type,
+            model_config=model_config,
+            score_metric=score_metric,
+        )
 
         best = sorted_model_list[0]
         model_id = util.get_model_config_id(best['now_model_config'])

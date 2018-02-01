@@ -52,9 +52,10 @@ base_path_options = [
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170914_state_transition_wait_2s',
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170914_use_old_tagpuber',
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170918_old_puber',
+    '/home/sklaw/Downloads/Shuangqi Data/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170918_old_puber',
+    '/home/sklaw/Desktop/experiment/birl/data_for_or_from_HMM/baxter_pick_and_place_data/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170918_old_puber',
 ]
 
-import birl.robot_introspection_pkg.multi_modal_config as mmc
 
 # config provided by the user
 config_by_user = {
