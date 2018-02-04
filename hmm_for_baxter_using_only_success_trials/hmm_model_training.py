@@ -9,8 +9,7 @@ from sklearn.preprocessing import (
 import util
 import ipdb
 import copy
-from introspection_model_handler import model_generation
-from introspection_model_handler import train_model
+from birl_hmm.hmm_training import train_model
     
 def run(model_save_path, 
     model_type,

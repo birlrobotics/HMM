@@ -10,9 +10,24 @@ from math import (
 from matplotlib import pyplot as plt
 import util
 import json
-import model_generation
+from birl_hmm.hmm_training import model_generation
+import ipdb
 
 
+def _translate_into_new_config_paradigm(d):
+    if 'gaussianhmm_covariance_type_string' in d:
+        d['covariance_type'] = d['gaussianhmm_covariance_type_string']
+        del d['gaussianhmm_covariance_type_string']
+
+    if 'hmm_max_train_iteration' in d:
+        d['n_iter'] = d['hmm_max_train_iteration']
+        del d['hmm_max_train_iteration']
+
+    if 'hmm_hidden_state_amount' in d:
+        d['n_components'] = d['hmm_hidden_state_amount']
+        del d['hmm_hidden_state_amount']
+
+    return d
 
 def plot_trials_loglik_curves_of_one_state(
     np_matrix_traj_by_time, 
@@ -99,8 +114,8 @@ def run(model_save_path,
             model_id = list_of_scored_models[idx].keys()[0]
             model_score = list_of_scored_models[idx].values()[0]
             model_config = util.bring_model_id_back_to_model_config(model_id, model_config_template)
-            model_generator = model_generation.get_model_generator(model_type, model_config)
-            model, trash = next(model_generator)
+            model_config = _translate_into_new_config_paradigm(model_config)
+            model = model_generation.model_factory(model_type, model_config)
 
             model = model.fit(X, lengths=lengths)
 
