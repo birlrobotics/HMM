@@ -22,7 +22,7 @@ def run(model_save_path,
     model_type,
     model_config,
     score_metric,
-        trials_group_by_folder_name, **kwargs):
+    trials_group_by_folder_name):
 
     trials_group_by_folder_name = util.make_trials_of_each_state_the_same_length(trials_group_by_folder_name)
     list_of_trials = trials_group_by_folder_name.values() 
@@ -62,6 +62,11 @@ def run(model_save_path,
 
             X = training_data_group_by_state[state_no]
             lengths = training_length_array_group_by_state[state_no]
+            #-----------
+ #           from birl.feature_selection import pca_multimodal
+#            pca_multimodal.pca_feature_selection(X)
+            #-----------
+
             model = model.fit(X, lengths=lengths)
             score = model_score.score(score_metric, model, X, lengths)
             if score == None:
@@ -131,6 +136,8 @@ def run(model_save_path,
       #  ax = plt.gca()
         if model_type == 'hmmlearn\'s HMM':
             _, model.z = model.decode(X, algorithm="viterbi")
+            # posterior probability for each state in the model
+#            post_prob = model.predict_proba(X)
         elif model_type == 'BNPY\'s HMM':
             model.z = model.z
         elif model_type == 'PYHSMM\'s HSMM':

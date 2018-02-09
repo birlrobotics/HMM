@@ -24,13 +24,11 @@ def run(model_save_path,
             print 'model of state %s not found'%(state_no,)
             continue
 
-    for trial_name in trials_group_by_folder_name:
-
         fig = plt.figure(1)
         ax = fig.add_subplot(111)
         from matplotlib.pyplot import cm
+    for trial_name in trials_group_by_folder_name:
         color = iter(cm.rainbow(np.linspace(0, 1, state_amount)))
-
         all_log_curves_of_this_model = [[]]
         for model_no in model_group_by_state:
             all_log_curves_of_this_model.append([])
@@ -41,10 +39,9 @@ def run(model_save_path,
                print len(one_log_curve_of_this_model)
                all_log_curves_of_this_model[model_no] = np.hstack([all_log_curves_of_this_model[model_no], one_log_curve_of_this_model])
             ax.plot(all_log_curves_of_this_model[model_no], linestyle="solid", label='state_'+ str(model_no), color=next(color))
-        fig.show()
         title = ('skill_identification' + trial_name)
         ax.set_title(title)
         if not os.path.isdir(figure_save_path + '/skill_identification_plot'):
             os.makedirs(figure_save_path + '/skill_identification_plot')
         fig.savefig(os.path.join(figure_save_path, 'skill_identification_plot', title + ".jpg"), format="jpg")
-        plt.close(1)
+    fig.show()

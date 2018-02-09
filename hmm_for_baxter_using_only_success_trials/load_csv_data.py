@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from sklearn import preprocessing
+import ipdb
 
 def _load_data(path, interested_data_fields, preprocessing_normalize, preprocessing_scaling, norm_style):
     df = pd.read_csv(path, sep=',')
@@ -14,10 +15,24 @@ def _load_data(path, interested_data_fields, preprocessing_normalize, preprocess
     for s in range(1, state_amount+1):
         one_trial_data_group_by_state[s] = df.loc[df['.tag'] == s].drop('.tag', axis=1).values
         if preprocessing_normalize:
-            one_trial_data_group_by_state[s] = preprocessing.normalize(one_trial_data_group_by_state[s], norm=norm)
+            one_trial_data_group_by_state[s] = preprocessing.normalize(one_trial_data_group_by_state[s], norm=norm_style)
         if preprocessing_scaling:
             one_trial_data_group_by_state[s] = preprocessing.scale(one_trial_data_group_by_state[s])
     return one_trial_data_group_by_state, state_order
+
+def _load_anomalous_data(path, interested_data_fields, preprocessing_normalize, preprocessing_scaling, norm_style):
+    interested_data_fields.remove('.tag') # delete the '.tag'
+    df = pd.read_csv(path, sep=',')
+    df = df[interested_data_fields]
+
+    one_trial_data_group_by_state = {}
+    one_trial_data_group_by_state = df.values
+
+    if preprocessing_normalize:
+        one_trial_data_group_by_state = preprocessing.normalize(one_trial_data_group_by_state, norm=norm_style)
+    if preprocessing_scaling:
+        one_trial_data_group_by_state = preprocessing.scale(one_trial_data_group_by_state)
+    return one_trial_data_group_by_state
 
 def run(data_path, interested_data_fields, preprocessing_normalize, preprocessing_scaling, norm_style):
     trials_group_by_folder_name = {}
@@ -45,5 +60,4 @@ def run(data_path, interested_data_fields, preprocessing_normalize, preprocessin
                                             norm_style=norm_style)
         trials_group_by_folder_name[f] = one_trial_data_group_by_state
         state_order_group_by_folder_name[f] = state_order
-
     return trials_group_by_folder_name, state_order_group_by_folder_name

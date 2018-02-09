@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import ipdb
 
 def convert_camel_to_underscore(name):
@@ -169,18 +170,16 @@ def make_trials_of_each_state_the_same_length(_trials_group_by_folder_name):
     return trials_group_by_folder_name
 
 def get_trials_group_by_folder_name(training_config, data_class='success'):
+    import load_csv_data
     import copy
 
     if data_class == 'success':
         data_path = training_config.success_path
-    elif data_class == 'anomaly':
-        data_path = training_config.anomaly_data_path
     elif data_class == 'test_success':
         data_path = training_config.test_success_data_path
     else:
         raise Exception("unknown data class %s"%data_class)
 
-    import load_csv_data
     trials_group_by_folder_name = load_csv_data.run(
         data_path = data_path,
         interested_data_fields = training_config.interested_data_fields,
@@ -192,6 +191,22 @@ def get_trials_group_by_folder_name(training_config, data_class='success'):
     trials_group_by_folder_name
     return trials_group_by_folder_name
 
+def get_anomaly_data_for_labelled_case(training_config, data_path):
+    import load_csv_data
+    trials_group_by_folder_name = {}
+    state_order_group_by_folder_name = {}
+    files = os.listdir(data_path)
+    for f in files:
+        if os.path.isfile(os.path.join(data_path,f)):
+            csv_file_path =  os.path.join(data_path,f)
+            one_trial_data_group_by_state = load_csv_data._load_anomalous_data(path=csv_file_path,
+                                            interested_data_fields  = training_config.interested_data_fields,
+                                            preprocessing_scaling   = training_config.preprocessing_scaling,
+                                            preprocessing_normalize = training_config.preprocessing_normalize,
+                                            norm_style              = training_config.norm_style)
+        trials_group_by_folder_name[f] = one_trial_data_group_by_state
+    return trials_group_by_folder_name
+    
 def inform_config(training_config):
     import json
     config_to_print = [

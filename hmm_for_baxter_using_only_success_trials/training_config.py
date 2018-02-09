@@ -38,9 +38,12 @@ base_path_options = [
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170914_state_transition_wait_2s',
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170914_use_old_tagpuber',
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170918_old_puber',
-    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_HONGMINWU/samePoint_3targetPoints',
-    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_HONGMINWU/iiwa_varying_pose_record',
+    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_HONGMINWU/iiwa_varying_pose_record/train',
+    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_HONGMINWU/samePoint_3targetPoints/test',
+    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_HONGMINWU/move_to_random_pose/',
 ]
+
+anomaly_data_path = '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_HONGMINWU/anomaly_identification/anomalies'
 
 # hardcoded constants.
 data_type_options = [
@@ -61,8 +64,8 @@ import birl.robot_introspection_pkg.multi_modal_config as mmc
 # config provided by the user
 config_by_user = {
     # config for types
-    'data_type_chosen':  mmc.modality_chosen,
-    'model_type_chosen':  'BNPY\'s HMM',
+    'data_type_chosen' :  mmc.modality_chosen,
+    'model_type_chosen':  'BNPY\'s HMM', #'BNPY\'s HMM','hmmlearn\'s HMM'
     'score_metric': '_score_metric_last_time_stdmeanratio_',
     'anomaly_detection_metric': anomaly_detection_metric_options[1],
 
@@ -88,10 +91,10 @@ model_config = model_store[config_by_user['model_type_chosen']]['config_set'][mo
 
 model_id     = util.get_model_config_id(model_config)
 model_id     = config_by_user['score_metric']+model_id
+norm_style   = config_by_user['norm_style']
 
 
 success_path = os.path.join(config_by_user['base_path'], "success")
-anomaly_data_path = os.path.join(config_by_user['base_path'], "has_anomaly")
 test_success_data_path = os.path.join(config_by_user['base_path'], "success_for_test")
 model_save_path = os.path.join(config_by_user['base_path'], "model", config_by_user['data_type_chosen'], config_by_user['model_type_chosen'], model_id)
 anomaly_model_save_path = os.path.join(config_by_user['base_path'], "anomaly_model", config_by_user['data_type_chosen'], config_by_user['model_type_chosen'], model_id)

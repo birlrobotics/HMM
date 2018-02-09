@@ -1,6 +1,8 @@
 from optparse import OptionParser
 import training_config
 import util
+import os
+import ipdb
 
 def warn(*args, **kwargs):
     if 'category' in kwargs and kwargs['category'] == DeprecationWarning:
@@ -143,16 +145,24 @@ if __name__ == "__main__":
             trials_group_by_folder_name = trials_group_by_folder_name)
 
     if options.train_anomaly_model is True:
-        print "gonna train HMM anomaly_model."
-        anomaly_trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config, data_class='anomaly')
-
         import hmm_model_training
-        hmm_model_training.run(
-            model_save_path = training_config.anomaly_model_save_path,
-            model_type = training_config.model_type_chosen,
-            model_config = training_config.model_config,
-            score_metric = training_config.score_metric,
-            trials_group_by_folder_name = anomaly_trials_group_by_folder_name)
+        print "gonna train HMM anomaly_model."
+
+        folders = os.listdir(training_config.anomaly_data_path)
+        for fo in folders:
+            path = os.path.join(training_config.anomaly_data_path, fo)
+            if not os.path.isdir(path):
+                continue
+            data_path = os.path.join(training_config.anomaly_data_path, fo)
+            trials_group_by_folder_name = util.get_anomaly_data_for_labelled_case(training_config, data_path)
+
+            ipdb.set_trace()
+            hmm_model_training.run(
+                model_save_path = training_config.anomaly_model_save_path,
+                model_type = training_config.model_type_chosen,
+                model_config = training_config.model_config,
+                score_metric = training_config.score_metric,
+                trials_group_by_folder_name = anomaly_trials_group_by_folder_name)
 
     if options.learn_threshold_for_log_likelihood is True:
         print "gonna learn_threshold_for_log_likelihood."
