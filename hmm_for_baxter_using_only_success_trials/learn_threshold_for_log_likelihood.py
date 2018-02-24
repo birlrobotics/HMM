@@ -5,8 +5,7 @@ from sklearn.externals import joblib
 from matplotlib import pyplot as plt
 import time
 import util
-
-
+import ipdb
 
 def assess_threshold_and_decide(
     threshold_c_value,
@@ -58,8 +57,6 @@ def run(model_save_path,
     figure_save_path,
     threshold_c_value,
     trials_group_by_folder_name):
-
-
         
     trials_group_by_folder_name = util.make_trials_of_each_state_the_same_length(trials_group_by_folder_name)
 
@@ -77,9 +74,6 @@ def run(model_save_path,
     expected_log = {}
     std_of_log = {}
     threshold = {}
-
-
-
 
     for state_no in model_group_by_state:
         compute_score_time_cost = 0

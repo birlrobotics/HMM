@@ -20,18 +20,22 @@ def _load_data(path, interested_data_fields, preprocessing_normalize, preprocess
             one_trial_data_group_by_state[s] = preprocessing.scale(one_trial_data_group_by_state[s])
     return one_trial_data_group_by_state, state_order
 
-def _load_anomalous_data(path, interested_data_fields, preprocessing_normalize, preprocessing_scaling, norm_style):
-    interested_data_fields.remove('.tag') # delete the '.tag'
+def _load_anomalous_data(path, interested_data_fields, preprocessing_normalize, preprocessing_scaling, norm_style, pca_components):
+    if '.tag' in interested_data_fields:
+        interested_data_fields.remove('.tag') # delete the '.tag'
     df = pd.read_csv(path, sep=',')
     df = df[interested_data_fields]
 
     one_trial_data_group_by_state = {}
-    one_trial_data_group_by_state = df.values
+    one_trial_data_group_by_state[1] = df.values
 
     if preprocessing_normalize:
-        one_trial_data_group_by_state = preprocessing.normalize(one_trial_data_group_by_state, norm=norm_style)
+        one_trial_data_group_by_state[1] = preprocessing.normalize(one_trial_data_group_by_state[1], norm=norm_style)
     if preprocessing_scaling:
-        one_trial_data_group_by_state = preprocessing.scale(one_trial_data_group_by_state)
+        one_trial_data_group_by_state[1] = preprocessing.scale(one_trial_data_group_by_state[1])
+    if pca_components > 0:
+        from birl.feature_selection import pca_multimodal
+        one_trial_data_group_by_state[1] = pca_multimodal.pca_feature_selection(one_trial_data_group_by_state[1], pca_components)
     return one_trial_data_group_by_state
 
 def run(data_path, interested_data_fields, preprocessing_normalize, preprocessing_scaling, norm_style):

@@ -187,3 +187,4 @@ def score(score_metric, model, X, lengths):
         raise Exception('unknown score metric \'%s\''%(score_metric,))
 
     return score
+    

@@ -191,7 +191,7 @@ def get_trials_group_by_folder_name(training_config, data_class='success'):
     trials_group_by_folder_name
     return trials_group_by_folder_name
 
-def get_anomaly_data_for_labelled_case(training_config, data_path):
+def get_anomaly_data_for_labelled_case(training_config, data_path, label):
     import load_csv_data
     trials_group_by_folder_name = {}
     state_order_group_by_folder_name = {}
@@ -203,7 +203,8 @@ def get_anomaly_data_for_labelled_case(training_config, data_path):
                                             interested_data_fields  = training_config.interested_data_fields,
                                             preprocessing_scaling   = training_config.preprocessing_scaling,
                                             preprocessing_normalize = training_config.preprocessing_normalize,
-                                            norm_style              = training_config.norm_style)
+                                            norm_style              = training_config.norm_style,
+                                            pca_components= training_config.pca_components)
         trials_group_by_folder_name[f] = one_trial_data_group_by_state
     return trials_group_by_folder_name
     

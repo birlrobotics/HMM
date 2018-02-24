@@ -101,6 +101,7 @@ def get_model_generator(model_type, model_config):
                         "hmm_max_train_iteration": n_iter,
                     }
                     yield model, now_model_config 
+
     elif model_type == 'hmmlearn\'s GMMHMM':
         import hmmlearn.hmm 
         if type(model_config['hmm_max_train_iteration']) is not list:
@@ -170,6 +171,9 @@ def get_model_generator(model_type, model_config):
 
         if type(model_config['obsModel']) is not list:
             model_config['obsModel'] = [model_config['obsModel']]
+            
+        if type(model_config['ECovMat']) is not list:
+            model_config['ECovMat'] = [model_config['ECovMat']]
 
         if type(model_config['varMethod']) is not list:
             model_config['varMethod'] = [model_config['varMethod']]
@@ -180,36 +184,38 @@ def get_model_generator(model_type, model_config):
             if type(model_config['hmm_hidden_state_amount']) is not list:
                 model_config['hmm_hidden_state_amount'] = [model_config['hmm_hidden_state_amount']]
 
-
         for alloModel in model_config['alloModel']:
             for obsModel in model_config['obsModel']:
-                for varMethod in model_config['varMethod']:
-                    for n_iter in model_config['hmm_max_train_iteration']:
+                for ECovMat in model_config['ECovMat']:
+                    for varMethod in model_config['varMethod']:
+                        for n_iter in model_config['hmm_max_train_iteration']:
 
-                        init_new_score_level()
-                        for n_components in model_config['hmm_hidden_state_amount']:
-                            update_last_score_level()
-                            if does_bad_score_count_hit(2) and n_components>5:
-                                clear_last_score_level()
-                                break
+                            init_new_score_level()
+                            for n_components in model_config['hmm_hidden_state_amount']:
+                                update_last_score_level()
+                                if does_bad_score_count_hit(2) and n_components>5:
+                                    clear_last_score_level()
+                                    break
 
-                            model = hongminhmmpkg.hmm.HongminHMM(
-                                alloModel=alloModel,
-                                obsModel=obsModel,
-                                varMethod=varMethod,
-                                n_iteration=n_iter,
-                                K=n_components
-                            )
+                                model = hongminhmmpkg.hmm.HongminHMM(
+                                    alloModel   = alloModel,
+                                    obsModel    = obsModel,
+                                    ECovMat     = ECovMat,
+                                    varMethod   = varMethod,
+                                    n_iteration = n_iter,
+                                    K           = n_components
+                                )
 
-                            now_model_config = {
-                                'alloModel': alloModel,
-                                'obsModel': obsModel,
-                                'varMethod': varMethod,
-                                'hmm_hidden_state_amount': n_components,
-                                'hmm_max_train_iteration': n_iter,
-                            }
+                                now_model_config = {
+                                    'alloModel': alloModel,
+                                    'obsModel':  obsModel,
+                                    'ECovMat' :  ECovMat,
+                                    'varMethod': varMethod,
+                                    'hmm_hidden_state_amount': n_components,
+                                    'hmm_max_train_iteration': n_iter,
+                                }
 
-                            yield model, now_model_config 
+                                yield model, now_model_config 
 
     elif model_type == 'PYHSMM\'s HSMM':
         import hongminhsmmpkg.hmm

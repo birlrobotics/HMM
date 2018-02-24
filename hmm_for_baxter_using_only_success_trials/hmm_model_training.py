@@ -55,17 +55,14 @@ def run(model_save_path,
     for state_no in range(1, state_amount+1):
         model_list = []
         model_generator = model_generation.get_model_generator(model_type, model_config)
+
+        X = training_data_group_by_state[state_no]
+        lengths = training_length_array_group_by_state[state_no]
+        lengths[-1] -=1 # Adapting for bnpy's observation is firt-order autoregressive gaussian 
         for model, now_model_config in model_generator:
             print
             print '-'*20
             print 'in state', state_no, ' working on config:', now_model_config
-
-            X = training_data_group_by_state[state_no]
-            lengths = training_length_array_group_by_state[state_no]
-            #-----------
- #           from birl.feature_selection import pca_multimodal
-#            pca_multimodal.pca_feature_selection(X)
-            #-----------
 
             model = model.fit(X, lengths=lengths)
             score = model_score.score(score_metric, model, X, lengths)
@@ -154,6 +151,7 @@ def run(model_save_path,
         print np.unique(model.z)
         ax.imshow(im_data[None], aspect='auto', interpolation='nearest', vmin = 0, vmax = np.max(model.z), cmap = cmap, alpha = 0.5)
         '''
+
         trial_len = len(model.z) / trials_amount
         color=iter(cm.rainbow(np.linspace(0, 1, trials_amount)))
         for iTrial in range(trials_amount):

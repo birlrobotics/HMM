@@ -69,32 +69,46 @@ model_store = {
             },
         }
     },
+  
 
     'BNPY\'s HMM': {
-        'use': 'auto',
+        'use': 'default',
         'config_set': {
             'default': {
                 'hmm_max_train_iteration': 10000,
-                'hmm_hidden_state_amount': 5,
+                'hmm_hidden_state_amount': 20,
                 'alloModel' : 'HDPHMM',     
-                'obsModel'  : 'Gauss',     
+                'obsModel'  : 'Gauss',  
+                'ECovMat'   : 'covdata',
+                'varMethod' : 'moVB',
+            },
+            
+            'gaussObs': {
+                'hmm_max_train_iteration': 10000,
+                'hmm_hidden_state_amount': 20,
+                'alloModel' : 'HDPHMM',     
+                'obsModel'  : ['Gauss', 'DiagGauss'],  
+                'ECovMat'   : ['eye', 'covdata', 'diagcovdata'],
                 'varMethod' : 'moVB',
             },
 
+
             'auto': {
                 'hmm_max_train_iteration': 10000,
-                'hmm_hidden_state_amount': 5,
+                'hmm_hidden_state_amount': 20,
                 'alloModel' : 'HDPHMM',     
                 'obsModel'  : 'AutoRegGauss',     
-                'varMethod' : 'memoVB',
+                'ECovMat'   : ['covfirstdiff', 'diagcovfirstdiff'], # those are only for the autoregressive dataset
+                'varMethod' : 'moVB',
             },
 
             'b1': {
                 'hmm_max_train_iteration': 10000,
-                'hmm_max_hidden_state_amount': 10,
+                'hmm_max_hidden_state_amount': 20,
                 'alloModel' : 'HDPHMM',     
-                'obsModel'  : ['Gauss', 'DiagGauss', 'ZeroMeanGauss'],     
-                'varMethod' : ['moVB', 'memoVB'],
+                'obsModel'  : ['Gauss', 'DiagGauss', 'ZeroMeanGauss'],
+                'ECovMat'   : ['eye', 'covdata', 'diagcovdata'],
+                'varMethod' : ['moVB', 'memoVB', 'VB'],
             },
         }
     },

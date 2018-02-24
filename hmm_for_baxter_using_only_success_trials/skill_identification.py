@@ -36,7 +36,6 @@ def run(model_save_path,
                one_log_curve_of_this_model = util.fast_log_curve_calculation(
                     trials_group_by_folder_name[trial_name][state_no],
                     model_group_by_state[model_no])
-               print len(one_log_curve_of_this_model)
                all_log_curves_of_this_model[model_no] = np.hstack([all_log_curves_of_this_model[model_no], one_log_curve_of_this_model])
             ax.plot(all_log_curves_of_this_model[model_no], linestyle="solid", label='state_'+ str(model_no), color=next(color))
         title = ('skill_identification' + trial_name)

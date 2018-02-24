@@ -119,11 +119,18 @@ def build_parser():
         type="string", 
         dest="trial_class",
         default = None,)
+
     parser.add_option("--skill_identification",
         action="store_true", 
         dest="skill_identification",
         default = False,
         help = 'True for skill identification')
+
+    parser.add_option("--anomaly_identification",
+                      action = "store_true",
+                      dest = "anomaly_identification",
+                      default = False,
+                      help = "True for anomaly identification")
     return parser
 
 if __name__ == "__main__":
@@ -154,16 +161,35 @@ if __name__ == "__main__":
             if not os.path.isdir(path):
                 continue
             data_path = os.path.join(training_config.anomaly_data_path, fo)
-            trials_group_by_folder_name = util.get_anomaly_data_for_labelled_case(training_config, data_path)
-
-            ipdb.set_trace()
+            anomaly_trials_group_by_folder_name = util.get_anomaly_data_for_labelled_case(training_config, data_path, label = fo) 
+            anomaly_model_path = os.path.join(training_config.anomaly_model_save_path, 
+                                                   fo, 
+                                                   training_config.config_by_user['data_type_chosen'], 
+                                                   training_config.config_by_user['model_type_chosen'], 
+                                                   training_config.model_id)
+            print ("training the anomaly model of " + fo + "\n" ) * 10
             hmm_model_training.run(
-                model_save_path = training_config.anomaly_model_save_path,
+                model_save_path = anomaly_model_path,
                 model_type = training_config.model_type_chosen,
                 model_config = training_config.model_config,
                 score_metric = training_config.score_metric,
-                trials_group_by_folder_name = anomaly_trials_group_by_folder_name)
+                trials_group_by_folder_name =  anomaly_trials_group_by_folder_name)
 
+            import learn_threshold_for_log_likelihood
+            print "gonna calculate the expected log-likelihood of all the non-anomalous trials"
+            learn_threshold_for_log_likelihood.run(model_save_path = anomaly_model_path,
+                                                   figure_save_path = training_config.anomaly_identification_figure_path,
+                                                   threshold_c_value = training_config.threshold_c_value,
+                                                   trials_group_by_folder_name = anomaly_trials_group_by_folder_name)
+
+    if options.anomaly_identification is True:
+        print "gonna test the anomaly identification"
+        import anomaly_identification
+        anomaly_identification.run(
+            anomaly_data_path_for_testing = training_config.anomaly_data_path_for_testing,
+            model_save_path = training_config.model_save_path,
+            figure_save_path = training_config.anomaly_identification_figure_path,)
+        
     if options.learn_threshold_for_log_likelihood is True:
         print "gonna learn_threshold_for_log_likelihood."
         trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
@@ -325,6 +351,7 @@ if __name__ == "__main__":
             data_path=data_path,
             interested_data_fields = training_config.interested_data_fields,
         )
+
     if options.skill_identification is True:
         trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
         import skill_identification
@@ -332,5 +359,6 @@ if __name__ == "__main__":
             model_save_path = training_config.model_save_path,
             figure_save_path = training_config.figure_save_path,
             trials_group_by_folder_name = trials_group_by_folder_name,)
+
     
 

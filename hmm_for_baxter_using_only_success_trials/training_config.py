@@ -41,9 +41,8 @@ base_path_options = [
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_HONGMINWU/iiwa_varying_pose_record/train',
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_HONGMINWU/samePoint_3targetPoints/test',
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_HONGMINWU/move_to_random_pose/',
+    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_HONGMINWU/anomaly_identification/', 
 ]
-
-anomaly_data_path = '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_HONGMINWU/anomaly_identification/anomalies'
 
 # hardcoded constants.
 data_type_options = [
@@ -71,12 +70,12 @@ config_by_user = {
 
     # config for dataset folder
     'base_path': base_path_options[-1],
-
+        
     # config for preprocessing
     'preprocessing_scaling': False, # scaled data has zero mean and unit variance
     'preprocessing_normalize': False, # normalize the individual samples to have unit norm "l1" or 'l2'
     'norm_style': 'l2',
-
+    'pca_components': 10,
     # threshold of derivative used in hmm online anomaly detection
     'deri_threshold': 200,
 
@@ -97,10 +96,19 @@ norm_style   = config_by_user['norm_style']
 success_path = os.path.join(config_by_user['base_path'], "success")
 test_success_data_path = os.path.join(config_by_user['base_path'], "success_for_test")
 model_save_path = os.path.join(config_by_user['base_path'], "model", config_by_user['data_type_chosen'], config_by_user['model_type_chosen'], model_id)
-anomaly_model_save_path = os.path.join(config_by_user['base_path'], "anomaly_model", config_by_user['data_type_chosen'], config_by_user['model_type_chosen'], model_id)
 figure_save_path = os.path.join(config_by_user['base_path'], "figure", config_by_user['data_type_chosen'], config_by_user['model_type_chosen'], model_id)
 
+# for anomaly analysis
+anomaly_data_path = os.path.join(config_by_user['base_path'], 'anomalies')
+anomaly_data_path_for_testing = os.path.join(config_by_user['base_path'], 'anomalies_for_testing')
+anomaly_model_save_path = os.path.join(config_by_user['base_path'], "anomaly_models")
+anomaly_identification_figure_path = os.path.join(config_by_user['base_path'], "figure", config_by_user['data_type_chosen'], config_by_user['model_type_chosen'], model_id)
+
 exec '\n'.join("%s=%r"%i for i in config_by_user.items())
+
+
+
+
 
 
 
