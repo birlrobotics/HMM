@@ -55,7 +55,7 @@ model_type_options = [
     'hmmlearn\'s HMM',
     'hmmlearn\'s GMMHMM', 
     'BNPY\'s HMM',    
-    'PYHSMM\'s HSMM',
+    'PYHSMM\'s HMM',
 ]
 
 import birl.robot_introspection_pkg.multi_modal_config as mmc
@@ -75,7 +75,7 @@ config_by_user = {
     'preprocessing_scaling': False, # scaled data has zero mean and unit variance
     'preprocessing_normalize': False, # normalize the individual samples to have unit norm "l1" or 'l2'
     'norm_style': 'l2',
-    'pca_components': 10,
+    'pca_components': 0, # cancel the pca processing
     # threshold of derivative used in hmm online anomaly detection
     'deri_threshold': 200,
 

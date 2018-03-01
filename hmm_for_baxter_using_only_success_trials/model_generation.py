@@ -217,7 +217,7 @@ def get_model_generator(model_type, model_config):
 
                                 yield model, now_model_config 
 
-    elif model_type == 'PYHSMM\'s HSMM':
+    elif model_type == 'PYHSMM\'s HMM':
         import hongminhsmmpkg.hmm
         if type(model_config['hmm_max_train_iteration']) is not list:
             model_config['hmm_max_train_iteration'] = [model_config['hmm_max_train_iteration']]

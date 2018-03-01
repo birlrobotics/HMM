@@ -75,12 +75,12 @@ model_store = {
         'use': 'default',
         'config_set': {
             'default': {
-                'hmm_max_train_iteration': 10000,
-                'hmm_hidden_state_amount': 20,
+                'hmm_max_train_iteration': 1000,
+                'hmm_hidden_state_amount': 10,
                 'alloModel' : 'HDPHMM',     
-                'obsModel'  : 'Gauss',  
+                'obsModel'  : 'AutoRegGauss',  
                 'ECovMat'   : 'covdata',
-                'varMethod' : 'moVB',
+                'varMethod' : 'memoVB',
             },
             
             'gaussObs': {
@@ -113,13 +113,13 @@ model_store = {
         }
     },
     
-    'PYHSMM\'s HSMM': {
+    'PYHSMM\'s HMM': {
         'use': 'default',
         'config_set': {
             'default': {
                 'hmm_max_train_iteration': 1000,
-                'hmm_hidden_state_amount': 5,
-                'max_duration_length' : 1000,     
+                'hmm_hidden_state_amount': 10,
+                'max_duration_length' : 10,     
             },
         }
     },

@@ -66,6 +66,7 @@ def run(model_save_path,
 
             model = model.fit(X, lengths=lengths)
             score = model_score.score(score_metric, model, X, lengths)
+
             if score == None:
                 print "scorer says to skip this model, will do"
                 continue
@@ -133,14 +134,16 @@ def run(model_save_path,
       #  ax = plt.gca()
         if model_type == 'hmmlearn\'s HMM':
             _, model.z = model.decode(X, algorithm="viterbi")
-            # posterior probability for each state in the model
-#            post_prob = model.predict_proba(X)
+
         elif model_type == 'BNPY\'s HMM':
-            model.z = model.z
-        elif model_type == 'PYHSMM\'s HSMM':
+            model.z = model.decode(X, lengths)
+
+        elif model_type == 'PYHSMM\'s HMM':
             model.z = model.model.stateseqs[0]
+
         elif model_type == 'hmmlearn\'s GMMHMM':
             _, model.z = model.decode(X, algorithm="viterbi")
+
         else:
             print 'Sorry, this model cannot obtain the hidden state sequence'
             return
@@ -151,18 +154,14 @@ def run(model_save_path,
         print np.unique(model.z)
         ax.imshow(im_data[None], aspect='auto', interpolation='nearest', vmin = 0, vmax = np.max(model.z), cmap = cmap, alpha = 0.5)
         '''
-
         trial_len = len(model.z) / trials_amount
         color=iter(cm.rainbow(np.linspace(0, 1, trials_amount)))
         for iTrial in range(trials_amount):
             ax.plot(model.z[iTrial*trial_len:(iTrial+1)*trial_len], color=next(color)) #, linewidth=2.0
             plt.draw()
         plt.gcf().suptitle('The hidden state_sequence of state_%d' % (state_no))
-        if not os.path.isdir(training_config.figure_save_path + '/hidden_state_sequence_plot'):
-            os.makedirs(training_config.figure_save_path + '/hidden_state_sequence_plot')
-        plt.gcf().savefig(os.path.join(training_config.figure_save_path, 'hidden_state_sequence_plot', str(state_no) + ".jpg"), format="jpg")
+        plt.gcf().savefig(model_save_path + '/hidden_state_seq.jpg', format="jpg")
         zdf = pd.DataFrame(model.z)
-        zdf.to_csv(os.path.join(training_config.figure_save_path, 'hidden_state_sequence_plot', str(state_no) + '.csv'))
-
-
+        zdf.to_csv(model_save_path + '/hidden_stateSeq.csv')
+        joblib.dump(model.z, model_save_path + '/hidden_stateSeq.pkl')
 
