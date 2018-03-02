@@ -191,7 +191,7 @@ def get_trials_group_by_folder_name(training_config, data_class='success'):
     trials_group_by_folder_name
     return trials_group_by_folder_name
 
-def get_anomaly_data_for_labelled_case(training_config, data_path, label):
+def get_anomaly_data_for_labelled_case(training_config, data_path):
     import load_csv_data
     trials_group_by_folder_name = {}
     state_order_group_by_folder_name = {}

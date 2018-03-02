@@ -5,6 +5,8 @@ from sklearn.externals import joblib
 from matplotlib import pyplot as plt
 import util
 import training_config
+import pandas as pd
+import random
 import ipdb
 
 
@@ -38,11 +40,10 @@ def run(anomaly_data_path_for_testing,
     # load testing anomaly data
     folders = os.listdir(anomaly_data_path_for_testing)
     for fo in folders:
-        path = os.path.join(anomaly_data_path_for_testing, fo)
+        data_path = os.path.join(anomaly_data_path_for_testing, fo)
         if not os.path.isdir(path):
             continue
-        data_path = os.path.join(anomaly_data_path_for_testing, fo)
-        anomaly_testing_group_by_folder_name = util.get_anomaly_data_for_labelled_case(training_config, data_path, label = fo) # label = fo   
+        anomaly_testing_group_by_folder_name = util.get_anomaly_data_for_labelled_case(training_config, data_path)   
     
 #---------------testing all the testing folder one by one-----------------------------------------------------------------------------------
         for trial_name in anomaly_testing_group_by_folder_name:
@@ -77,17 +78,26 @@ def run(anomaly_data_path_for_testing,
             optimal_result = sorted_list[-1]
 
             all_log_curves_of_this_state, threshold, confidence = get_confidence_of_identification(optimal_result)
-            if confidence < 1.0:
-                print 'generate a new anomaly'
-                
+
+            if confidence < 0.0:
+                df = pd.DataFrame(anomaly_testing_group_by_folder_name[trial_name][1], columns=training_config.interested_data_fields)
+                id = random.randint(1000,10000)
+                _name = 'unknown_anomaly_' + str(id)
+                unknown_anomaly_path = os.path.join(training_config.anomaly_data_path, _name)
+                os.makedirs(unknown_anomaly_path)
+                csv_path = os.path.join(training_config.anomaly_data_path, _name, 'trail_'+str(random.randint(1,100)) + '.csv')
+                df.to_csv(csv_path)
+                print 'generated a new anomaly:' + _name
+                print '*\n'*5
                 
                 print 'synthetic data generation'
-                
+                import generate_synthetic_data
+                generate_synthetic_data.run(df=df, csv_save_path=unknown_anomaly_path)
 
-                print 'train this new anomalous model'
             #--plot
-            for no_trial in range(len(all_log_curves_of_this_state)):
-                ax.plot(all_log_curves_of_this_state[no_trial], linestyle= '--', color = 'gray', label = 'trials')
+            #for no_trial in range(len(all_log_curves_of_this_state)):
+            #    ax.plot(all_log_curves_of_this_state[no_trial], linestyle= '--', color = 'gray', label = 'trials')
+            
             ax.plot(threshold.tolist()[0], linestyle='--', color='gold', label='threshold')
             ax.legend(loc='upper left')
             ax.text(20,optimal_result['culmulative_loglik']/2, optimal_result['model_label'] + ': ' + str(confidence),
@@ -99,9 +109,9 @@ def run(anomaly_data_path_for_testing,
             if not os.path.isdir(figure_save_path + '/anomaly_identification_plot'):
                     os.makedirs(figure_save_path + '/anomaly_identification_plot')
             fig.savefig(os.path.join(figure_save_path, 'anomaly_identification_plot', fo + ":" + trial_name + ".jpg"), format="jpg")
+            fig.show(1)
+            raw_input('testing another trial?? Please any key to continue')
         print 'Finish testing: '+ fo + '\n' 
-        fig.show(1)
-        raw_input("Press any key to continue...")
 
 def get_confidence_of_identification(optimal_result):
     confidence_metric = ['culmulative_loglik_divide_by_the_culmulative_mean_loglik',
@@ -118,14 +128,14 @@ def get_confidence_of_identification(optimal_result):
                                            training_config.model_id)
 
     if CONF_TYPE == 'culmulative_loglik_divide_by_the_culmulative_mean_loglik':
-        c_value = 2
+        c_value = 5
         all_log_curves_of_this_state = joblib.load(os.path.join(anomaly_model_path, 'all_log_curves_of_this_state.pkl'))
         std_of_log_likelihood        = joblib.load(os.path.join(anomaly_model_path, 'std_of_log_likelihood.pkl'))
         np_matrix_traj_by_time = np.matrix(all_log_curves_of_this_state)
         mean_of_log_curve = np_matrix_traj_by_time.mean(0)
         threshold = mean_of_log_curve - std_of_log_likelihood[1]
         
-        confidence = optimal_result['culmulative_loglik']/threshold.tolist()[0][-1]
+        confidence = optimal_result['culmulative_loglik'] - threshold.tolist()[0][-1]
         return all_log_curves_of_this_state, threshold, confidence
 
     elif CONF_TYPE == 'posterior_of_gmm_model':

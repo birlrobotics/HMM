@@ -161,13 +161,12 @@ if __name__ == "__main__":
             if not os.path.isdir(path):
                 continue
             data_path = os.path.join(training_config.anomaly_data_path, fo)
-            anomaly_trials_group_by_folder_name = util.get_anomaly_data_for_labelled_case(training_config, data_path, label = fo) 
+            anomaly_trials_group_by_folder_name = util.get_anomaly_data_for_labelled_case(training_config, data_path) 
             anomaly_model_path = os.path.join(training_config.anomaly_model_save_path, 
                                                    fo, 
                                                    training_config.config_by_user['data_type_chosen'], 
                                                    training_config.config_by_user['model_type_chosen'], 
                                                    training_config.model_id)
-            print ("training the anomaly model of " + fo + "\n" ) * 10
             hmm_model_training.run(
                 model_save_path = anomaly_model_path,
                 model_type = training_config.model_type_chosen,

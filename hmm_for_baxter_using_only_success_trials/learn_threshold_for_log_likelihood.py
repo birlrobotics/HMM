@@ -52,7 +52,6 @@ def assess_threshold_and_decide(
         return mean_of_log_curve-c*std_of_log_curve
         
         
-    
 def run(model_save_path, 
     figure_save_path,
     threshold_c_value,
