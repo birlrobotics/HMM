@@ -5,21 +5,11 @@ import matplotlib.pylab as plt
 from scipy.spatial.distance import cdist
 from numpy import array, zeros, argmin, inf, equal, ndim
 import os
+import random
 import ipdb 
 
-#for the position synthetic traj generation
-
+#for synthetic traj generation
 def fastdtw(x, y, dist):
-    """
-    Computes Dynamic Time Warping (DTW) of two sequences in a faster way.
-    Instead of iterating through each element and calculating each distance,
-    this uses the cdist function from scipy (https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.cdist.html)
-
-    :param array x: N1*M array
-    :param array y: N2*M array
-    :param string or func dist: distance parameter for cdist. When string is given, cdist uses optimized functions for the distance metrics.
-    Returns the minimum distance, the cost matrix, the accumulated cost matrix, and the wrap path.
-    """
     assert len(x)
     assert len(y)
     if ndim(x)==1:
@@ -68,14 +58,43 @@ def _plot(traj, synthetic_data):
     for i in range(len(synthetic_data)):
         ax.plot(synthetic_data[i].tolist(), linestyle="dashed", color='gray', label='synthetic_traj')
     ax.legend()
-    fig.show()
+    fig.show()    
+    
+def mean(L):
+    return sum(L)/len(L)
 
-def run(df, csv_save_path):
-    '''
-    This function for generating num_data synthetic datas from the one-shot
-    csv_path = '/media/vmrguser/DATA/Homlx/unsupervised_online_reaching_prediction/scripts/testing.csv'
-    '''
-    num_data = 5
+# Returns list of J maximum entropy bootstrap samples of time-series L
+def meboot(L): 
+    N = len(L)
+    L_sort = sorted((e,i) for i,e in enumerate(L))
+    L_vals = [l[0] for l in L_sort]
+    L_inds = [l[1] for l in L_sort]
+    L_out = []
+    Z = [(L_vals[i] + L_vals[i+1])/2 for i in range(N-1)]
+    m_trm = mean([abs(L[i] - L[i-1]) for i in range(1, N)])
+    Z = [L_vals[0] - m_trm] + Z + [L_vals[-1] + m_trm]
+    m = [0]*N
+    m[0] = 0.75*L_vals[0] + 0.25*L_vals[1]
+    for k in range(1, N-1):
+        m[k] = 0.25*L_vals[k-1] + 0.5*L_vals[k] + 0.25*L_vals[k+1]
+    m[-1] = 0.25*L_vals[-2] + 0.75*L_vals[-1]
+    U = sorted([random.random() for _ in range(N)])
+    quantiles = [0]*N
+    x = [float(y)/N for y in range(N+1)]
+    for k in range(N):
+        ind = min(range(len(x)), key=lambda i: abs(x[i] - U[k]))
+        if x[ind] > U[k]:
+            ind -= 1
+        c = (2*m[ind] - Z[ind] - Z[ind + 1]) / 2
+        y0 = Z[ind] + c
+        y1 = Z[ind + 1] + c
+        quantiles[k] = y0 + (U[k] - x[ind]) * \
+                        (y1 - y0) / (x[ind + 1] - x[ind])
+    L_out = [x for y, x in sorted(zip(L_inds, quantiles))]
+    return L_out
+
+
+def run_finite_differece_matrix(df, num_data, csv_save_path):
     dis_thresthod = 2.0
     traj = df.values
     interested_data_fields = df.columns.values
@@ -108,9 +127,28 @@ def run(df, csv_save_path):
         df = pd.DataFrame(synthetic_traj.tolist(), columns=interested_data_fields)
         df.to_csv(os.path.join(csv_save_path, 'synthetic_' + str(ind_D) + '.csv'))
         synthetic_data.append(synthetic_traj)
-
     #plot 
 #    _plot(traj, synthetic_data)
-    
-    
+
+
+def run_maximum_entropy_bootstrap(df, num_data, csv_save_path):
+    traj = df.values
+    interested_data_fields = df.columns.values
+    _,D = traj.shape
+    synthetic_data = []
+    for idata in range(num_data):
+        synthetic_traj = []
+        for idim in range(D):
+            L = traj[:,idim]
+            L_out = meboot(L)
+            synthetic_traj.append(L_out)
+        synthetic_traj = np.array(synthetic_traj).T
+        df = pd.DataFrame(synthetic_traj.tolist(), columns=interested_data_fields)
+        df.to_csv(os.path.join(csv_save_path, 'synthetic_' + str(idata) + '.csv'))
+        synthetic_data.append(synthetic_traj)
+
+    #plot 
+    _plot(traj, synthetic_data)
+        
+            
     

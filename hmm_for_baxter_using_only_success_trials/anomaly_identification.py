@@ -85,19 +85,17 @@ def run(anomaly_data_path_for_testing,
                 _name = 'unknown_anomaly_' + str(id)
                 unknown_anomaly_path = os.path.join(training_config.anomaly_data_path, _name)
                 os.makedirs(unknown_anomaly_path)
-                csv_path = os.path.join(training_config.anomaly_data_path, _name, 'trail_'+str(random.randint(1,100)) + '.csv')
-                df.to_csv(csv_path)
                 print 'generated a new anomaly:' + _name
                 print '*\n'*5
                 
                 print 'synthetic data generation'
                 import generate_synthetic_data
-                generate_synthetic_data.run(df=df, csv_save_path=unknown_anomaly_path)
-
-            #--plot
-            #for no_trial in range(len(all_log_curves_of_this_state)):
-            #    ax.plot(all_log_curves_of_this_state[no_trial], linestyle= '--', color = 'gray', label = 'trials')
+                generate_synthetic_data.run_finite_differece_matrix(df=df,   num_data = 5, csv_save_path=unknown_anomaly_path)
+#                generate_synthetic_data.run_maximum_entropy_bootstrap(df=df, num_data = 5, csv_save_path=unknown_anomaly_path)
             
+            #--plot
+            for no_trial in range(len(all_log_curves_of_this_state)):
+                ax.plot(all_log_curves_of_this_state[no_trial], linestyle= '--', color = 'gray', label = 'trials')
             ax.plot(threshold.tolist()[0], linestyle='--', color='gold', label='threshold')
             ax.legend(loc='upper left')
             ax.text(20,optimal_result['culmulative_loglik']/2, optimal_result['model_label'] + ': ' + str(confidence),
