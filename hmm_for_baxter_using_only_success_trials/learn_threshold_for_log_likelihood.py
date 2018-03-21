@@ -73,7 +73,7 @@ def run(model_save_path,
     expected_log = {}
     std_of_log = {}
     threshold = {}
-#    average_predict_proba = {}
+    average_predict_proba = {}
 
     for state_no in model_group_by_state:
         compute_score_time_cost = 0
@@ -81,7 +81,7 @@ def run(model_save_path,
 
 
         all_log_curves_of_this_state = []
-#        all_predict_proba_of_this_state = []
+        all_predict_proba_of_this_state = []
         curve_owner = []
         for trial_name in trials_group_by_folder_name:
             curve_owner.append(trial_name)
@@ -96,8 +96,25 @@ def run(model_save_path,
             )
             all_log_curves_of_this_state.append(one_log_curve_of_this_state)
             
-#            one_predice_proba_of_this_state = model_group_by_state[state_no].predict_proba(trials_group_by_folder_name[trial_name][state_no]) # HDPHSMM haven't implemented this
-#            all_predict_proba_of_this_state.append(one_predice_proba_of_this_state)
+            #-----test-----------------------------------------------------------------------------
+            X = trials_group_by_folder_name[trial_name][state_no]
+            n_sample, n_feature = X.shape
+            fast_log_curve = []
+            for i in range(n_sample):
+                sample = X[i, :]
+                loglik =  model_group_by_state[state_no].add_one_sample_and_get_loglik(sample)
+                fast_log_curve.append(loglik)
+            log_curve = model_group_by_state[state_no].calc_log(X)
+            log_curve = np.append([0],log_curve)
+            import matplotlib.pyplot as plt
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.plot(fast_log_curve, color = 'blue', label='fast_log_curve')
+            ax.plot(log_curve, color = 'red', label='log_curve')
+            plt.show()          
+
+            one_predice_proba_of_this_state = model_group_by_state[state_no].predict_proba(trials_group_by_folder_name[trial_name][state_no]) # HDPHSMM haven't implemented this
+            all_predict_proba_of_this_state.append(one_predice_proba_of_this_state)
 
             compute_score_time_cost += time.time()-start_time
             total_step_times += len(trials_group_by_folder_name[trial_name][state_no])
@@ -108,8 +125,8 @@ def run(model_save_path,
         std_of_log_curve = np_matrix_traj_by_time.std(0)
 
         # use np matrix to facilitate the computation of average probability of each hidden state
-#        sum_predict_proba_of_this_state = np.sum(all_predict_proba_of_this_state, axis=0)
-#        average_sum_predict_proba_of_this_state = sum_predict_proba_of_this_state/len(all_predict_proba_of_this_state)
+        sum_predict_proba_of_this_state = np.sum(all_predict_proba_of_this_state, axis=0)
+        average_sum_predict_proba_of_this_state = sum_predict_proba_of_this_state/len(all_predict_proba_of_this_state)
 
         score_time_cost_per_point = float(compute_score_time_cost)/total_step_times
         decided_threshold_log_curve = assess_threshold_and_decide(
@@ -124,7 +141,7 @@ def run(model_save_path,
         expected_log[state_no] = mean_of_log_curve.tolist()[0]
         threshold[state_no] = decided_threshold_log_curve.tolist()[0]
         std_of_log[state_no] = std_of_log_curve.tolist()[0]
-#        average_predict_proba[state_no] = average_sum_predict_proba_of_this_state
+        average_predict_proba[state_no] = average_sum_predict_proba_of_this_state
         joblib.dump(all_log_curves_of_this_state, model_save_path + "/all_log_curves_of_this_state.pkl")
     if not os.path.isdir(model_save_path):
         os.makedirs(model_save_path)
@@ -132,5 +149,5 @@ def run(model_save_path,
     joblib.dump(expected_log, model_save_path + "/mean_of_log_likelihood.pkl")
     joblib.dump(threshold, model_save_path    + "/threshold_for_log_likelihood.pkl")
     joblib.dump(std_of_log, model_save_path   + "/std_of_log_likelihood.pkl")
-#    joblib.dump(average_predict_proba, model_save_path + "/average_predict_proba.pkl")
+    joblib.dump(average_predict_proba, model_save_path + "/average_predict_proba.pkl")
 

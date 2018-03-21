@@ -57,14 +57,14 @@ def run(anomaly_data_path_for_testing,
                 one_log_curve_of_this_model = util.fast_log_curve_calculation(
                         anomaly_testing_group_by_folder_name[trial_name][1],
                         anomaly_model_group_by_label[model_label])
-#                one_predict_proba_of_this_state = anomaly_model_group_by_label[model_label].predict_proba(anomaly_testing_group_by_folder_name[trial_name][1]) # HDPHSMM haven't implemented this
-#                one_hidden_stateSeq_of_this_state =  anomaly_model_group_by_label[model_label].decode(anomaly_testing_group_by_folder_name[trial_name][1],len(anomaly_testing_group_by_folder_name[trial_name][1])-1)
+                one_predict_proba_of_this_state = anomaly_model_group_by_label[model_label].predict_proba(anomaly_testing_group_by_folder_name[trial_name][1]) # HDPHSMM haven't implemented this
+                one_hidden_stateSeq_of_this_state =  anomaly_model_group_by_label[model_label].decode(anomaly_testing_group_by_folder_name[trial_name][1],len(anomaly_testing_group_by_folder_name[trial_name][1])-1)
 
                 calc_cofidence_resourse.append({
                     'model_label'       : model_label,
                     'culmulative_loglik': one_log_curve_of_this_model[-1],
                     'loglik_curve'      : one_log_curve_of_this_model,
-#                    'predict_proba'     : one_predict_proba_of_this_state,
+                    'predict_proba'     : one_predict_proba_of_this_state,
 #                    'hidden_stateSeq'   : one_hidden_stateSeq_of_this_state
                 })
 
@@ -90,8 +90,8 @@ def run(anomaly_data_path_for_testing,
                 
                 print 'synthetic data generation'
                 import generate_synthetic_data
-                generate_synthetic_data.run_finite_differece_matrix(df=df,   num_data = 5, csv_save_path=unknown_anomaly_path)
-#                generate_synthetic_data.run_maximum_entropy_bootstrap(df=df, num_data = 5, csv_save_path=unknown_anomaly_path)
+#                generate_synthetic_data.run_finite_differece_matrix(df=df,   num_data = 5, csv_save_path=unknown_anomaly_path)
+                generate_synthetic_data.run_maximum_entropy_bootstrap(df=df, num_data = 5, csv_save_path=unknown_anomaly_path)
             
             #--plot
             for no_trial in range(len(all_log_curves_of_this_state)):
@@ -114,7 +114,7 @@ def run(anomaly_data_path_for_testing,
 def get_confidence_of_identification(optimal_result):
     confidence_metric = ['culmulative_loglik_divide_by_the_culmulative_mean_loglik',
                          'posterior_of_gmm_model',
-#                        'calc_kullback_leibler_divergence_of_predict_proba',
+                        'calc_kullback_leibler_divergence_of_predict_proba',
                          'hamming_distance_of_hidden_state_sequence',
                         ]
     CONF_TYPE = confidence_metric[0]

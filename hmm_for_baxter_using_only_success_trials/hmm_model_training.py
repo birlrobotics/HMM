@@ -127,8 +127,8 @@ def run(model_save_path,
         print 'Finish fitting the posterior model -> Generating the hidden state sequence...' 
         print
         print
-        plt.close("all")
-        fig, ax  = plt.subplots(nrows=1, ncols=1)
+#        plt.close("all")
+#        fig, ax  = plt.subplots(nrows=1, ncols=1)
       #  Xdf = pd.DataFrame(X) # plot the original multimodal signals
       #  Xdf.plot()
       #  ax = plt.gca()
@@ -154,13 +154,14 @@ def run(model_save_path,
         print np.unique(model.z)
         ax.imshow(im_data[None], aspect='auto', interpolation='nearest', vmin = 0, vmax = np.max(model.z), cmap = cmap, alpha = 0.5)
         '''
-        trial_len = len(model.z) / trials_amount
-        color=iter(cm.rainbow(np.linspace(0, 1, trials_amount)))
-        for iTrial in range(trials_amount):
-            ax.plot(model.z[iTrial*trial_len:(iTrial+1)*trial_len], color=next(color)) #, linewidth=2.0
-            plt.draw()
-        plt.gcf().suptitle('The hidden state_sequence of state_%d' % (state_no))
-        plt.gcf().savefig(model_save_path + '/hidden_state_seq.jpg', format="jpg")
+#        trial_len = len(model.z) / trials_amount
+#        color=iter(cm.rainbow(np.linspace(0, 1, trials_amount)))
+#        for iTrial in range(trials_amount):
+#            ax.plot(model.z[iTrial*trial_len:(iTrial+1)*trial_len], color=next(color)) #, linewidth=2.0
+#            plt.draw()
+        
+#        plt.gcf().suptitle('The hidden state_sequence of state_%d' % (state_no))
+#        plt.gcf().savefig(model_save_path + '/hidden_state_seq.jpg', format="jpg")
         zdf = pd.DataFrame(model.z)
         zdf.to_csv(model_save_path + '/hidden_stateSeq.csv')
         joblib.dump(model.z, model_save_path + '/hidden_stateSeq.pkl')

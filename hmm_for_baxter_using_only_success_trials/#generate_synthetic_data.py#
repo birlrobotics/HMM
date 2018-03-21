@@ -144,6 +144,7 @@ def run_bootstrap(df, num_data, csv_save_path):
     metric = '_maximum_entropy'
     for idata in range(num_data):
         synthetic_traj = []
+
         if metric == '_maximum_entropy':
             for idim in range(D):
                 L = traj[:,idim]
@@ -152,11 +153,17 @@ def run_bootstrap(df, num_data, csv_save_path):
                 L_out = meboot(L)
                 synthetic_traj.append(L_out)
             synthetic_traj = np.array(synthetic_traj).T
+
         elif metric == '_stationary':
+            from arch.bootstrap import IIDBootstrap
+            bs = IIDBootstrap()
+
         elif metric == '_circular_block':
+
         else :
             print 'sorry! without this metric for generating synthetic data, plese check!'
             pass 
+
         df = pd.DataFrame(synthetic_traj.tolist(), columns=interested_data_fields)
         df.to_csv(os.path.join(csv_save_path, 'synthetic_' + str(idata) + '.csv'))
         synthetic_data.append(synthetic_traj)

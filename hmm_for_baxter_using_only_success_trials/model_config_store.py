@@ -84,8 +84,8 @@ model_store = {
             },
             
             'gaussObs': {
-                'hmm_max_train_iteration': 10000,
-                'hmm_hidden_state_amount': 20,
+                'hmm_max_train_iteration': 1000,
+                'hmm_hidden_state_amount': 10,
                 'alloModel' : 'HDPHMM',     
                 'obsModel'  : ['Gauss', 'DiagGauss'],  
                 'ECovMat'   : ['eye', 'covdata', 'diagcovdata'],
