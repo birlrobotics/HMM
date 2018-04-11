@@ -36,6 +36,16 @@ def profile_model(model, output_dir, output_prefix):
             os.path.join(output_dir, output_prefix+'_startprob.txt'), 
             model.startprob_,
             fmt='%.6f')
+        for hs in range(model.n_components):
+            np.savetxt(
+                os.path.join(output_dir, output_prefix+'_mean_of_hidden_state_%s.txt'%hs), 
+                model.means_[hs],
+                fmt='% 8.6f')
+            np.savetxt(
+                os.path.join(output_dir, output_prefix+'_covar_of_hidden_state_%s.txt'%hs), 
+                model._covars_[hs],
+                fmt='% 8.6f')
+
     elif issubclass(type(model.model), bnpy.HModel):
         raise Exception('hongmin BNPY not supported for now.')
     else:
