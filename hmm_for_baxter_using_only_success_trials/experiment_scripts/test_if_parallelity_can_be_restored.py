@@ -309,6 +309,11 @@ def run(model_save_path,
             model_group_by_state[state_no]
         )
 
+        list_of_lock_t, n_samples, n_components = util.fast_viterbi_lock_t_cal(
+            X,
+            model_group_by_state[state_no]
+        )
+
         util.output_growing_viterbi_path_img(
             list_of_growing_viterbi_paths, 
             n_components,
@@ -316,6 +321,7 @@ def run(model_save_path,
                 output_dir,
                 'check_if_viterbi_path_grow_incrementally_state_%s.png'%state_no, 
             ), 
+            list_of_lock_t,
         )
 
 

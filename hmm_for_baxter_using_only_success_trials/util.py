@@ -234,6 +234,60 @@ def log_mask_zero(a):
         return a_log
 
 
+def fast_viterbi_lock_t_cal(X, model):
+    import hmmlearn.hmm
+    import hongminhmmpkg.hmm
+    import bnpy
+
+    if issubclass(type(model), hmmlearn.hmm._BaseHMM):
+        from sklearn.utils import check_array, check_random_state
+        from scipy.misc import logsumexp
+
+        X = check_array(X)
+
+        framelogprob = model._compute_log_likelihood(X[:])
+        n_samples, n_components = framelogprob.shape
+        log_startprob = log_mask_zero(model.startprob_)
+        log_transmat = log_mask_zero(model.transmat_)
+        work_buffer = np.empty(n_components)
+
+        list_of_lock_t = []
+
+
+        viterbi_lattice = np.zeros((n_samples, n_components))
+        viterbi_trace = np.zeros((n_samples, n_components))
+        for i in range(n_components):
+            viterbi_lattice[0, i] = log_startprob[i] + framelogprob[0, i]
+            viterbi_trace[0, i] = 0
+
+        # Induction
+        for t in range(1, n_samples):
+            for i in range(n_components):
+                for j in range(n_components):
+                    work_buffer[j] = (log_transmat[j, i]
+                                      + viterbi_lattice[t - 1, j])
+
+                prev_state = np.argmax(work_buffer)
+                viterbi_lattice[t, i] = work_buffer[prev_state] + framelogprob[t, i]
+                viterbi_trace[t, i] = prev_state
+
+            # backtract 
+            lock_t = None
+            for k in range(t-1, 0, -1):
+                if np.all(viterbi_trace[k+1, :] == viterbi_trace[k+1, 0]):
+                    lock_t = k
+                    break
+            
+
+            list_of_lock_t.append(lock_t)
+            
+
+        return list_of_lock_t, n_samples, n_components
+    else:
+        raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))
+
+
+
 def fast_growing_viterbi_paths_cal(X, model):
     import hmmlearn.hmm
     import hongminhmmpkg.hmm
@@ -293,10 +347,18 @@ def rgba_to_rgb_using_white_bg(rgb_array, alpha):
     return [i*alpha+(1-alpha) for i in rgb_array]
     
 
+def gray_a_pixel(pixel):
+    import numpy as np
+    p = np.array(pixel)
+    p += 50
+    p /= 2
+    return (p[0], p[1], p[2])
+
 def output_growing_viterbi_path_img(
     list_of_growing_viterbi_paths, 
     hidden_state_amount, 
     output_file_path,
+    list_of_lock_t=None,
 ):
     from matplotlib.pyplot import cm
     import numpy as np
@@ -308,9 +370,15 @@ def output_growing_viterbi_path_img(
 
     output_pixels = []
 
-    for vp in list_of_growing_viterbi_paths:
+    for idx, vp in enumerate(list_of_growing_viterbi_paths):
         black_to_append = width-len(vp)
         row = [colors[i] for i in vp]+[(0,0,0) for i in range(black_to_append)]
+        if list_of_lock_t is not None:
+            lock_t = list_of_lock_t[idx]
+            if lock_t is not None:
+                for i in range(lock_t):
+                    row[i] = gray_a_pixel(row[i])
+
         output_pixels += row
 
     from PIL import Image
