@@ -470,16 +470,11 @@ def visualize_viterbi_alog(X, model, path):
                 nodes_x.append(t)
                 nodes_y.append(i)
                 nodes_color.append('#%02x%02x%02x%02x'%(0, 0, 0, int(255*tmp[i])))
-
-            best_state_at_t = np.argmax(viterbi_lattice[t, :])
-            nodes_x.append(t)
-            nodes_y.append(best_state_at_t+0.1)
-            nodes_color.append('r')
     else:
         raise Exception('model of type %s is not supported by visualize_viterbi_alog.'%(type(model),))
     
     ax.plot(*edges)
     ax.scatter(x=nodes_x, y=nodes_y, c=nodes_color)
-    fig.set_size_inches(2*n_samples, 2)
+    fig.set_size_inches(0.5*n_samples, 0.25*n_components)
     fig.savefig(path)
     print 'done one viterbi alog graph'
