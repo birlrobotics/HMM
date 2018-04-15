@@ -105,6 +105,7 @@ def tab_sep_floats(list_to_print, annotation_list=None, highlight_maximum=False,
     return s
 
 def profile_log_curve_cal(X, model, output_dir, output_prefix, list_of_color_range=[]):
+    return
     import hmmlearn.hmm
     import hongminhmmpkg.hmm
     import bnpy
@@ -323,6 +324,7 @@ def run(model_save_path,
             ), 
             list_of_lock_t,
         )
+        util.visualize_viterbi_alog(X, model_group_by_state[state_no], os.path.join(output_dir, 'state %s visualized viterbi alog.png'%(state_no,)))
 
 
 

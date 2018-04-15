@@ -66,7 +66,7 @@ config_by_user = {
     'anomaly_detection_metric': anomaly_detection_metric_options[2],
 
     # config for dataset folder
-    'base_path': base_path_options[-1],
+    'base_path': base_path_options[-2],
 
     # config for preprocessing
     'preprocessing_scaling': False,

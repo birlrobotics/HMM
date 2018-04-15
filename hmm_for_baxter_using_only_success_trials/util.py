@@ -260,6 +260,8 @@ def fast_viterbi_lock_t_cal(X, model):
             viterbi_lattice[0, i] = log_startprob[i] + framelogprob[0, i]
             viterbi_trace[0, i] = 0
 
+        list_of_lock_t.append(None)
+
         # Induction
         for t in range(1, n_samples):
             for i in range(n_components):
@@ -273,9 +275,9 @@ def fast_viterbi_lock_t_cal(X, model):
 
             # backtract 
             lock_t = None
-            for k in range(t-1, 0, -1):
-                if np.all(viterbi_trace[k+1, :] == viterbi_trace[k+1, 0]):
-                    lock_t = k
+            for k in range(t, 0, -1):
+                if np.all(viterbi_trace[k, :] == viterbi_trace[k, 0]):
+                    lock_t = k-1
                     break
             
 
@@ -314,6 +316,7 @@ def fast_growing_viterbi_paths_cal(X, model):
             viterbi_lattice[0, i] = log_startprob[i] + framelogprob[0, i]
             viterbi_trace[0, i] = 0
 
+        list_of_growing_viterbi_paths.append([np.argmax(viterbi_lattice[0])])
         # Induction
         for t in range(1, n_samples):
             for i in range(n_components):
@@ -327,11 +330,11 @@ def fast_growing_viterbi_paths_cal(X, model):
 
             best_state_at_t = np.argmax(viterbi_lattice[t, :])
 
-            viterbi_path = [0 for k in range(t)]
-            viterbi_path[t-1] = best_state_at_t
+            viterbi_path = [0 for k in range(t+1)]
+            viterbi_path[t] = best_state_at_t
             # backtract 
 
-            for k in range(t-1, 0, -1):
+            for k in range(t, 0, -1):
                 forward_z = viterbi_path[k]
                 viterbi_path[k-1] = int(viterbi_trace[k, forward_z])
 
@@ -376,7 +379,7 @@ def output_growing_viterbi_path_img(
         if list_of_lock_t is not None:
             lock_t = list_of_lock_t[idx]
             if lock_t is not None:
-                for i in range(lock_t):
+                for i in range(lock_t+1):
                     row[i] = gray_a_pixel(row[i])
 
         output_pixels += row
@@ -393,3 +396,90 @@ def output_growing_viterbi_path_img(
         output_file_path,
     )
 
+def _norm_loglik(a):
+    from scipy.misc import logsumexp
+    s = logsumexp(a)
+    a = np.exp(a-s)
+    return a
+
+def visualize_viterbi_alog(X, model, path):
+    import hmmlearn.hmm
+    import hongminhmmpkg.hmm
+    import bnpy
+    from matplotlib import pyplot as plt
+    from sklearn.preprocessing import MinMaxScaler
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    nodes_x = []
+    nodes_y = []
+    nodes_color = []
+    edges = []
+
+    if issubclass(type(model), hmmlearn.hmm._BaseHMM):
+        from sklearn.utils import check_array, check_random_state
+        from scipy.misc import logsumexp
+
+        X = check_array(X)
+
+        framelogprob = model._compute_log_likelihood(X[:])
+        n_samples, n_components = framelogprob.shape
+        log_startprob = log_mask_zero(model.startprob_)
+        log_transmat = log_mask_zero(model.transmat_)
+        work_buffer = np.empty(n_components)
+        connection = np.empty((n_components, n_components))
+
+        list_of_growing_viterbi_paths = []
+
+
+        viterbi_lattice = np.zeros((n_samples, n_components))
+        viterbi_trace = np.zeros((n_samples, n_components))
+        for i in range(n_components):
+            viterbi_lattice[0, i] = log_startprob[i] + framelogprob[0, i]
+            viterbi_trace[0, i] = 0
+        tmp = _norm_loglik(viterbi_lattice[0])
+        for i in range(n_components):
+            nodes_x.append(0)
+            nodes_y.append(i)
+            nodes_color.append('#%02x%02x%02x%02x'%(0, 0, 0, int(255*tmp[i])))
+
+        # Induction
+        for t in range(1, n_samples):
+            for i in range(n_components):
+                for j in range(n_components):
+                    work_buffer[j] = (log_transmat[j, i]
+                                      + viterbi_lattice[t - 1, j])
+                    connection[j, i] = log_transmat[j, i]+framelogprob[t, i]
+
+                prev_state = np.argmax(work_buffer)
+                viterbi_lattice[t, i] = work_buffer[prev_state] + framelogprob[t, i]
+                viterbi_trace[t, i] = prev_state
+
+            tmp = _norm_loglik(connection.flatten()).reshape((n_components, n_components))
+            for i in range(n_components):
+                for j in range(n_components):
+                    edges.append((t-1,t))
+                    edges.append((j,i))
+                    edges.append('#%02x%02x%02x%02x'%(0, 0, 0, int(255*tmp[j][i])))
+                edges.append((t-1,t))
+                edges.append((viterbi_trace[t, i]+0.1,i+0.1))
+                edges.append('k:')
+
+            tmp = _norm_loglik(viterbi_lattice[t])
+            for i in range(n_components):
+                nodes_x.append(t)
+                nodes_y.append(i)
+                nodes_color.append('#%02x%02x%02x%02x'%(0, 0, 0, int(255*tmp[i])))
+
+            best_state_at_t = np.argmax(viterbi_lattice[t, :])
+            nodes_x.append(t)
+            nodes_y.append(best_state_at_t+0.1)
+            nodes_color.append('r')
+    else:
+        raise Exception('model of type %s is not supported by visualize_viterbi_alog.'%(type(model),))
+    
+    ax.plot(*edges)
+    ax.scatter(x=nodes_x, y=nodes_y, c=nodes_color)
+    fig.set_size_inches(2*n_samples, 2)
+    fig.savefig(path)
+    print 'done one viterbi alog graph'
