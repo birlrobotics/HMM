@@ -299,6 +299,8 @@ if __name__ == "__main__":
             data_path = training_config.anomaly_data_path
         elif data_class == 'test_success':
             data_path = training_config.test_success_data_path
+        elif data_class == 'one_success_and_one_anomaly':
+            data_path = training_config.test_success_data_path
         else:
             raise Exception("unknown data class %s"%data_class)
 
