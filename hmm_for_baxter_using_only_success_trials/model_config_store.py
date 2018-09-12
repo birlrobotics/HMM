@@ -19,7 +19,7 @@ model_store = {
             },
             'c1_less_iter_less_maxhstate': {
                 'hmm_max_train_iteration': 1000,
-                'hmm_max_hidden_state_amount': 7,
+                'hmm_max_hidden_state_amount': 10,
                 'gaussianhmm_covariance_type_string': ['diag', 'spherical', 'full', 'tied'],
             },
             'a1': {

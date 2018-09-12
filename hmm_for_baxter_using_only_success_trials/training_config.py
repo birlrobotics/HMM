@@ -29,8 +29,8 @@ score_metric_options = [
     '_score_metric_minus_diff_btw_1st_2ed(>=0)_divide_maxeprob_emissionprob_',
     '_score_metric_minus_diff_btw_1st_2ed(delete<0)_divide_maxeprob_emissionprob_',
     '_score_metric_mean_of_(std_of_(max_emissionprob_of_trials))_',
-    '_score_metric_duration_of_(diff_btw_1st_2ed_emissionprob_<_10)_',
     '_score_metric_sum_of_loglik_',
+    '_score_metric_duration_of_(diff_btw_1st_2ed_emissionprob_<_10)_',
 ]
 
 anomaly_detection_metric_options = [
@@ -54,6 +54,7 @@ base_path_options = [
     '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170918_old_puber',
     '/home/sklaw/Downloads/Shuangqi Data/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170918_old_puber',
     '/home/sklaw/Desktop/experiment/birl/data_for_or_from_HMM/baxter_pick_and_place_data/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170918_old_puber',
+    '/home/birl-spai-ubuntu14/HMM/hmm_for_baxter_using_only_success_trials/baxter_pick_and_place_data/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170918_old_puber',
 ]
 
 
@@ -63,10 +64,10 @@ config_by_user = {
     'data_type_chosen': data_type_options[2],
     'model_type_chosen': model_type_options[0],
     'score_metric': score_metric_options[-1],
-    'anomaly_detection_metric': anomaly_detection_metric_options[2],
+    'anomaly_detection_metric': anomaly_detection_metric_options[0],
 
     # config for dataset folder
-    'base_path': base_path_options[-2],
+    'base_path': base_path_options[-1],
 
     # config for preprocessing
     'preprocessing_scaling': False,

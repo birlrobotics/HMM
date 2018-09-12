@@ -7,6 +7,7 @@ import math
 import anomaly_detection.interface
 import pandas as pd
 import util
+import ipdb
 
 def load_data(
     data_path, 
@@ -116,7 +117,7 @@ def run(
     data_path,
     interested_data_fields,
 ):
-
+   
     trials_group_by_folder_name, state_idx_range_by_folder_name, anomaly_start_idx_group_by_folder_name = load_data(data_path, interested_data_fields,)
     
     state_amount = len(state_idx_range_by_folder_name.itervalues().next())

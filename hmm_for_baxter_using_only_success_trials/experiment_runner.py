@@ -1,6 +1,7 @@
 from optparse import OptionParser
 import training_config
 import util
+import ipdb
 
 def build_parser():
     parser = OptionParser()
@@ -71,6 +72,7 @@ if __name__ == "__main__":
 
     if options.compare_anomay_model_with_normal_model:
         print 'gonna compare_anomay_model_with_normal_model'
+        ipdb.set_trace()
         normal_trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config)
         anomaly_trials_group_by_folder_name, state_order_group_by_folder_name = util.get_trials_group_by_folder_name(training_config, data_class='anomaly')
 

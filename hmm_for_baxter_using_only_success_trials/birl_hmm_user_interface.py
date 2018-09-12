@@ -107,6 +107,7 @@ def build_parser():
         default = False,
         help="True if you want to check_if_viterbi_path_grow_incrementally.")
 
+    #python birl_hmm_user_interface.py --plot_skill_identification_and_anomaly_detection --trial-class success
     parser.add_option(
         "--plot_skill_identification_and_anomaly_detection",
         action="store_true", 

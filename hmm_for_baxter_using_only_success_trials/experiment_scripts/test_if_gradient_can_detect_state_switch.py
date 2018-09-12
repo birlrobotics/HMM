@@ -1,3 +1,5 @@
+import sys
+sys.path.append('..')
 from sklearn.externals import joblib
 import util
 import numpy as np
