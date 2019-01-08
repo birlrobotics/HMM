@@ -70,7 +70,7 @@ First learn the threshold of log-likelihood
 python birl_hmm_user_interface.py --learn_threshold_for_log_likelihood
 ```
 e.g 
-![threshold_by_mean_and_std](/readme_figurs/state1threshold_c20.png  "threshold_by_mean_and_std")
+![threshold_by_mean_and_std](./readme_figures/state1threshold_c20.png  "threshold_by_mean_and_std")
 
 and/or learn the threshold for graient of log likelihood
 ```
