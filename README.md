@@ -60,7 +60,45 @@ run the testing script to get the plot
 ```
 python experiment_runner.py --test-if-gradient-can-detect-state-switch
 ```
- ![test_if_gradient_can_detect_state_switch](/home/birl_wu/time_series_anomaly_detection_classification_clustering/HMM/hmm_for_baxter_using_only_success_trials/baxter_pick_and_place_data/REAL_BAXTER_PICK_N_PLACE_with_5_states_for_roman_paper_metrics_comparisions_plots/figure/endpoint_twist_and_wrench/hmmlearn's HMM/_score_metric_duration_of_(diff_btw_1st_2ed_emissionprob_<_10)_gcts_(['diag', 'spherical', 'full', 'tied'])_hmti_(1000)_hmhsa_(10)_/test_if_gradient_can_detect_state_switch/test_if_gradient_can_detect_state_switch.png  "test_if_gradient_can_detect_state_switch")
+test_if_gradient_can_detect_state_switch.png
+![test_if_gradient_can_detect_state_switch](/home/birl_wu/Pictures/test_if_gradient_can_detect_state_switch_crop.png  "test_if_gradient_can_detect_state_switch")
+
+
+### TO RUN plot_skill_identification_and_anomaly_detection
+First learn the threshold of log-likelihood
+```
+python birl_hmm_user_interface.py --learn_threshold_for_log_likelihood
+```
+e.g 
+![threshold_by_mean_and_std](/home/birl_wu/Pictures/state1threshold_c20.png  "threshold_by_mean_and_std")
+
+and/or learn the threshold for graient of log likelihood
+```
+python birl_hmm_user_interface.py --learn_threshold_for_gradient_of_log_likelihood
+```
+e.g.
+![gradient_of_log_likelihood](/home/birl_wu/Pictures/state1.png  "gradient_of_log_likelihood")
+
+and/or learn the threshold for derivative of difference of log-likelihood
+```
+python birl_hmm_user_interface.py --learn_threshold_for_deri_of_diff
+```
+e.g.
+![deri_of_diff](/home/birl_wu/Pictures/state1_deri_of_diff.png  "deri_of_diff")
+
+plot all the log-likelihood curves of state
+```
+python birl_hmm_user_interface.py --trial-log-likelihood-plot
+```
+e.g.
+![state_log_likelihoodplot](/home/birl_wu/Pictures/state1trial_log_likelihoodplot.png  "state_log_likelihoodplot")
+
+Finally, run skill identification and anomaly detection
+```
+python birl_hmm_user_interface.py --plot_skill_identification_and_anomaly_detection --trial_class success
+```
+e.g.
+![anomaly_detection](/home/birl_wu/Pictures/anomaly_detection.png  "anomaly_detection")
   
 ### To Run HMM Online Service
 

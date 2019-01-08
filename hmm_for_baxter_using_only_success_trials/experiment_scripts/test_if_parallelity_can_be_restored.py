@@ -409,6 +409,8 @@ def run(model_save_path,
 
         fig.savefig(os.path.join(output_dir, title+".eps"), format="eps", bbox_extra_artists=bbox_extra_artists, bbox_inches='tight')
         fig.savefig(os.path.join(output_dir, title+".png"), format="png", bbox_extra_artists=bbox_extra_artists, bbox_inches='tight')
+        print('figure is saved to %s'%output_dir)
+    plt.show()
 
 
 

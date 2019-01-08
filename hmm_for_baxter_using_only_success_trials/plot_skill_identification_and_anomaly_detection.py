@@ -159,7 +159,7 @@ def run(
     anomaly_detection_metric_options = [
         'loglik<threshold=(mean-c*std)',
         'gradient<threshold=(min-range/2)',
-        'deri_of_diff',
+#        'deri_of_diff',
     ]
 
     trial_count = -1
