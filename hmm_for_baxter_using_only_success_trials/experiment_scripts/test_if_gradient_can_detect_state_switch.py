@@ -135,5 +135,5 @@ def run(model_save_path,
     fig.tight_layout()
     fig.savefig(os.path.join(output_dir, "test_if_gradient_can_detect_state_switch.png"), format="png")
     fig.savefig(os.path.join(output_dir, "test_if_gradient_can_detect_state_switch.eps"), format="eps")
-    print("figures are saved in %s" output_dir)
+    print("figures are saved in %s" %output_dir)
     plt.show()
