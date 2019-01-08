@@ -106,7 +106,7 @@ def build_parser():
         default = False,
         help="True if you want to plot_skill_identification_and_anomaly_detection.")
 
-    parser.add_option("--trial_class",
+    parser.add_option("--trial-class",
         action="store", 
         type="string", 
         dest="trial_class",

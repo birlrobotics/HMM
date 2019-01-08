@@ -1,3 +1,4 @@
 *.pyc
 .*.swp
 hmm_for_baxter_using_only_success_trials/experiment_scripts/experiment_output
+hmm_for_baxter_using_only_success_trials/baxter_pick_and_place_data/
