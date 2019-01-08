@@ -1,5 +1,5 @@
 from sklearn.externals import joblib
-import util
+import HMM.hmm_for_baxter_using_only_success_trials.util as util
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import cm 
@@ -32,7 +32,6 @@ def run(model_save_path,
         except IOError:
             print 'model of state %s not found'%(state_no,)
             continue
-
     state_color = {}
     color=iter(cm.rainbow(np.linspace(0, 1, state_amount)))
     for state_no in model_group_by_state:
@@ -136,3 +135,5 @@ def run(model_save_path,
     fig.tight_layout()
     fig.savefig(os.path.join(output_dir, "test_if_gradient_can_detect_state_switch.png"), format="png")
     fig.savefig(os.path.join(output_dir, "test_if_gradient_can_detect_state_switch.eps"), format="eps")
+    print("figures are saved in %s" output_dir)
+    plt.show()

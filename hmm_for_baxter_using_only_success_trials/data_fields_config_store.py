@@ -8,7 +8,17 @@ data_fields_store = {
         '.endpoint_state.pose.orientation.z',
         '.endpoint_state.pose.orientation.w'
     ],
-    'wrench': [
+
+    "endpoint_twist": [
+        '.endpoint_state.twist.linear.x',
+        '.endpoint_state.twist.linear.y',
+        '.endpoint_state.twist.linear.z',
+        '.endpoint_state.twist.angular.x',
+        '.endpoint_state.twist.angular.y',
+        '.endpoint_state.twist.angular.z',
+    ],
+ 
+   'wrench': [
          '.wrench_stamped.wrench.force.x',
          '.wrench_stamped.wrench.force.y',
          '.wrench_stamped.wrench.force.z',
