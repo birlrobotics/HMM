@@ -65,6 +65,18 @@ test_if_gradient_can_detect_state_switch.png
 
 
 ### TO RUN plot_skill_identification_and_anomaly_detection
+Fundamental assumptions
+check_if_viterbi_path_grow_incrementally
+```
+python birl_hmm_user_interface.py --check_if_viterbi_path_grow_incrementally
+```
+e.g. s1
+![check_if_viterbi_path_grow_incrementally](./readme_figures/s01.png  "check_if_viterbi_path_grow_incrementally")
+
+and then generate the state_emission_ log_prob_plot
+e.g.
+![state_emission_logll_plot](./readme_figures/state_emission_logll_plot.png  "state_emission_logll_plot")
+
 First learn the threshold of log-likelihood
 ```
 python birl_hmm_user_interface.py --learn_threshold_for_log_likelihood
