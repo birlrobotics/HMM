@@ -38,20 +38,14 @@ anomaly_detection_metric_options = [
 ]
 
 base_path_options = [
-    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170711',
-    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170724_6states_vision (delete a bad training data)',
-    '/home/sklaw/Desktop/ex/birl/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_20170724_6states_vision (delete a bad training data)',
-    '/home/sklaw/Desktop/ex/birl/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170711',
-    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170908',
-    '/home/vmrguser/Files_from_Shuangqi_to_Workstation/birl/data_for_or_from_HMM/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170909(wrench data synced)',
-    '/home/sklaw/Desktop/ex/birl/ML_DATA_Shuangqi/REAL_BAXTER_PICK_N_PLACE_with_5_states_20170909_calibrated_wrench_data',
+'/home/birl_wu/time_series_anomaly_detection_classification_clustering/HMM/hmm_for_baxter_using_only_success_trials/baxter_pick_and_place_data/REAL_BAXTER_PICK_N_PLACE_with_5_states_for_roman_paper_metrics_comparisions_plots'
 ]
 
 
 # config provided by the user
 config_by_user = {
     # config for types
-    'data_type_chosen': data_type_options[2],
+    'data_type_chosen': data_type_options[1],
     'model_type_chosen': model_type_options[0],
     'score_metric': '_score_metric_duration_of_(diff_btw_1st_2ed_emissionprob_<_10)_',
     'anomaly_detection_metric': anomaly_detection_metric_options[1],
