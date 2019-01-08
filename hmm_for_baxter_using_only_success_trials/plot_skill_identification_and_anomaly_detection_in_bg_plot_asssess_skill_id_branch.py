@@ -69,13 +69,13 @@ def load_data(
 
     return trials_group_by_folder_name, state_idx_range_by_folder_name, anomaly_start_idx_group_by_folder_name
 
-
 def color_bg(
     state_amount, 
     skill_seq, 
     ax, 
     state_idx_range_group_by_state,
     list_of_anomaly_start_idx,
+    pred_start_idx_group_by_state = None,
     color_identified_skills = True,
 ):
     state_color = {}
@@ -91,9 +91,15 @@ def color_bg(
             skill = skill_seq[t-1]
             end_t = t
 
-            color = util.rgba_to_rgb_using_white_bg(state_color[skill], 0.25)
+            color = util.rgba_to_rgb_using_white_bg(state_color[skill], 1)
             ax.axvspan(start_t, end_t, facecolor=color, ymax=0.5, ymin=0, lw=0)
             start_t = t
+
+    if pred_start_idx_group_by_state is not None:
+        for state_no in pred_start_idx_group_by_state:
+            start_idx = pred_start_idx_group_by_state[state_no]
+            ax.axvline(x=start_idx, color='black', ymax=0.5, ls='dashed')
+            
             
     if color_identified_skills:
         ymin = 0.5
@@ -103,15 +109,44 @@ def color_bg(
         state_range = state_idx_range_group_by_state[state_no]
         start_t = state_range[0]
         end_t = state_range[1]
-        color = util.rgba_to_rgb_using_white_bg(state_color[state_no], 0.5)
+        color = util.rgba_to_rgb_using_white_bg(state_color[state_no], 1)
         ax.axvspan(start_t, end_t, facecolor=color, ymax=1, ymin=ymin, lw=0)
+        ax.axvline(x=start_t, color='black', ymax=1, ymin=0.5, ls='dashed')
 
-    ymin,ymax = ax.get_ylim()
+    ax.axhline(y=0.5, color='black', lw=1)
+
     for anomaly_start_idx in list_of_anomaly_start_idx:
-        ax.axvline(x=anomaly_start_idx, color='red')
-        ax.text(anomaly_start_idx-100, ymax-0.17*(ymax-ymin), 'anomaly before occurrence', rotation=90)
+        ax.axvline(x=anomaly_start_idx, color='yellow')
 
 
+    ax.text(-450, 0.75, 'True')
+    ax.text(-450, 0.25, 'Estimate')
+
+
+def get_pred_skill_start_idx(skill_seq, the_way_to_mark_skill_begins):
+    if the_way_to_mark_skill_begins == 'first_occurrence':
+        start_idx_group_by_state = {}
+        for idx in range(len(skill_seq)):
+            now_skill = skill_seq[idx]
+            if now_skill not in start_idx_group_by_state:
+                start_idx_group_by_state[now_skill] = idx
+        return start_idx_group_by_state
+    elif the_way_to_mark_skill_begins == 'first_10_successive_occurrence':
+        start_idx_group_by_state = {}
+        count_dict = {}
+        for idx in range(len(skill_seq)):
+            now_skill = skill_seq[idx]
+            if now_skill not in start_idx_group_by_state:
+                if now_skill not in count_dict:
+                    count_dict = {}
+                    count_dict[now_skill] = 1
+                else:
+                    count_dict[now_skill] += 1 
+
+                if count_dict[now_skill] == 10:
+                    start_idx_group_by_state[now_skill] = idx-9
+                    count_dict = {}
+        return start_idx_group_by_state
 
 
 def run(
@@ -130,16 +165,17 @@ def run(
     output_dir = os.path.join(
         figure_save_path,
         "anomaly_detection_assessment",
+        trial_class,
     )
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
     trial_amount = len(trials_group_by_folder_name)
-    subpolt_amount_for_each_trial = 3 
-    subplot_per_row = 2
+    subpolt_amount_for_each_trial = 2 
+    subplot_per_row = 1
     subplot_amount = trial_amount*subpolt_amount_for_each_trial
     row_amount = int(math.ceil(float(subplot_amount)/subplot_per_row))
-    fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row, sharex=True)
+    fig, ax_mat = plt.subplots(nrows=row_amount, ncols=subplot_per_row)
     if row_amount == 1 and subplot_per_row == 1:
         ax_mat = np.array([ax_mat]).reshape(1, 1)
     elif row_amount == 1:
@@ -156,94 +192,65 @@ def run(
             col_no = j%subplot_per_row
             ax_list.append(ax_mat[row_no, col_no])
 
-    anomaly_detection_metric_options = [
-        'loglik<threshold=(mean-c*std)',
-        'gradient<threshold=(min-range/2)',
-#        'deri_of_diff',
-    ]
-
     trial_count = -1
     for trial_name in trials_group_by_folder_name:
         trial_count += 1
 
-        metric_count = -1
-        for anomaly_detection_metric in anomaly_detection_metric_options:
-            metric_count += 1
+        plot_idx = trial_count*2
+        ax_mark_skill_begin_by_first_occurrence = ax_list[plot_idx]
+        ax_mark_skill_begin_by_first_occurrence.set_title("use first skill occurrence as skill beginning") 
+        ax_mark_skill_begin_by_first_occurrence.set_yticklabels([])
+        ax_mark_skill_begin_by_first_occurrence.set_xlabel("time step")
 
-            # use given skill
-            if metric_count == 0:
-                plot_idx = 2*2+trial_count
-            else:
-                plot_idx = metric_count*2+trial_count-2
-    
-            ax_using_given_skill = ax_list[plot_idx]
+        plot_idx = trial_count*2+1
+        ax_mark_skill_begin_by_first_10_successive_occurrence = ax_list[plot_idx]
+        ax_mark_skill_begin_by_first_10_successive_occurrence.set_title("use first 10 successive skill occurrences as skill beginning") 
+        ax_mark_skill_begin_by_first_10_successive_occurrence.set_yticklabels([])
+        ax_mark_skill_begin_by_first_10_successive_occurrence.set_xlabel("time step")
 
-            title = ""
-            if trial_count == 0:
-                title += "anomalous trial using "
-            else:
-                title += "successful trial using "
+        # use skill id service
+        detector_using_skill_id_service = anomaly_detection.interface.get_anomaly_detector(
+            model_save_path, 
+            state_amount,
+            anomaly_detection_metric,
+        )
 
-            if metric_count == 0:
-                title += "magnitude-based metric"
-            elif metric_count == 1:
-                title += "gradient-based metric"
-            else:
-                title += "derivative-of-difference metric"
-                
+        print trial_name
+        X = trials_group_by_folder_name[trial_name]
+        skill_seq = []
+        for t in range(0, X.shape[0]):
+            now_skill, anomaly_detected, metric, threshold = detector_using_skill_id_service.add_one_smaple_and_identify_skill_and_detect_anomaly(X[t].reshape(1,-1))
+            skill_seq.append(now_skill)
 
-            ax_using_given_skill.set_title(title)
+        pred_start_idx_group_by_state = get_pred_skill_start_idx(skill_seq, the_way_to_mark_skill_begins= 'first_occurrence')
 
-            if trial_count == 0:
-                ax_using_given_skill.set_ylabel("log probability")
-            if plot_idx >= 4:
-                ax_using_given_skill.set_xlabel("time step")
-            detector_using_given_skill = anomaly_detection.interface.get_anomaly_detector(
-                model_save_path, 
-                state_amount,
-                anomaly_detection_metric,
-            )
+        color_bg(
+            state_amount, 
+            skill_seq, 
+            ax_mark_skill_begin_by_first_occurrence, 
+            state_idx_range_by_folder_name[trial_name],
+            anomaly_start_idx_group_by_folder_name[trial_name],
+            pred_start_idx_group_by_state = pred_start_idx_group_by_state,
+        )
 
-            print trial_name
-            X = trials_group_by_folder_name[trial_name]
-            skill_seq = []
 
-            state_idx_range_by_folder_name[trial_name]
-            for t in range(0, X.shape[0]):
-                for state_no in state_idx_range_by_folder_name[trial_name]:
-                    state_range = state_idx_range_by_folder_name[trial_name][state_no]
-                    if t >= state_range[0] and t <= state_range[1]:
-                        given_skill = state_no
+        pred_start_idx_group_by_state = get_pred_skill_start_idx(skill_seq, the_way_to_mark_skill_begins= 'first_10_successive_occurrence')
 
-                now_skill, anomaly_detected, metric, threshold = detector_using_given_skill.add_one_smaple_and_identify_skill_and_detect_anomaly(X[t].reshape(1,-1), now_skill=given_skill)
-                skill_seq.append(now_skill)
+        color_bg(
+            state_amount, 
+            skill_seq, 
+            ax_mark_skill_begin_by_first_10_successive_occurrence, 
+            state_idx_range_by_folder_name[trial_name],
+            anomaly_start_idx_group_by_folder_name[trial_name],
+            pred_start_idx_group_by_state = pred_start_idx_group_by_state,
+        )
 
-            detector_using_given_skill.plot_metric_data(ax_using_given_skill)
 
-            color_bg(
-                state_amount, 
-                skill_seq, 
-                ax_using_given_skill, 
-                state_idx_range_by_folder_name[trial_name],
-                anomaly_start_idx_group_by_folder_name[trial_name],
-                color_identified_skills = False,
-            )
-
-    filename = "trial_class_%s_anoamly_detection_metric_%s"%(trial_class, anomaly_detection_metric, )
+    filename = "anoamly_detection_metric_%s"%(anomaly_detection_metric, )
     safe_filename = filename.replace("/","_divide_")
-    fig.set_size_inches(12*subplot_per_row, 4*row_amount)
+
+    fig.set_size_inches(8*subplot_per_row,2*row_amount)
+
+    fig. tight_layout()
     fig.savefig(os.path.join(output_dir, safe_filename+'.eps'), format="eps")
     fig.savefig(os.path.join(output_dir, safe_filename+'.png'), format="png")
-
-    import plot_skill_identification_and_anomaly_detection_in_bg_plot_asssess_skill_id_branch
-    plot_skill_identification_and_anomaly_detection_in_bg_plot_asssess_skill_id_branch.run(model_save_path, 
-                                                                                           figure_save_path,
-                                                                                           anomaly_detection_metric,
-                                                                                           trial_class,
-                                                                                           data_path,
-                                                                                           interested_data_fields,
-                                                                                       )
-
-
-
-
